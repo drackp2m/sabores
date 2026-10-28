@@ -1,0 +1,75 @@
+<article>
+  <header>
+    <span class="numero">{{ local().number }}</span>
+    <div class="titulo">
+      <h2>{{ local().name }}</h2>
+      @if (local().subtitle) {
+        <p class="subtitulo">{{ local().subtitle }}</p>
+      }
+      <p class="direccion">{{ local().address }}</p>
+    </div>
+    @if (local().location) {
+      <button type="button" class="secundario" (click)="verEnMapa.emit()">Ver en el mapa</button>
+    }
+  </header>
+
+  @for (aviso of local().notes; track aviso) {
+    <p class="aviso">{{ aviso }}</p>
+  }
+
+  <ul class="tapas">
+    @for (tapa of local().tapas; track tapa.number) {
+      <li>
+        <img [src]="'data/' + tapa.photo" [alt]="tapa.name" loading="lazy" width="96" height="96" />
+        <div>
+          <h3>{{ tapa.name }}</h3>
+          <p>{{ tapa.description }}</p>
+          @if (tapa.glutenFree !== 'no' || tapa.castelloRutaDeSabor) {
+            <p class="sellos">
+              @if (tapa.glutenFree === 'yes') {
+                <span class="sello gluten">Sin gluten</span>
+              } @else if (tapa.glutenFree === 'optional') {
+                <span class="sello gluten">Sin gluten bajo petición</span>
+              }
+              @if (tapa.castelloRutaDeSabor) {
+                <span class="sello ruta">Castelló Ruta de Sabor</span>
+              }
+            </p>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+
+  <p class="dato"><strong>Bebidas:</strong> {{ local().drinks.join(' · ') }}</p>
+
+  @if (horarioDia(); as horario) {
+    <p class="dato"><strong>{{ horario.nombre }}:</strong> {{ horario.franjas }}</p>
+  }
+
+  <details>
+    <summary>Horario de tapas</summary>
+    <dl>
+      @for (d of dias; track d.id) {
+        <dt [class.activo]="d.id === dia()">{{ d.nombre }}</dt>
+        <dd>{{ formatearFranjas(local().schedule[d.id]) }}</dd>
+      }
+    </dl>
+  </details>
+
+  @if (local().phone || local().instagram) {
+    <footer>
+      @if (local().phone; as telefono) {
+        <a [href]="'tel:' + telefono">{{ telefono }}</a>
+      }
+      @if (local().instagram; as instagram) {
+        <a
+          [href]="'https://www.instagram.com/' + instagram.replace('@', '')"
+          target="_blank"
+          rel="noopener"
+          >{{ instagram }}</a
+        >
+      }
+    </footer>
+  }
+</article>

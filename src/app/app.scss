@@ -1,0 +1,109 @@
+.contenido {
+  max-width: 1280px;
+  margin-inline: auto;
+}
+
+.cabecera {
+  background: var(--acento);
+  color: #fff;
+  padding: 1.25rem 1rem;
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+    opacity: 0.9;
+  }
+}
+
+.filtros {
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+  padding: 0.75rem 1rem;
+
+  .contenido {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.75rem;
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--suave);
+
+  &.texto {
+    flex: 1 1 16rem;
+  }
+
+  input,
+  select {
+    font-size: 0.95rem;
+    color: var(--texto);
+  }
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-block: 0.5rem;
+}
+
+.acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.resultados {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.mapa {
+  height: 320px;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.resumen {
+  margin: 0;
+  color: var(--suave);
+}
+
+.estado {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--suave);
+}
+
+.error {
+  color: var(--acento);
+}
+
+@media (min-width: 960px) {
+  .resultados {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  // Lista a la izquierda y mapa fijo a la derecha mientras se hace scroll.
+  .mapa {
+    order: 2;
+    position: sticky;
+    top: 1rem;
+    height: calc(100vh - 2rem);
+  }
+}

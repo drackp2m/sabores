@@ -1,0 +1,5377 @@
+{
+  "event" : {
+    "city" : "Castelló de la Plana",
+    "edition" : "Otoño 2026 (17ª edición)",
+    "endDate" : "2026-11-07",
+    "name" : "Ruta de Tapas Sabores Castellón",
+    "price" : "Tapa + bebida 6,00 €",
+    "startDate" : "2026-10-15"
+  },
+  "locales" : [
+    {
+      "address" : "C/ CARCAGENTE, 17",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "TERCIO"
+      ],
+      "instagram" : "@origen_castellon",
+      "location" : {
+        "lat" : 39.980796505653025,
+        "lng" : -0.032586479586695617,
+        "match" : "CALLE CARCAGENTE 17",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "ORIGEN",
+      "notes" : [
+
+      ],
+      "number" : 1,
+      "page" : 4,
+      "phone" : "641986169",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Boquerón relleno de queso crema, pimiento del piquillo y membrillo sobre crudité de verduras.",
+          "glutenFree" : "no",
+          "name" : "NIDO DE BOQUERÓN",
+          "number" : 1,
+          "photo" : "fotos/01-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Relleno de carrillera al Pedro Ximénez con crema de castañas, setas, puré de calabaza y queso crema.",
+          "glutenFree" : "no",
+          "name" : "PIPO DE OTOÑO",
+          "number" : 2,
+          "photo" : "fotos/01-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ PADRE RICARDO, 28",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@somos.dosenverde",
+      "location" : {
+        "lat" : 39.979110204604048,
+        "lng" : -0.03272025552219688,
+        "match" : "CALLE PARE RICARDO 27",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "DOS EN VERDE",
+      "notes" : [
+
+      ],
+      "number" : 2,
+      "page" : 4,
+      "phone" : "611993578",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "20:00",
+            "open" : "17:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "20:00",
+            "open" : "17:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "20:00",
+            "open" : "17:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tortita de patatas crujientes acompañadas de una salsa cremosa de ternera, nata agria suave y coronadas con tocino ahumado.",
+          "glutenFree" : "no",
+          "name" : "TORTITAS CRUJIENTES",
+          "number" : 1,
+          "photo" : "fotos/02-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pan brioche relleno de costillar de Teruel desmigado, con salsa BBQ y cebolla encurtida.",
+          "glutenFree" : "no",
+          "name" : "BOCADO GOURMET",
+          "number" : 2,
+          "photo" : "fotos/02-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ DESIERTO DE LAS PALMAS, 3",
+      "drinks" : [
+        "1/5 CERVEZA",
+        "COPA DE VINO",
+        "PAPELÓN CON LIMÓN"
+      ],
+      "instagram" : "@_costadeoro",
+      "location" : {
+        "lat" : 39.973420422781253,
+        "lng" : -0.055605810973685388,
+        "match" : "CALLE DESIERTO PALMAS 6",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "COSTA DE ORO",
+      "notes" : [
+
+      ],
+      "number" : 3,
+      "page" : 5,
+      "phone" : "624276914",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pernil de jamón marinado en salsa a base de aceituna, alcaparra, pepinillo, zumo de naranja, vino y cerveza, sobre una tosta de yuca con una reducción de naranja caramelizada.",
+          "glutenFree" : "yes",
+          "name" : "BOCADO DE PERNIL IMPERIAL",
+          "number" : 1,
+          "photo" : "fotos/03-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Mix de marisco marinado en vinagre y limón sobre base de plátano macho frito.",
+          "glutenFree" : "yes",
+          "name" : "PASIÓN MEDITERRÁNEA",
+          "number" : 2,
+          "photo" : "fotos/03-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ NAVARRA, 4",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@elporton_castellon",
+      "location" : {
+        "lat" : 39.983971760699994,
+        "lng" : -0.039729715681832874,
+        "match" : "CALLE NAVARRA 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "EL PORTÓN",
+      "notes" : [
+
+      ],
+      "number" : 4,
+      "page" : 5,
+      "phone" : "606713281",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : "TASCA GASTRONÓMICA",
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Rosquilleta con ensaladilla de pato con yema de huevo y encurtidos.",
+          "glutenFree" : "no",
+          "name" : "ROSQUILLETA CON ENSALADILLA DE PATO",
+          "number" : 1,
+          "photo" : "fotos/04-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Buñuelo relleno de mejillón en escabeche y olivas.",
+          "glutenFree" : "no",
+          "name" : "PAPA FRITA CON MEJILLONES Y OLIVAS",
+          "number" : 2,
+          "photo" : "fotos/04-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ PINTOR SOLER BLANCO, 16",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA"
+      ],
+      "instagram" : "@elalquimista.res",
+      "location" : {
+        "lat" : 39.980371795817582,
+        "lng" : -0.029041980138371323,
+        "match" : "CALLE PINTOR SOLER BLASCO 26",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "EL ALQUIMISTA",
+      "notes" : [
+
+      ],
+      "number" : 5,
+      "page" : 6,
+      "phone" : "624258380",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Arancini de rabo de toro, queso taleggio y pico de gallo.",
+          "glutenFree" : "no",
+          "name" : "SÍSIFO",
+          "number" : 1,
+          "photo" : "fotos/05-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tostada de maíz, humus de maíz, anguila y kimchi casero.",
+          "glutenFree" : "no",
+          "name" : "MAÍZ ANGUILA KIMCHI",
+          "number" : 2,
+          "photo" : "fotos/05-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ NAVARRA, 3",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "AGUA",
+        "COPA DE CAVA PARA LA NAVAJA"
+      ],
+      "instagram" : "@atemporal_castellon",
+      "location" : {
+        "lat" : 39.983911858117644,
+        "lng" : -0.039712045604662974,
+        "match" : "CALLE NAVARRA 3",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "ATEMPORAL",
+      "notes" : [
+        "SERVICIO SOLO EN TERRAZA"
+      ],
+      "number" : 6,
+      "page" : 6,
+      "phone" : "606713281",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tartar de navaja con escabeche de maíz dulce.",
+          "glutenFree" : "no",
+          "name" : "TARTAR DE NAVAJA",
+          "number" : 1,
+          "photo" : "fotos/06-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Brioche tostado en mantequilla con tapenade de gamba y mariscos.",
+          "glutenFree" : "no",
+          "name" : "BRIOCHE MARINO",
+          "number" : 2,
+          "photo" : "fotos/06-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ CABALLEROS, 20",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@madhur_gastrobar",
+      "location" : {
+        "lat" : 39.987438743826637,
+        "lng" : -0.036136939092617781,
+        "match" : "CALLE CABALLEROS 20",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "MADHUR GASTROBAR",
+      "notes" : [
+
+      ],
+      "number" : 7,
+      "page" : 7,
+      "phone" : "604909139",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Canelón crujiente de gambón con salsa holandesa, coronado con huevas de arenque ahumado.",
+          "glutenFree" : "no",
+          "name" : "PERLA DORADA DEL MAR",
+          "number" : 1,
+          "photo" : "fotos/07-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Esfera de paté de pollo glaseada con coulis de frutos del bosque, acompañada de crujiente de pan de pasas, mantequilla aromática y ciruela flambeada al coñac.",
+          "glutenFree" : "no",
+          "name" : "CAPRICHO DE RUBÍ",
+          "number" : 2,
+          "photo" : "fotos/07-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/JOSÉ Mª MULET ORTIZ, 26",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "AGUA"
+      ],
+      "instagram" : "@restaurantenorteno",
+      "location" : {
+        "lat" : 39.993259692440411,
+        "lng" : -0.062933079911347153,
+        "match" : "CALLE JOSE MARIA MULET ORTIZ 26",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "RESTAURANTE NORTEÑO",
+      "notes" : [
+
+      ],
+      "number" : 8,
+      "page" : 7,
+      "phone" : "604803306",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Base de causa peruana, bonito con salsa nikkei y mayonesa de ajo negro.",
+          "glutenFree" : "yes",
+          "name" : "TARTAR DE BONITO NIKKEI",
+          "number" : 1,
+          "photo" : "fotos/08-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Corvina curada con espejo de ají amarillo acevichada, espuma de mejillón, salsa pesto, aguacate e hilos de boniato.",
+          "glutenFree" : "no",
+          "name" : "TIRADITO DEL PACÍFICO",
+          "number" : 2,
+          "photo" : "fotos/08-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ALICANTE, 34",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA"
+      ],
+      "instagram" : "@mejorana_gastrobar",
+      "location" : {
+        "lat" : 39.99669391660467,
+        "lng" : -0.036249847164190024,
+        "precision" : "manual",
+        "source" : "manual"
+      },
+      "name" : "MEJORANA GASTROBAR",
+      "notes" : [
+
+      ],
+      "number" : 9,
+      "page" : 8,
+      "phone" : "642282435",
+      "schedule" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:00",
+            "open" : "10:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "13:00",
+            "open" : "10:30"
+          }
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Envoltini de berenjena rellena de pollo y terminada con cebolla caramelizada, queso de cabra y mermelada de pimiento picante y tomate casero.",
+          "glutenFree" : "yes",
+          "name" : "ENVOLTINI",
+          "number" : 1,
+          "photo" : "fotos/09-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Canelón de surimi relleno de ensaladilla con langostino cocido.",
+          "glutenFree" : "yes",
+          "name" : "CANELÓN",
+          "number" : 2,
+          "photo" : "fotos/09-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ CAMP DE MORVEDRE, 111",
+      "drinks" : [
+        "ZURITO DE CERVEZA",
+        "ZURITO DE VINO BLANCO O TINTO"
+      ],
+      "instagram" : "@labelepoc_gastrobar",
+      "location" : {
+        "lat" : 39.976741868690183,
+        "lng" : -0.058216576547365242,
+        "match" : "CALLE CAMP DE MORVEDRE 113",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LA BELEPOC",
+      "notes" : [
+        "28 DE OCT. NO HAY TAPAS POR LA NOCHE"
+      ],
+      "number" : 10,
+      "page" : 8,
+      "phone" : "622423694",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:30"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pastel de sepia con tartar de gamba, esferificación de algas, gel de limón y crujiente de arroz y tinta.",
+          "glutenFree" : "no",
+          "name" : "PASTEL DE SEPIA",
+          "number" : 1,
+          "photo" : "fotos/10-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Brioche de mantequilla tostado, puré de chirivía, carrillera estofada al masaman, cebolla morada encurtida y panko frito.",
+          "glutenFree" : "no",
+          "name" : "BRIOCHE CARRILLERA",
+          "number" : 2,
+          "photo" : "fotos/10-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ MAESTRO FALLA, 16",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "AGUA"
+      ],
+      "instagram" : "@cafeteria_blesa",
+      "location" : {
+        "lat" : 39.98049870519533,
+        "lng" : -0.034678171962291039,
+        "match" : "CALLE MAESTRO FALLA 16",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "CAFETERÍA BLESA",
+      "notes" : [
+
+      ],
+      "number" : 11,
+      "page" : 10,
+      "phone" : "964222037",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:30",
+            "open" : "09:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "13:30",
+            "open" : "09:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "13:30",
+            "open" : "09:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "13:30",
+            "open" : "09:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "13:30",
+            "open" : "09:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "13:30",
+            "open" : "09:30"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Albóndigas de carne de cerdo picada con ajo, perejil, orégano, huevo y tomate natural frito.",
+          "glutenFree" : "yes",
+          "name" : "ALBÓNDIGAS BLESA",
+          "number" : 1,
+          "photo" : "fotos/11-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Tostas de pan natural y tomate rallado, aceite de oliva y sal con tortilla casera de puerro con bacalao esgarraet y toque de pimentón de la Vera.",
+          "glutenFree" : "no",
+          "name" : "TOSTAS FANTASÍA",
+          "number" : 2,
+          "photo" : "fotos/11-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/DR. FLEMING, 24",
+      "drinks" : [
+        "COPA DE VINO",
+        "1/5 CERVEZA",
+        "MARTINI",
+        "AGUA"
+      ],
+      "instagram" : null,
+      "location" : {
+        "lat" : 39.979835327289813,
+        "lng" : -0.033928211623073572,
+        "match" : "CALLE DOCTOR FLEMING 24",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "TABERNA MARINERA",
+      "notes" : [
+
+      ],
+      "number" : 12,
+      "page" : 10,
+      "phone" : "964035831",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Langostinos pelados, marinados y rebozados, acompañados con caviar y salsa mayonesa de pimentón.",
+          "glutenFree" : "no",
+          "name" : "LANGOSTINO TORPEDO",
+          "number" : 1,
+          "photo" : "fotos/12-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Hecho a la plancha con base de patatas hervidas en caldo de pulpo.",
+          "glutenFree" : "yes",
+          "name" : "PINCHITO DE GAMBA Y PULPO",
+          "number" : 2,
+          "photo" : "fotos/12-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "CAMINO SERRADAL, 13 (GRAO)",
+      "drinks" : [
+        "COPA DE VINO",
+        "1/5 CERVEZA",
+        "REFRESCO"
+      ],
+      "instagram" : "@cafeteriababys",
+      "location" : {
+        "lat" : 39.991222056000787,
+        "lng" : 0.01410854477597177,
+        "match" : "CAMINO SERRADAL 13",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BABY’S TERRASSA",
+      "notes" : [
+
+      ],
+      "number" : 13,
+      "page" : 11,
+      "phone" : "666211550",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Rodaja de flamenquín con papa al horno con salsa de mojo picón y salsa casera baby’s.",
+          "glutenFree" : "no",
+          "name" : "FLAMENQUÍN PICÓN",
+          "number" : 1,
+          "photo" : "fotos/13-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pincho califa con nachos con jalapeños.",
+          "glutenFree" : "no",
+          "name" : "PINCHO CALIFA",
+          "number" : 2,
+          "photo" : "fotos/13-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ASENSI, 14",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@asensi_14",
+      "location" : {
+        "lat" : 39.982958824310806,
+        "lng" : -0.036992155638039176,
+        "match" : "CALLE ASENSI 14",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "ASENSI 14",
+      "notes" : [
+
+      ],
+      "number" : 14,
+      "page" : 11,
+      "phone" : "711509856",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Caracoles en salsa de carne de ñora con chorizo, jamón, tomate y vino blanco.",
+          "glutenFree" : "no",
+          "name" : "MONTAÑA",
+          "number" : 1,
+          "photo" : "fotos/14-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Fideos con sepia y verduras.",
+          "glutenFree" : "no",
+          "name" : "MAR",
+          "number" : 2,
+          "photo" : "fotos/14-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ LIDÓN, 20",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@tabernalidon20",
+      "location" : {
+        "lat" : 39.989694481340393,
+        "lng" : -0.032805401042434214,
+        "match" : "AVENIDA VIRGEN DE LIDON 20",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "TABERNA LIDÓN 20",
+      "notes" : [
+
+      ],
+      "number" : 15,
+      "page" : 12,
+      "phone" : "646202850",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Gilda de langostino y huevo de codorniz con pimiento alegría y dip de gilda de anchoa.",
+          "glutenFree" : "no",
+          "name" : "ANDERE",
+          "number" : 1,
+          "photo" : "fotos/15-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Ensaladilla de jamón y puerro.",
+          "glutenFree" : "optional",
+          "name" : "ONDO DA!",
+          "number" : 2,
+          "photo" : "fotos/15-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/OBISPO CLIMENT, 4",
+      "drinks" : [
+        "COPA DE VINO",
+        "CERVEZA",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@jorge_malasana",
+      "location" : {
+        "lat" : 39.985208778603003,
+        "lng" : -0.036476251937597286,
+        "match" : "CALLE OBISPO CLIMENT 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "TASCA MALASAÑA",
+      "notes" : [
+
+      ],
+      "number" : 16,
+      "page" : 12,
+      "phone" : "619503949",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Patatas con salsa brava madrileña.",
+          "glutenFree" : "no",
+          "name" : "BRAVAS MALASAÑA",
+          "number" : 1,
+          "photo" : "fotos/16-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Bocadillo de calamares con mayonesa cítrica.",
+          "glutenFree" : "no",
+          "name" : "BOCATA DE CALAMARES",
+          "number" : 2,
+          "photo" : "fotos/16-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ CAPUCHINOS, 27",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "VERMUT CASERO"
+      ],
+      "instagram" : "@taperiabocateriamissdaisy",
+      "location" : {
+        "lat" : 39.99047742794874,
+        "lng" : -0.034095961237608378,
+        "match" : "AVENIDA CAPUCHINOS 27",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "MISS DAISY",
+      "notes" : [
+
+      ],
+      "number" : 17,
+      "page" : 13,
+      "phone" : "642769745",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Croquetas de carabineros y gamba roja sobre crema de pimientos.",
+          "glutenFree" : "no",
+          "name" : "MISS CARABINERA",
+          "number" : 1,
+          "photo" : "fotos/17-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tortita de camarón con ensaladilla rusa y patatas paja.",
+          "glutenFree" : "no",
+          "name" : "MISS CAMARÓN",
+          "number" : 2,
+          "photo" : "fotos/17-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ MAYOR, 42",
+      "drinks" : [
+        "COPA DE VINO",
+        "CERVEZA",
+        "CERVEZA 0’0",
+        "CERVEZA SIN GLUTEN",
+        "AGUA"
+      ],
+      "instagram" : "@barista.castellon",
+      "location" : {
+        "lat" : 39.985243065353558,
+        "lng" : -0.036770671326647977,
+        "match" : "CALLE MAYOR 42",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "CAFÉ BARISTA",
+      "notes" : [
+
+      ],
+      "number" : 18,
+      "page" : 13,
+      "phone" : "964231371",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Berenjena al horno envuelta en papel de arroz crujiente, rellena de gorgonzola y nueces con salsa de remolacha.",
+          "glutenFree" : "yes",
+          "name" : "LA MORADA",
+          "number" : 1,
+          "photo" : "fotos/18-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Buñuelo redondo de carrillera melosa con salsa hoisin, cebolla crujiente y cebollino fresco.",
+          "glutenFree" : "no",
+          "name" : "LA VUELTA",
+          "number" : 2,
+          "photo" : "fotos/18-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PZA. ESPAÑA, 1",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@lacomarca_taberna",
+      "location" : {
+        "lat" : 39.987210167130975,
+        "lng" : -0.047547420699493706,
+        "match" : "PLAZA ESPAÑA 1",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "TABERNA LA COMARCA",
+      "notes" : [
+
+      ],
+      "number" : 19,
+      "page" : 14,
+      "phone" : "675974320",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Sándwich crujiente de frito en conserva de San Vicente con salsa del chef y crema de zanahoria.",
+          "glutenFree" : "no",
+          "name" : "EL BOCADO DE LA TERRETA",
+          "number" : 1,
+          "photo" : "fotos/19-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Carpaccio de manitas de cerdo de San Vicente con salsa de pimiento picante y dulce adornado con pistacho.",
+          "glutenFree" : "yes",
+          "name" : "FOC PORK CASTELLÓ",
+          "number" : 2,
+          "photo" : "fotos/19-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/TEMPRADO, 7",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "1/5 CERVEZA",
+        "AGUA"
+      ],
+      "instagram" : "@pizzeriadanubio",
+      "location" : {
+        "lat" : 39.983609363812619,
+        "lng" : -0.03693276447750387,
+        "match" : "CALLE TEMPRADO 7",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "DANUBIO PIZZERÍA",
+      "notes" : [
+
+      ],
+      "number" : 20,
+      "page" : 14,
+      "phone" : "964220617",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "21:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Gambón relleno con mantequilla de ajo, perejil y ahumados, cubierto de salmón marinado en soja y naranja sobre crema marinera.",
+          "glutenFree" : "optional",
+          "name" : "NUESTRA VERSIÓN DEL GAMBÓN",
+          "number" : 1,
+          "photo" : "fotos/20-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Hojaldre relleno de solomillo en salsa de setas, cubierto de salsa de piquillos.",
+          "glutenFree" : "no",
+          "name" : "NUESTRA VERSIÓN DE ROLL NEW YORK",
+          "number" : 2,
+          "photo" : "fotos/20-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ FOLA, 2",
+      "drinks" : [
+        "COPA DE VINO",
+        "CERVEZA"
+      ],
+      "instagram" : "@comoencasacastellon",
+      "location" : {
+        "lat" : 39.982780274237008,
+        "lng" : -0.039319022547205741,
+        "match" : "CALLE FOLA 2",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "COMO EN CASA BOCATERÍA",
+      "notes" : [
+
+      ],
+      "number" : 21,
+      "page" : 16,
+      "phone" : "603116166",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Empanada de mechada con pico de gallo y mayonesa de naranja.",
+          "glutenFree" : "yes",
+          "name" : "MECHADA CON NARANJA",
+          "number" : 1,
+          "photo" : "fotos/21-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Gambas al ajillo sobre puré de patata y pimiento asado con salsa de naranja.",
+          "glutenFree" : "yes",
+          "name" : "GAMBAS CON NARANJA",
+          "number" : 2,
+          "photo" : "fotos/21-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ MAESTRO RIPOLLÉS, 12",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "AGUA"
+      ],
+      "instagram" : "@tasca.argentina.laloca",
+      "location" : {
+        "lat" : 39.981895329351552,
+        "lng" : -0.034255933916969378,
+        "match" : "CALLE MAESTRO RIPOLLES 12",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LA LOCA TASCA ARGENTINA",
+      "notes" : [
+
+      ],
+      "number" : 22,
+      "page" : 16,
+      "phone" : "604860830",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Alfajor de naranja relleno de salmón con corazón de naranja y crujiente de almendra.",
+          "glutenFree" : "no",
+          "name" : "SEÑOR PUCHOL",
+          "number" : 1,
+          "photo" : "fotos/22-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Bikini de vitel toné - Receta de mi tío Pablo.",
+          "glutenFree" : "no",
+          "name" : "TÍO PABLO",
+          "number" : 2,
+          "photo" : "fotos/22-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PZA. BORRULL, 5",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO",
+        "MICHELADA",
+        "AGUA"
+      ],
+      "instagram" : "@elpasotexmexx",
+      "location" : {
+        "lat" : 39.984081582162204,
+        "lng" : -0.034844334263161345,
+        "match" : "PLAZA JUEZ BORRULL 5",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "EL PASO TEX-MEX",
+      "notes" : [
+
+      ],
+      "number" : 23,
+      "page" : 17,
+      "phone" : "635876809",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "18:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "18:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "18:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "18:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "18:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tortilla de trigo rellena de arroz de cilantro, frijoles negros y ternera acompañada de guacamole, cebolla encurtida y salsa verde.",
+          "glutenFree" : "no",
+          "name" : "BURRITO EL PASO",
+          "number" : 1,
+          "photo" : "fotos/23-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Totopos crujientes, mozzarella y nuestro chili con carne casera acompañada de guacamole, salsa agria y jalapeños.",
+          "glutenFree" : "yes",
+          "name" : "NACHOS TEX-MEX",
+          "number" : 2,
+          "photo" : "fotos/23-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PLA. VILANOVA D’ALCOLEA, 4",
+      "drinks" : [
+        "COPA DE VINO",
+        "CERVEZA",
+        "AGUA"
+      ],
+      "instagram" : "@cupula.castellon",
+      "location" : {
+        "lat" : 39.975727049336015,
+        "lng" : -0.047531317792218357,
+        "match" : "PLAZA VILANOVA D\"ALCOLEA 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "CÚPULA",
+      "notes" : [
+
+      ],
+      "number" : 24,
+      "page" : 17,
+      "phone" : "698447307",
+      "schedule" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+          {
+            "close" : "21:30",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:30",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tartar de fuet sobre nori crujiente con salsa de yema.",
+          "glutenFree" : "yes",
+          "name" : "ENTRE JAPÓN Y CASTELLÓN",
+          "number" : 1,
+          "photo" : "fotos/24-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Ensaladilla de marisco con mayonesa de lima sobre pan de gamba.",
+          "glutenFree" : "yes",
+          "name" : "NUBE MARINA",
+          "number" : 2,
+          "photo" : "fotos/24-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ DOCTOR FLEMING, 9",
+      "drinks" : [
+        "COPA DE VINO",
+        "CERVEZA",
+        "AGUA"
+      ],
+      "instagram" : null,
+      "location" : {
+        "lat" : 39.980399108406296,
+        "lng" : -0.033366849703112607,
+        "match" : "CALLE DOCTOR FLEMING 9",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LA GRADA GASTROBAR",
+      "notes" : [
+
+      ],
+      "number" : 25,
+      "page" : 18,
+      "phone" : "624442059",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Verduras cocidas con salmón, mayonesa, huevo decorado con ralladura de yema y canónigos.",
+          "glutenFree" : "yes",
+          "name" : "ENSALADA CON SALMÓN",
+          "number" : 1,
+          "photo" : "fotos/25-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Crepe casera rellena de pollo con cebolla caramelizada acompañado con salsa cremosa de champiñones y rúcula con nueces.",
+          "glutenFree" : "no",
+          "name" : "CREPE CRUJIENTE CON POLLO",
+          "number" : 2,
+          "photo" : "fotos/25-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ CARCAGENTE, 7",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : null,
+      "location" : {
+        "lat" : 39.981322686685466,
+        "lng" : -0.034047349866339019,
+        "match" : "CALLE CARCAGENTE 7",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "FRAPPÉ GASTROTAPAS",
+      "notes" : [
+
+      ],
+      "number" : 26,
+      "page" : 18,
+      "phone" : "624984299",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "19:30",
+            "open" : "17:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "19:30",
+            "open" : "17:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "19:30",
+            "open" : "17:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "19:30",
+            "open" : "17:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "19:30",
+            "open" : "17:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "19:30",
+            "open" : "17:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pulpo encebollado acompañado con rodajitas de pan tostado.",
+          "glutenFree" : "no",
+          "name" : "PULPO ENCEBOLLADO",
+          "number" : 1,
+          "photo" : "fotos/26-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pincho de cordero con salsa de la casa.",
+          "glutenFree" : "no",
+          "name" : "PINCHITO DE CORDERO",
+          "number" : 2,
+          "photo" : "fotos/26-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ LIDÓN, 14",
+      "drinks" : [
+        "CAÑA",
+        "1/3 CERVEZA",
+        "COPA DE VINO",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@eldespatarrao",
+      "location" : {
+        "lat" : 39.989246486251886,
+        "lng" : -0.033566190018332831,
+        "match" : "AVENIDA VIRGEN DE LIDON 14",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "EL DESPATARRAO",
+      "notes" : [
+
+      ],
+      "number" : 27,
+      "page" : 19,
+      "phone" : "614113513",
+      "schedule" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Patata natural cocida en horno coronada con queso provolone fundido, mayonesa de chimichurri y jamón serrano cocido.",
+          "glutenFree" : "yes",
+          "name" : "PATATAS DESPATARRADAS",
+          "number" : 1,
+          "photo" : "fotos/27-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Base de plátano verde frito coronado con salsa criolla Argentina y provolone, uno con salsa gold casera y otro con salsa verde a base de ajo.",
+          "glutenFree" : "yes",
+          "name" : "DESPATACÓN",
+          "number" : 2,
+          "photo" : "fotos/27-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ CASALDUCH, 28",
+      "drinks" : [
+        "COPA DE VINO"
+      ],
+      "instagram" : "@rustico.mmgrupo",
+      "location" : {
+        "lat" : 39.980577468561975,
+        "lng" : -0.037537007415235878,
+        "match" : "AVENIDA CASALDUCH 28",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "MM RÚSTICO",
+      "notes" : [
+
+      ],
+      "number" : 28,
+      "page" : 19,
+      "phone" : "964269603",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Taco de lomo de lubina con pico de gallo y flambeado al cointreau.",
+          "glutenFree" : "optional",
+          "name" : "TACO DE LA REINA",
+          "number" : 1,
+          "photo" : "fotos/28-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Hamburguesa de langostino con crujiente de arroz y mayonesa de ponzu.",
+          "glutenFree" : "yes",
+          "name" : "EL MARJAL",
+          "number" : 2,
+          "photo" : "fotos/28-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ENSEÑANZA, 3",
+      "drinks" : [
+        "1/5 CERVEZA",
+        "COPA DE VINO",
+        "AGUA"
+      ],
+      "instagram" : "@bajo_32",
+      "location" : {
+        "lat" : 39.987636373005174,
+        "lng" : -0.035704250841095936,
+        "match" : "CALLE ENSEÑANZA 3",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BAJO 32",
+      "notes" : [
+
+      ],
+      "number" : 29,
+      "page" : 20,
+      "phone" : "621434982",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Sándwich de cerdo asado con salsa de jugo y piparras.",
+          "glutenFree" : "no",
+          "name" : "SANDO",
+          "number" : 1,
+          "photo" : "fotos/29-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Buñuelo de oreja guisada y chipotle (chile mexicano).",
+          "glutenFree" : "no",
+          "name" : "ORELLUT",
+          "number" : 2,
+          "photo" : "fotos/29-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ SAINZ DE BREMOND, 4",
+      "drinks" : [
+        "CAÑA",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : null,
+      "location" : {
+        "lat" : 39.990540924887135,
+        "lng" : -0.032338027936122851,
+        "match" : "CALLE SANZ DE BREMOND 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "EL TORICO",
+      "notes" : [
+
+      ],
+      "number" : 30,
+      "page" : 20,
+      "phone" : "642290175",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tosta de ensalada de berenjena con crujiente de jamón y tomate cherry.",
+          "glutenFree" : "no",
+          "name" : "TOSTA EL TORICO",
+          "number" : 1,
+          "photo" : "fotos/30-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tabla de puré con salchicha rumana y mostaza de Dijon.",
+          "glutenFree" : "no",
+          "name" : "SALCHICHA DEL MESÓN",
+          "number" : 2,
+          "photo" : "fotos/30-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ BENICÀSSIM, 6",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@montecristo_restaurant",
+      "location" : {
+        "lat" : 39.997676073925341,
+        "lng" : -0.038884547080648334,
+        "match" : "AVENIDA BENICASIM 5",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "RESTAURANTE MONTECRISTO",
+      "notes" : [
+
+      ],
+      "number" : 31,
+      "page" : 22,
+      "phone" : "864811911",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Croquetas semifrías de tartar de atún, alga wakame e inyección de salsa teriyaki.",
+          "glutenFree" : "no",
+          "name" : "CROQUETA DE TARTAR DE ATÚN",
+          "number" : 1,
+          "photo" : "fotos/31-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Zamburiña rellena de mariscos y pescado.",
+          "glutenFree" : "no",
+          "name" : "ZAMBURIÑA RELLENA",
+          "number" : 2,
+          "photo" : "fotos/31-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ALCALÁ GALIANO, 3 (GRAO)",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@nouescull",
+      "location" : {
+        "lat" : 39.971769268551,
+        "lng" : 0.010383896213705057,
+        "match" : "CALLE ALCALA GALIANO 3",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "NOU ESCULL",
+      "notes" : [
+
+      ],
+      "number" : 32,
+      "page" : 22,
+      "phone" : "964281619",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Un tomate de penjar relleno de queso sobre una crema de aguacate y una vinagreta de pistacho.",
+          "glutenFree" : "yes",
+          "name" : "MOSSET DE PENJAR",
+          "number" : 1,
+          "photo" : "fotos/32-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tosta de tartar de gamba marinada con aguachile de mango.",
+          "glutenFree" : "no",
+          "name" : "GAMBA TROPICAL",
+          "number" : 2,
+          "photo" : "fotos/32-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PZA. FADRELL (ESQUINA SEGARRA RIBES)",
+      "drinks" : [
+        "CAÑA",
+        "LOLEA",
+        "REFRESCO"
+      ],
+      "instagram" : "@laparadadefadrell",
+      "location" : {
+        "lat" : 39.981968137120333,
+        "lng" : -0.035559074150575812,
+        "precision" : "manual",
+        "source" : "manual"
+      },
+      "name" : "LA PARADA DE FADRELL",
+      "notes" : [
+
+      ],
+      "number" : 33,
+      "page" : 23,
+      "phone" : "681316666",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : null,
+            "open" : "16:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "16:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : null,
+            "open" : "16:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "16:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "16:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "16:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "16:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Papas y mejillones en escabeche terminados con sal negra de nuestra marca Espinaler.",
+          "glutenFree" : "yes",
+          "name" : "NACHOS GALLEGOS",
+          "number" : 1,
+          "photo" : "fotos/33-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Dos gildas, una de anchoas y otra de boquerón terminadas con aceitunas y piparras picantón de nuestra marca Espinaler.",
+          "glutenFree" : "yes",
+          "name" : "MATRIMONIO VASCO",
+          "number" : 2,
+          "photo" : "fotos/33-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PZA. RÍO ALVENTOSA, 1",
+      "drinks" : [
+        "CERVEZA",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@casapena",
+      "location" : {
+        "lat" : 39.978396251409478,
+        "lng" : -0.046733402561493026,
+        "match" : "PLAZA RIO ALBENTOSA 1",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "CASA PEÑA",
+      "notes" : [
+
+      ],
+      "number" : 34,
+      "page" : 23,
+      "phone" : "964179271",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:30"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:30"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:30"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:30"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:30"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:30"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Matrimonio formado por boquerones rebozados más anchoas y pimiento rojo y verde en pan de bocata.",
+          "glutenFree" : "no",
+          "name" : "MATRIMONIO",
+          "number" : 1,
+          "photo" : "fotos/34-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Anilla de calamar con rosa de salchichón acompañado de langostinos.",
+          "glutenFree" : "no",
+          "name" : "ROSA DE ANILLAS DE CALAMAR",
+          "number" : 2,
+          "photo" : "fotos/34-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ Mª ROSA MOLÁS, 15",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@rokelincastellon",
+      "location" : {
+        "lat" : 39.994115079250122,
+        "lng" : -0.033404678245067904,
+        "match" : "CALLE MARIA ROSA MOLAS 15",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "ROKELÍN",
+      "notes" : [
+
+      ],
+      "number" : 35,
+      "page" : 24,
+      "phone" : "964269087",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "21:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Champiñón relleno de almendra marcona, manzana y queso de cabra, cubierto de láminas de bacon crujiente.",
+          "glutenFree" : "yes",
+          "name" : "BACON SORPRESA",
+          "number" : 1,
+          "photo" : "fotos/35-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Espuma de jamón de Teruel sobre fondo de crema de patata con guisantes y menta.",
+          "glutenFree" : "yes",
+          "name" : "NUBE DE JAMÓN",
+          "number" : 2,
+          "photo" : "fotos/35-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/MAESTRO RIPOLLÉS, 7",
+      "drinks" : [
+        "CAÑA",
+        "COPA ALBARIÑO",
+        "AGUA"
+      ],
+      "instagram" : "@bier_castello",
+      "location" : {
+        "lat" : 39.981679922149731,
+        "lng" : -0.033259560485625152,
+        "match" : "CALLE MAESTRO RIPOLLES 7",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BIER CASTELLÓ",
+      "notes" : [
+        "31 DE OCT. NO HAY TAPAS"
+      ],
+      "number" : 36,
+      "page" : 24,
+      "phone" : "964250517",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "20:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Hamburguesa con salsa bourbon, miel y Jack Daniels y 4 quesos.",
+          "glutenFree" : "no",
+          "name" : "CHEESE KISS",
+          "number" : 1,
+          "photo" : "fotos/36-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Nachos con pulled pork, guacamole, queso cheddar, gouda, philadelphia, pico de gallo y jalapeños con salsa de miel.",
+          "glutenFree" : "no",
+          "name" : "TOTOPOS SUPREMOS",
+          "number" : 2,
+          "photo" : "fotos/36-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ TRIPULANTS DE LA PACA, 2 (GRAO)",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "AGUA"
+      ],
+      "instagram" : "@panderolabar",
+      "location" : {
+        "lat" : 39.972216684751785,
+        "lng" : 0.010756582122619674,
+        "match" : "CALLE TRIPULANTS DE LA PACA 2",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LA PANDEROLA",
+      "notes" : [
+
+      ],
+      "number" : 37,
+      "page" : 25,
+      "phone" : "614029025",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Buñuelo de bacalao, emulsión de cítricos y piel de bacalao deshidratada sobre tinta de chipirón.",
+          "glutenFree" : "no",
+          "name" : "LA PANDEROLA: DE LA PLANA AL GRAO",
+          "number" : 1,
+          "photo" : "fotos/37-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Crujiente de corteza de trigo, ensaladilla rusa, emulsión de ajo, polvo de yema tostada y camarón pipa.",
+          "glutenFree" : "optional",
+          "name" : "PALOMA DEL PUERTO",
+          "number" : 2,
+          "photo" : "fotos/37-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ GOBERNADOR, 53",
+      "drinks" : [
+        "CAÑA",
+        "CERVEZA",
+        "COPA DE VINO (RIOJA, VERDEJO)",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@ginvincastellon",
+      "location" : {
+        "lat" : 39.985650795470576,
+        "lng" : -0.034790123423267143,
+        "match" : "CALLE GOBERNADOR BERMUDEZ CASTR 53",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "GIN & VIN",
+      "notes" : [
+
+      ],
+      "number" : 38,
+      "page" : 25,
+      "phone" : "964142497",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Crema de berenjena asada con 3 sabores: lima, ahumado y picante sobre lecho de pan laminado.",
+          "glutenFree" : "no",
+          "name" : "3 DESEOS",
+          "number" : 1,
+          "photo" : "fotos/38-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "“Pastisset” de pato confit, pera asada y reducción de higo negro.",
+          "glutenFree" : "no",
+          "name" : "PERA AL PATO",
+          "number" : 2,
+          "photo" : "fotos/38-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "CRTA. RIBESALBES, 54",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@benadressa_bar",
+      "location" : {
+        "lat" : 39.990354764193803,
+        "lng" : -0.10729531563607839,
+        "match" : "CARRETERA RIBESALBES 52",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BAR RTE. BENADRESA",
+      "notes" : [
+
+      ],
+      "number" : 39,
+      "page" : 26,
+      "phone" : "633164619",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "11:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "11:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "11:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "11:00",
+            "open" : "09:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Clásica elaboración de manitas de cerdo en su salsa casera.",
+          "glutenFree" : "no",
+          "name" : "MANITAS",
+          "number" : 1,
+          "photo" : "fotos/39-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Caracoles en salsa casera tradicional.",
+          "glutenFree" : "no",
+          "name" : "CARAGOLS",
+          "number" : 2,
+          "photo" : "fotos/39-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ASTRÓNOMO FRANCESC ARAGÓ, 2 (GRAO)",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@impalacafegrao",
+      "location" : {
+        "lat" : 39.979142615627524,
+        "lng" : 0.020497901897568661,
+        "match" : "CALLE ASTRONOMO FRANSESC ARAGO 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "IMPALA CAFÉ GRAO",
+      "notes" : [
+
+      ],
+      "number" : 40,
+      "page" : 26,
+      "phone" : "672140003",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "13:00",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Falso tiramisú con tomate confitado, anchoa del cantábrico y tierra de aceituna.",
+          "glutenFree" : "no",
+          "name" : "COSTA AZAHAR",
+          "number" : 1,
+          "photo" : "fotos/40-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Pastel de queso crema con langostino, cebolla, encurtidos y crema galleta de espinacas.",
+          "glutenFree" : "no",
+          "name" : "CREMOSO",
+          "number" : 2,
+          "photo" : "fotos/40-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ CAMPOAMOR, 11",
+      "drinks" : [
+        "CAÑA",
+        "VERMUT",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@homenaje.cs",
+      "location" : {
+        "lat" : 39.984494558472456,
+        "lng" : -0.036560417868218162,
+        "match" : "CALLE CAMPOAMOR 11",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "HOMENAJE",
+      "notes" : [
+
+      ],
+      "number" : 41,
+      "page" : 28,
+      "phone" : "642267554",
+      "schedule" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Chupa chups de cordero con puré de patatas y salsa demi-glace con un toque ligero de manzana.",
+          "glutenFree" : "no",
+          "name" : "CHUPA CHUPS DE CORDERO",
+          "number" : 1,
+          "photo" : "fotos/41-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Nuestra marinera con anchoa del cantábrico.",
+          "glutenFree" : "no",
+          "name" : "NUESTRA MARINERA",
+          "number" : 2,
+          "photo" : "fotos/41-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ONDA, 36",
+      "drinks" : [
+        "CAÑA",
+        "1/5 CERVEZA",
+        "COPA DE VINO",
+        "CAVA",
+        "AGUA"
+      ],
+      "instagram" : "@restcorporesano",
+      "location" : {
+        "lat" : 39.978922214518605,
+        "lng" : -0.050577622673274335,
+        "match" : "CALLE ONDA 36",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "CORPORE SANO",
+      "notes" : [
+
+      ],
+      "number" : 42,
+      "page" : 28,
+      "phone" : "651405059",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Caviar 100% real sobre crema de kéfir, tosta de brioche y gel de yema.",
+          "glutenFree" : "yes",
+          "name" : "MI PRIMER CAVIAR CHISPAS",
+          "number" : 1,
+          "photo" : "fotos/42-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Kokotxas de bacalao al pil-pil con tellinas en salsa verde, gelatina de vermut de Alcora y crujientes de ajo, perejil y piquillo.",
+          "glutenFree" : "yes",
+          "name" : "KOKOTXINAS",
+          "number" : 2,
+          "photo" : "fotos/42-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ALLOZA, 164",
+      "drinks" : [
+        "CAÑA",
+        "CERVEZA SIN ALCOHOL",
+        "COPA DE VINO",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@aglio.nero.castellon",
+      "location" : {
+        "lat" : 39.988149168957236,
+        "lng" : -0.038505865758620472,
+        "match" : "CALLE ALLOZA 163",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "AGLIO NERO",
+      "notes" : [
+
+      ],
+      "number" : 43,
+      "page" : 29,
+      "phone" : "614242393",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "12:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Tomate de penjar confitado con aceite de oliva virgen extra, relleno de stracciatella y aceite de albahaca.",
+          "glutenFree" : "yes",
+          "name" : "TOMATE CONFITADO",
+          "number" : 1,
+          "photo" : "fotos/43-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Lasaña de boniato a la norcina.",
+          "glutenFree" : "yes",
+          "name" : "LASAÑA DE BONIATO",
+          "number" : 2,
+          "photo" : "fotos/43-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PUERTA DEL SOL, 1",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "AGUA"
+      ],
+      "instagram" : "@linoterrace",
+      "location" : {
+        "lat" : 39.984486671549469,
+        "lng" : -0.038762509526282588,
+        "match" : "PLAZA PUERTA DEL SOL 1",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LINO TERRACE",
+      "notes" : [
+
+      ],
+      "number" : 44,
+      "page" : 29,
+      "phone" : "964225800",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "21:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "21:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "21:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "21:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "21:30"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Canana rellena de longaniza y sobrasada.",
+          "glutenFree" : "yes",
+          "name" : "CANANA RELLENA",
+          "number" : 1,
+          "photo" : "fotos/44-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Brioche de paté de pato de Les Useres, setas y mandarina.",
+          "glutenFree" : "no",
+          "name" : "BRIOCHE PELEGRÍ",
+          "number" : 2,
+          "photo" : "fotos/44-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ORTEGA Y GASSET, 3",
+      "drinks" : [
+        "COPA DE VINO",
+        "VERMUT",
+        "1/5 CERVEZA",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@labancada",
+      "location" : {
+        "lat" : 39.984607363423642,
+        "lng" : -0.037994114629110003,
+        "precision" : "manual",
+        "source" : "manual"
+      },
+      "name" : "LA BANCADA",
+      "notes" : [
+
+      ],
+      "number" : 45,
+      "page" : 30,
+      "phone" : "964035619",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "22:30",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Wanton frito de yema con salmón marinado, cebolla morada, mango, aguacate y mayonesa japonesa con avellana tostada.",
+          "glutenFree" : "no",
+          "name" : "WANTON DE YEMA Y SALMÓN",
+          "number" : 1,
+          "photo" : "fotos/45-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Pan brioche relleno de brisket de angus con salsa tártara, crema de queso cheddar, pepinillos agridulces y cebolla crujiente.",
+          "glutenFree" : "no",
+          "name" : "BRIOCHE DE PASTRAMI",
+          "number" : 2,
+          "photo" : "fotos/45-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ESCULTOR VICIANO, 13",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@lodepepe_castellon",
+      "location" : {
+        "lat" : 39.983841586055021,
+        "lng" : -0.036443583985921638,
+        "match" : "CALLE ESCULTOR VICIANO 13",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LO DE PEPE",
+      "notes" : [
+
+      ],
+      "number" : 46,
+      "page" : 30,
+      "phone" : "964723787",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "22:30",
+            "open" : "19:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "21:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "22:30",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "22:30",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:30",
+            "open" : "19:30"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Croqueta de mejillón tigre con mayonesa de Gilda.",
+          "glutenFree" : "no",
+          "name" : "EL TIGRE",
+          "number" : 1,
+          "photo" : "fotos/46-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Albóndigas de bacalao con salsa de almejas.",
+          "glutenFree" : "no",
+          "name" : "LA ALMEJA",
+          "number" : 2,
+          "photo" : "fotos/46-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ MOYANO, 4",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@elbartortilla",
+      "location" : {
+        "lat" : 39.983087379617018,
+        "lng" : -0.038626610721953281,
+        "match" : "CALLE MOYANO 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BAR TORTILLA",
+      "notes" : [
+
+      ],
+      "number" : 47,
+      "page" : 31,
+      "phone" : "677737463",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:30",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Croqueta de limón fermentado y queso parmesano.",
+          "glutenFree" : "no",
+          "name" : "LA PIAMONTESA",
+          "number" : 1,
+          "photo" : "fotos/47-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Cremoso con queso de cabra con tomates confitados acabado con polvo de tomate seco y pesto rojo.",
+          "glutenFree" : "yes",
+          "name" : "TIRAMISÚ",
+          "number" : 2,
+          "photo" : "fotos/47-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ANTONIO MAURA, 31",
+      "drinks" : [
+        "CAÑA",
+        "VERMUT",
+        "AGUA"
+      ],
+      "instagram" : "@arre_restaurant",
+      "location" : {
+        "lat" : 39.987836076509552,
+        "lng" : -0.036373046236043295,
+        "match" : "CALLE ANTONIO MAURA 31",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "ARRE",
+      "notes" : [
+
+      ],
+      "number" : 48,
+      "page" : 31,
+      "phone" : "964183691",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Gilda de corvina curada con limón fermentado a la sal, cebolla encurtida con vermut, aceitunas y piparras, acompañada de su propio gazpachuelo.",
+          "glutenFree" : "yes",
+          "name" : "GILDA CASTELLONERA",
+          "number" : 1,
+          "photo" : "fotos/48-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Brocheta de pato de Les Useres con marinada anticuchera de peras encurtidas y caldito templado.",
+          "glutenFree" : "no",
+          "name" : "ANTICUCHOS DE LES USERES",
+          "number" : 2,
+          "photo" : "fotos/48-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ CARCAGENTE, 9",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA"
+      ],
+      "instagram" : "@barlamorena22",
+      "location" : {
+        "lat" : 39.981107608937229,
+        "lng" : -0.033527878501768277,
+        "match" : "CALLE CARCAGENTE 9",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "LA MORENA",
+      "notes" : [
+
+      ],
+      "number" : 49,
+      "page" : 32,
+      "phone" : "678120598",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Alitas de pollo rebozadas con apio, ajo picante, jengibre y cilantro.",
+          "glutenFree" : "no",
+          "name" : "ALITAS CEVICHADAS",
+          "number" : 1,
+          "photo" : "fotos/49-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Patata con aguacate con pescado y marisco aderezado con limón.",
+          "glutenFree" : "no",
+          "name" : "CAUSA CEVICHADA",
+          "number" : 2,
+          "photo" : "fotos/49-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV. DEL REY, 5",
+      "drinks" : [
+        "CAÑA"
+      ],
+      "instagram" : "@alessandromaino_restaurant",
+      "location" : {
+        "lat" : 39.985628375236878,
+        "lng" : -0.040826791522674565,
+        "match" : "AVENIDA REY DON JAIME 5",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "ALESSANDRO MAINO RESTAURANT",
+      "notes" : [
+
+      ],
+      "number" : 50,
+      "page" : 32,
+      "phone" : "695046814",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Patata crujiente con nuestra salsa brava.",
+          "glutenFree" : "no",
+          "name" : "MÁGNUM DE PATATA BRAVA",
+          "number" : 1,
+          "photo" : "fotos/50-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Gyoza con ragú de chuletón del Maestrazgo thai.",
+          "glutenFree" : "no",
+          "name" : "NUESTRA GYOZA",
+          "number" : 2,
+          "photo" : "fotos/50-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ CAPUCHINOS, 1",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@venecia_by_la_garnatxa",
+      "location" : {
+        "lat" : 39.989432358377009,
+        "lng" : -0.033954890807310768,
+        "match" : "AVENIDA CAPUCHINOS 2",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "VENECIA",
+      "notes" : [
+
+      ],
+      "number" : 51,
+      "page" : 34,
+      "phone" : "634917568",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "13:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "13:30",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "13:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "13:30",
+            "open" : "11:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "13:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:30",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Calamar de lonja salteado con verdura encima de patacón.",
+          "glutenFree" : "yes",
+          "name" : "PATACÓN MARINERO DE CALAMAR DE LONJA",
+          "number" : 1,
+          "photo" : "fotos/51-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tortita de maíz dulce con queso mozzarella y torrezno de Soria.",
+          "glutenFree" : "no",
+          "name" : "TORREZNOS CANALLA",
+          "number" : 2,
+          "photo" : "fotos/51-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "AV/ ALCORA, 246",
+      "drinks" : [
+        "COPA DE VINO",
+        "CERVEZA",
+        "REFRESCO"
+      ],
+      "instagram" : "@restaurante_portoles",
+      "location" : {
+        "lat" : 39.99006964121255,
+        "lng" : -0.072635871173966457,
+        "match" : "AVENIDA ALCORA 247",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "RESTAURANTE PORTOLÉS",
+      "notes" : [
+
+      ],
+      "number" : 52,
+      "page" : 34,
+      "phone" : "692604468",
+      "schedule" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "13:30",
+            "open" : "12:30"
+          }
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Pulpo encebollado acompañado de aceite de sésamo, aceite de oliva y jengibre.",
+          "glutenFree" : "no",
+          "name" : "PULPO ENCEBOLLADO",
+          "number" : 1,
+          "photo" : "fotos/52-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Pulpo acompañado con tomate, pimiento, ajo y pan.",
+          "glutenFree" : "no",
+          "name" : "ALL I PEBRE DE POLP",
+          "number" : 2,
+          "photo" : "fotos/52-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PZA. MAR MEDITERRÁNEO, 1",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "AGUA"
+      ],
+      "instagram" : "@blancoroto_restaurante",
+      "location" : {
+        "lat" : 39.98073709565098,
+        "lng" : -0.034107847816556881,
+        "match" : "PLAZA MAR MEDITERRANEO DEL 1",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BLANCO ROTO",
+      "notes" : [
+
+      ],
+      "number" : 53,
+      "page" : 35,
+      "phone" : "964292471",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Nido de patatas con puré de pimientos y pulpo asado, acompañado con cebolla encurtida.",
+          "glutenFree" : "no",
+          "name" : "EL NIDO",
+          "number" : 1,
+          "photo" : "fotos/53-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Solomillo y cebolla caramelizada con salsa de ciruela sobre puré de manzana.",
+          "glutenFree" : "no",
+          "name" : "FUSIÓN DE OTOÑO",
+          "number" : 2,
+          "photo" : "fotos/53-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ AMADEO I, 8",
+      "drinks" : [
+        "CHILCANO APASIONADA",
+        "1/5 CERVEZA",
+        "COPA DE VINO",
+        "AGUA"
+      ],
+      "instagram" : "@restauranteelbuensaborperuano",
+      "location" : {
+        "lat" : 39.986021793463252,
+        "lng" : -0.042492973839765892,
+        "match" : "CALLE AMADEO I 9",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "EL BUEN SABOR PERUANO",
+      "notes" : [
+
+      ],
+      "number" : 54,
+      "page" : 35,
+      "phone" : "677074694",
+      "schedule" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+          {
+            "close" : "19:00",
+            "open" : "16:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "19:00",
+            "open" : "16:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "19:00",
+            "open" : "16:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "19:00",
+            "open" : "16:00"
+          }
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Vieiras grilladas con mantequilla de limón, miel y bacon crocante.",
+          "glutenFree" : "no",
+          "name" : "CONCHAS MAR Y TIERRA",
+          "number" : 1,
+          "photo" : "fotos/54-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Langostinos crocantes con mayonesa de maracuyá con toques orientales.",
+          "glutenFree" : "no",
+          "name" : "LANGOSTINOS AL PANKO",
+          "number" : 2,
+          "photo" : "fotos/54-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PZA. VILANOVA D’ALCOLEA, 4",
+      "drinks" : [
+        "COPA DE VINO",
+        "CAÑA",
+        "VERMUT"
+      ],
+      "instagram" : "@suglagu",
+      "location" : {
+        "lat" : 39.975727049336015,
+        "lng" : -0.047531317792218357,
+        "match" : "PLAZA VILANOVA D\"ALCOLEA 4",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "SUGLAGU",
+      "notes" : [
+
+      ],
+      "number" : 55,
+      "page" : 36,
+      "phone" : "634496900",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "22:00",
+            "open" : "20:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "22:00",
+            "open" : "20:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Porra del almuerzo tradicional de morcilla, longaniza y habas con ajoaceite y yema curada con reducción de carne para dipear.",
+          "glutenFree" : "no",
+          "name" : "PORRA DE BLANC I NEGRE",
+          "number" : 1,
+          "photo" : "fotos/55-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tempura de calabacín acompañada de mayonesa de algarroba y espuma de queso de romero de Almassora.",
+          "glutenFree" : "no",
+          "name" : "TEMPURA DE CATEGORÍA",
+          "number" : 2,
+          "photo" : "fotos/55-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/MAYOR, 36",
+      "drinks" : [
+        "CAÑA"
+      ],
+      "instagram" : "@barrita____",
+      "location" : {
+        "lat" : 39.985075943874236,
+        "lng" : -0.036892771329188424,
+        "match" : "CALLE MAYOR 36",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "BARRITA",
+      "notes" : [
+
+      ],
+      "number" : 56,
+      "page" : 36,
+      "phone" : "864871911",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "20:00",
+            "open" : "19:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Rosquilleta con ensaladilla rusa de atún, anchoa, cebollino y AOVE.",
+          "glutenFree" : "no",
+          "name" : "MARINERA CLÁSICA DE ANCHOA",
+          "number" : 1,
+          "photo" : "fotos/56-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Ensaladilla rusa de gamba al ajillo, mayonesa de sus cabezas y gambita cruda, cebollino y AOVE.",
+          "glutenFree" : "no",
+          "name" : "MARINERA BARRITA",
+          "number" : 2,
+          "photo" : "fotos/56-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/ ESCULTOR VICIANO, 5",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO"
+      ],
+      "instagram" : "@copacabanacs",
+      "location" : {
+        "lat" : 39.983897879644502,
+        "lng" : -0.036844885713937632,
+        "match" : "CALLE ESCULTOR VICIANO 5",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "COPACABANA",
+      "notes" : [
+
+      ],
+      "number" : 57,
+      "page" : 37,
+      "phone" : "611398080",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "21:00",
+            "open" : "18:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Tomate de penjar en salazón de naranja, relleno de brandada de bacalao, gambita blanca y gel de gambas.",
+          "glutenFree" : "yes",
+          "name" : "TOMATE DE PENJAR SECO",
+          "number" : 1,
+          "photo" : "fotos/57-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Crujiente de rabo de toro y albahaca.",
+          "glutenFree" : "no",
+          "name" : "CRUJIENTE DE RABO Y ALBAHACA",
+          "number" : 2,
+          "photo" : "fotos/57-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "MERCAT CENTRAL CASTELLÓ",
+      "drinks" : [
+        "CAÑA",
+        "COPA DE VINO",
+        "REFRESCO"
+      ],
+      "instagram" : "@elbardelmercat__",
+      "location" : {
+        "lat" : 39.985937042296591,
+        "lng" : -0.037222318328948387,
+        "precision" : "manual",
+        "source" : "manual"
+      },
+      "name" : "BAR DEL MERCAT",
+      "notes" : [
+
+      ],
+      "number" : 58,
+      "page" : 37,
+      "phone" : "625672824",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "12:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Tortilla de camarón frita coronada con ensaladilla de mariscos y patatas paja.",
+          "glutenFree" : "no",
+          "name" : "VOLANDO VOY",
+          "number" : 1,
+          "photo" : "fotos/58-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Super gilda.",
+          "glutenFree" : "yes",
+          "name" : "RITA HAYWORTH",
+          "number" : 2,
+          "photo" : "fotos/58-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "PARQUE GEÓLOGO JOSÉ ROYO",
+      "drinks" : [
+        "1/3 CERVEZA",
+        "COPA DE VINO",
+        "REFRESCO",
+        "AGUA"
+      ],
+      "instagram" : "@quioscodellago",
+      "location" : {
+        "lat" : 39.978896425768582,
+        "lng" : -0.037762849014898001,
+        "precision" : "manual",
+        "source" : "manual"
+      },
+      "name" : "QUIOSCO DEL LAGO",
+      "notes" : [
+
+      ],
+      "number" : 59,
+      "page" : 38,
+      "phone" : "646889090",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "14:00"
+          }
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : true,
+          "description" : "Carrillera, papas García, pepinillos y yema curada.",
+          "glutenFree" : "no",
+          "name" : "MILHOMENS",
+          "number" : 1,
+          "photo" : "fotos/59-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Queso Arzúa Ulloa, cabeza de lomo asada y col lombarda.",
+          "glutenFree" : "no",
+          "name" : "BIKINI GALLEGO",
+          "number" : 2,
+          "photo" : "fotos/59-2.jpg"
+        }
+      ]
+    },
+    {
+      "address" : "C/NAVARRA, 125",
+      "drinks" : [
+        "CAFÉ",
+        "LICOR"
+      ],
+      "instagram" : "@alvostregust",
+      "location" : {
+        "lat" : 39.984748848268417,
+        "lng" : -0.043272858310510004,
+        "match" : "CALLE NAVARRA 125",
+        "precision" : "portal",
+        "source" : "cartociudad"
+      },
+      "name" : "AL VOSTRE GUST",
+      "notes" : [
+
+      ],
+      "number" : 60,
+      "page" : 38,
+      "phone" : "964210108",
+      "schedule" : {
+        "friday" : [
+          {
+            "close" : "20:00",
+            "open" : "17:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "10:00"
+          }
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+
+        ]
+      },
+      "subtitle" : null,
+      "tapas" : [
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Nuestro clásico de toda la vida: hojaldre crujiente, crema de yema caramelizada, nata y chocolate.",
+          "glutenFree" : "no",
+          "name" : "EL NEGRITO",
+          "number" : 1,
+          "photo" : "fotos/60-1.jpg"
+        },
+        {
+          "castelloRutaDeSabor" : false,
+          "description" : "Cremosa cheesecake de dulce de leche con topping a elegir, escamas de sal, avellana tostada o chocolate negro.",
+          "glutenFree" : "no",
+          "name" : "CHEESECAKE AL VOSTRE GUST",
+          "number" : 2,
+          "photo" : "fotos/60-2.jpg"
+        }
+      ]
+    }
+  ]
+}

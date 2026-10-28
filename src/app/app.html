@@ -1,0 +1,70 @@
+<header class="cabecera">
+  <div class="contenido">
+    <h1>{{ datos()?.event.name ?? 'Ruta de Tapas' }}</h1>
+    @if (datos(); as ruta) {
+      <p>{{ ruta.event.edition }} · {{ periodo() }} · {{ ruta.event.price }}</p>
+    }
+  </div>
+</header>
+
+<section class="filtros" aria-label="Filtros">
+  <div class="contenido">
+    <label class="campo texto">
+      <span>Buscar</span>
+      <input type="search" placeholder="Local, tapa, ingrediente, calle…" [(ngModel)]="texto" />
+    </label>
+
+    <label class="campo">
+      <span>Día</span>
+      <select [(ngModel)]="dia">
+        <option value="">Cualquiera</option>
+        @for (d of dias; track d.id) {
+          <option [value]="d.id">{{ d.nombre }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="campo">
+      <span>Hora</span>
+      <input type="time" [(ngModel)]="hora" [disabled]="!dia()" />
+    </label>
+
+    <label class="campo">
+      <span>Sin gluten</span>
+      <select [(ngModel)]="sinGluten">
+        <option value="">Indiferente</option>
+        <option value="yes">Sin gluten</option>
+        <option value="optional">Incluye «bajo petición»</option>
+      </select>
+    </label>
+
+    <label class="check">
+      <input type="checkbox" [(ngModel)]="rutaDeSabor" />
+      Castelló Ruta de Sabor
+    </label>
+
+    <div class="acciones">
+      <button type="button" (click)="ahora()">Abierto ahora</button>
+      <button type="button" class="secundario" (click)="limpiar()">Limpiar</button>
+    </div>
+  </div>
+</section>
+
+@if (datos(); as ruta) {
+  <div class="resultados contenido">
+    <app-mapa #mapa class="mapa" [locales]="filtrados()" />
+
+    <section class="lista">
+      <p class="resumen">{{ filtrados().length }} de {{ ruta.locales.length }} locales</p>
+      @for (local of filtrados(); track local.number) {
+        <app-local-card [local]="local" [dia]="dia()" (verEnMapa)="mapa.enfocar(local.number)" />
+      } @empty {
+        <p class="estado">Ningún local cumple los filtros.</p>
+      }
+    </section>
+  </div>
+} @else if (datos() === null) {
+  <p class="estado error">No se han podido cargar los datos (<code>data/locales.json</code>).</p>
+} @else {
+  <p class="estado">Cargando locales…</p>
+}

@@ -1,0 +1,31 @@
+{
+  "name": "ruta-tapas",
+  "build": { "dockerfile": "Dockerfile" },
+  "remoteUser": "node",
+  "containerEnv": {
+    "NG_CLI_ANALYTICS": "false",
+    "ZDOTDIR": "${containerWorkspaceFolder}/.devcontainer/zsh"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/node_modules/.bin"
+  },
+  "postCreateCommand": "sh .devcontainer/post-create.sh",
+  "forwardPorts": [4200],
+  "portsAttributes": {
+    "4200": { "label": "ng serve", "onAutoForward": "openBrowser" }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      },
+      "extensions": [
+        "Anthropic.claude-code",
+        "angular.ng-template",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}

@@ -1,0 +1,79 @@
+:root {
+  --fondo: #faf6f0;
+  --superficie: #fff;
+  --texto: #2a211b;
+  --suave: #6f6259;
+  --borde: #e8dfd3;
+  --acento: #b4441b;
+  --acento-suave: #fbe9df;
+  --verde: #2f7d4a;
+  --verde-suave: #e3f2e8;
+  --aviso: #8a5a00;
+  --aviso-suave: #fff3d6;
+  --radio: 12px;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.45;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+select {
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: var(--superficie);
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--acento);
+  border-radius: 8px;
+  background: var(--acento);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.secundario {
+    background: transparent;
+    color: var(--acento);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.leaflet-popup-content {
+  font: inherit;
+  font-size: 0.9rem;
+}

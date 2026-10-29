@@ -83,7 +83,7 @@ h2 {
 .aviso {
   margin: 0;
   padding: 0.4rem 0.6rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--aviso-suave);
   color: var(--aviso);
   font-size: 0.85rem;
@@ -127,7 +127,7 @@ h2 {
   padding: 0;
   // Fino: las fotos de fondo claro no se funden con la ficha (0,5px: una línea de pantalla en móvil).
   border: 0.5px solid var(--borde);
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--borde);
   overflow: hidden;
   cursor: zoom-in;
@@ -287,13 +287,13 @@ dt {
 }
 
 dt.hoy {
-  border-radius: 6px 0 0 6px;
+  border-radius: 0.375rem 0 0 0.375rem;
   color: var(--acento);
   font-weight: 700;
 }
 
 .relleno.hoy {
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 0.375rem 0.375rem 0;
 }
 
 footer {

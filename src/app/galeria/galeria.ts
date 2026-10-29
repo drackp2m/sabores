@@ -251,7 +251,7 @@ import { Visor } from '../visor/visor';
       height: auto;
       padding: 0;
       border: 0.5px solid var(--borde); // Fino, para las fotos de fondo claro (como en las fichas).
-      border-radius: 8px;
+      border-radius: 0.5rem;
       background: var(--borde);
       overflow: hidden;
       cursor: zoom-in;

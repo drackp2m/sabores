@@ -59,7 +59,6 @@ export const FRASES = [
   styles: `
     // Con un filo de luz arriba y a la izquierda, como un cristal.
     :host {
-      --estrella: #ffc531;
       --trazo-icono: 1.5;
       display: inline-flex;
       align-items: center;

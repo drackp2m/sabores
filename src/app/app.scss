@@ -81,6 +81,7 @@
   top: calc(100% + 0.25rem);
   right: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); // Sin pasar del ancho máximo, aunque no quepa holgado.
   gap: 0.9rem;
   width: max-content;
   max-width: calc(100vw - var(--margen-izquierdo) - var(--margen-derecho));
@@ -115,6 +116,15 @@
   > span {
     font-size: 0.8rem;
     color: var(--suave);
+  }
+
+  // En móviles estrechos (o con la letra grande), los botones se reparten el ancho del menú en vez
+  // de salirse de él.
+  .segmentos button {
+    flex: 1 1 auto;
+    gap: 0.3rem;
+    min-width: 0;
+    padding-inline: 0.5rem;
   }
 }
 
@@ -305,7 +315,7 @@ main {
 }
 
 .mapa {
-  height: 320px;
+  height: 20rem;
 }
 
 .lista {

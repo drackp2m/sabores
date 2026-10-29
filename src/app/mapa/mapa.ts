@@ -10,6 +10,7 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import * as L from 'leaflet';
@@ -27,9 +28,27 @@ const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').matches ?? false;
 
 /**
+ * Marcador de un local: un punto pequeño (styles.scss) en el centro de una zona de 1,875rem para
+ * pincharlo. En rem, como el resto; Leaflet lo quiere en píxeles, así que se calcula al pintar.
+ */
+function iconoLocal(rem: number): L.DivIcon {
+  const lado = Math.round(1.875 * rem);
+  return new L.DivIcon({
+    className: 'marcador-local',
+    iconSize: [lado, lado],
+    popupAnchor: [0, -Math.round(0.35 * rem)],
+  });
+}
+
+/** Píxeles de 1rem (menos en pantallas estrechas, ver styles.scss). */
+function remEnPx(): number {
+  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+}
+
+/**
  * Mapa de OpenStreetMap con un marcador por local; se ajusta a los locales filtrados. Con punto de
- * partida, dibuja el camino hasta el local elegido (o el del popup abierto). Se puede ampliar a
- * toda la pantalla y abrir el local en la app de mapas.
+ * partida, dibuja el camino hasta el local elegido (o el seleccionado en el mapa, que se resalta).
+ * Se puede ampliar a toda la pantalla y abrir el local en la app de mapas.
  */
 @Component({
   selector: 'app-mapa',
@@ -127,7 +146,7 @@ const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').ma
         align-items: center;
         justify-content: center;
         border: 1px solid var(--marca);
-        border-radius: 8px;
+        border-radius: 0.5rem;
         background: var(--superficie);
         color: var(--marca);
         font-size: 1.1rem;
@@ -183,10 +202,16 @@ export class Mapa {
 
   /** A toda la pantalla. */
   protected readonly grande = signal(false);
-  /** Local con el popup abierto. */
-  private readonly abierto = signal<number | null>(null);
+  /**
+   * Local seleccionado al abrir su popup. Al cerrarlo (con su botón o pinchando fuera) sigue
+   * seleccionado, con su camino; pinchar fuera otra vez lo deselecciona.
+   */
+  private readonly seleccionado = signal<number | null>(null);
+  /** Si al pinchar en el mapa había un popup abierto (ese clic solo lo cierra). */
+  private habiaPopup = false;
+  private readonly activo = computed(() => this.rutaHacia() ?? this.seleccionado());
   private readonly destino = computed(() => {
-    const numero = this.rutaHacia() ?? this.abierto();
+    const numero = this.activo();
     return this.locales().find((local) => local.number === numero && local.location);
   });
 
@@ -202,7 +227,7 @@ export class Mapa {
   private ocultarAviso?: ReturnType<typeof setTimeout>;
   private readonly capa = new L.FeatureGroup();
   private readonly capaCamino = new L.FeatureGroup();
-  private readonly marcadores = new Map<number, L.CircleMarker>();
+  private readonly marcadores = new Map<number, L.Marker>();
   private readonly marcadorOrigen = new L.CircleMarker(CASTELLON, {
     radius: 7,
     color: '#fff',
@@ -226,6 +251,15 @@ export class Mapa {
       }).addTo(mapa);
       // El camino, por debajo de los marcadores.
       mapa.createPane('camino').style.zIndex = '350';
+      // Antes de que el popup se cierre con el mismo clic (también en preclick, pero se registra
+      // después).
+      mapa.on(
+        'preclick',
+        () => (this.habiaPopup = !!mapa.getContainer().querySelector('.leaflet-popup')),
+      );
+      mapa.on('click', () => {
+        if (!this.habiaPopup) this.seleccionado.set(null);
+      });
       this.capaCamino.addTo(mapa);
       this.capa.addTo(mapa);
       this.mapa.set(mapa);
@@ -283,7 +317,18 @@ export class Mapa {
 
     effect(() => {
       const mapa = this.mapa();
-      if (mapa) this.pintar(mapa, this.locales());
+      const locales = this.locales();
+      if (mapa) untracked(() => this.pintar(mapa, locales));
+    });
+
+    // El activo, dorado (como las estrellas) y por encima de los demás.
+    effect(() => {
+      const activo = this.activo();
+      this.mapa(); // Tras pintar los marcadores.
+      for (const [numero, marcador] of this.marcadores) {
+        marcador.getElement()?.classList.toggle('activo', numero === activo);
+        marcador.setZIndexOffset(numero === activo ? 1000 : 0);
+      }
     });
 
     effect(() => {
@@ -316,23 +361,25 @@ export class Mapa {
   private pintar(mapa: L.Map, locales: readonly Local[]): void {
     this.capa.clearLayers();
     this.marcadores.clear();
-    this.abierto.set(null);
+    // Si el seleccionado ya no está entre los filtrados, deja de estarlo.
+    const seleccionado = this.seleccionado();
+    if (!locales.some((l) => l.number === seleccionado && l.location)) this.seleccionado.set(null);
+    const rem = remEnPx();
+    const icono = iconoLocal(rem);
+    const anchoPopup = Math.round(15 * rem);
     for (const local of locales) {
       if (!local.location) continue;
-      const marcador = new L.CircleMarker([local.location.lat, local.location.lng], {
-        radius: 9,
-        color: '#fff',
-        weight: 2,
-        fillColor: '#b4441b',
-        fillOpacity: 0.9,
+      const marcador = new L.Marker([local.location.lat, local.location.lng], {
+        icon: icono,
+        title: `${local.number}. ${local.name}`,
+        riseOnHover: true,
       })
         // El contenido se genera al abrirlo, con el estado del horario de ese momento.
-        .bindPopup(() => this.popup(local), { minWidth: 240, maxWidth: 240 })
+        .bindPopup(() => this.popup(local), { minWidth: anchoPopup, maxWidth: anchoPopup })
         .on('click', () => this.seleccionar.emit(local.number))
-        .on('mouseover', () => marcador.bringToFront())
-        .on('popupopen', () => this.abierto.set(local.number))
-        .on('popupclose', () => this.abierto.update((n) => (n === local.number ? null : n)));
+        .on('popupopen', () => this.seleccionado.set(local.number));
       marcador.addTo(this.capa);
+      if (local.number === this.activo()) marcador.getElement()?.classList.add('activo');
       this.marcadores.set(local.number, marcador);
     }
     if (this.marcadores.size) {

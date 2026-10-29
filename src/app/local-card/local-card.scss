@@ -148,17 +148,18 @@ app-plegable {
   grid-area: texto;
 }
 
-// El nombre se parte en las líneas que haga falta y los sellos van detrás, a la altura de la primera.
+// El nombre se parte en las líneas que haga falta y los sellos van a la derecha, centrados con él.
 .cabeza {
   grid-area: cabeza;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.35rem;
   min-width: 0;
   font-size: 0.95rem;
 }
 
 h3 {
+  flex: 1;
   min-width: 0;
   font-size: inherit;
 }

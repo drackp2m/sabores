@@ -35,7 +35,7 @@ import { Mapa } from './mapa/mapa';
 import { OrigenPanel } from './origen/origen';
 import { Sello } from './sello/sello';
 import { Tema, Temas } from './tema';
-import { VisorFotos } from './visor/visor';
+import { Visor, VisorFotos } from './visor/visor';
 import { Ubicacion } from './ubicacion';
 
 type Vista = 'detalles' | 'fotos';
@@ -71,6 +71,7 @@ export class App {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly ubicacion = inject(Ubicacion);
   protected readonly tema = inject(Temas);
+  private readonly visor = inject(Visor);
   protected readonly dias = DIAS;
   protected readonly temas = TEMAS;
 
@@ -194,6 +195,13 @@ export class App {
   protected subir(): void {
     const suave = !matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.host.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
+  }
+
+  /** Al abrir el menú, si hay una foto ampliada, se cierra (la cabecera queda por encima de ella). */
+  protected alternarMenu(): void {
+    const abrir = !this.menuAbierto();
+    this.menuAbierto.set(abrir);
+    if (abrir) this.visor.cerrar();
   }
 
   /** Pinchar fuera del menú lo cierra (el botón del menú ya lo abre y cierra por su cuenta). */

@@ -121,7 +121,7 @@
 .subir {
   position: fixed;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  z-index: 1100;
+  z-index: 1050; // Sobre los controles de Leaflet (1000); bajo la foto ampliada y la cabecera.
   height: 3rem;
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);
 }

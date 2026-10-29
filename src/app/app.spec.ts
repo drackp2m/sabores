@@ -136,16 +136,28 @@ describe('App', () => {
     expect(localStorage.getItem('ruta-tapas:vista')).toBe('fotos');
   });
 
-  it('amplía una foto al pincharla y la cierra con la X', async () => {
+  it('amplía una foto al pincharla y la cierra pinchando en cualquier sitio', async () => {
     const { fixture, el, pulsar } = await arrancar();
     await pulsar('app-local-card .foto');
     const visor = () => el.querySelector('app-visor-fotos [role=dialog]');
     expect(visor()!.querySelector('img')!.getAttribute('src')).toBe('data/fotos/01-1.jpg');
 
-    await pulsar('app-visor-fotos .cerrar');
+    await pulsar('app-visor-fotos .fondo');
     await new Promise((r) => setTimeout(r));
     await fixture.whenStable();
     expect(visor()).toBeNull();
+  });
+
+  it('cierra la foto ampliada al abrir el menú', async () => {
+    const { fixture, el, pulsar } = await arrancar();
+    await pulsar('app-local-card .foto');
+    expect(el.querySelector('app-visor-fotos [role=dialog]')).not.toBeNull();
+
+    await pulsar('.boton-menu');
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+    expect(el.querySelector('app-visor-fotos [role=dialog]')).toBeNull();
+    expect(el.querySelector('.menu')).not.toBeNull();
   });
 
   it('pinta los iconos como SVG', async () => {

@@ -8,8 +8,6 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { Icono } from '../icono/icono';
-
 export interface FotoAmpliada {
   src: string;
   alt: string;
@@ -21,6 +19,8 @@ export interface FotoAmpliada {
 @Injectable({ providedIn: 'root' })
 export class Visor {
   readonly foto = signal<FotoAmpliada | null>(null);
+  /** Cierra la foto; el visor lo sustituye por su cierre con animación. */
+  cerrar: () => void = () => this.foto.set(null);
 }
 
 const DURACION = 380;
@@ -28,37 +28,41 @@ const DURACION = 380;
 const RADIO = 12;
 
 /**
- * Foto ampliada: crece desde su miniatura hasta el centro mientras aparece el fondo, desenfocado y
- * sin color, y al cerrar (X, Escape o pinchando fuera) hace el mismo recorrido al revés.
+ * Foto ampliada: crece desde su miniatura hasta el centro del espacio bajo la cabecera (que sigue a
+ * la vista) mientras aparece el fondo, desenfocado y sin color, y al cerrar (pinchando en cualquier
+ * sitio o con Escape) hace el mismo recorrido al revés.
  */
 @Component({
   selector: 'app-visor-fotos',
-  imports: [Icono],
   template: `
     @if (visor.foto(); as foto) {
-      <!-- Sin scroll de la página mientras se ve la foto. -->
+      <!-- Sin scroll de la página mientras se ve la foto; pinchar en cualquier sitio la cierra. -->
       <div
+        #dialogo
         class="visor"
         role="dialog"
         aria-modal="true"
+        tabindex="-1"
         [attr.aria-label]="foto.alt"
+        (click)="cerrar()"
         (wheel)="$event.preventDefault()"
         (touchmove)="$event.preventDefault()"
       >
-        <div #fondo class="fondo" (click)="cerrar()"></div>
+        <div #fondo class="fondo"></div>
         <img #imagen [src]="foto.src" [alt]="foto.alt" width="690" height="439" />
-        <button #boton type="button" class="cerrar" aria-label="Cerrar" (click)="cerrar()">
-          <app-icono nombre="cerrar" />
-        </button>
       </div>
     }
   `,
   host: { '(document:keydown.escape)': 'cerrar()' },
   styles: `
+    // Bajo la cabecera (su alto, la zona segura y su borde), que no se tapa; por encima de lo demás,
+    // botones flotantes incluidos. Contenedor de tamaño, para medir la foto con lo que queda libre.
     .visor {
       position: fixed;
-      inset: 0;
-      z-index: 1200; // Por encima de la cabecera.
+      inset: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1px) 0 0;
+      z-index: 1090;
+      container-type: size;
+      outline: none;
     }
 
     .fondo {
@@ -73,37 +77,18 @@ const RADIO = 12;
 
     // Lo más grande posible sin pasar de 1,25 veces el tamaño real de las fotos (690×439).
     img {
-      --ancho: min(92vw, 85dvh * 690 / 439, 860px);
+      --ancho: min(92cqw, 85cqh * 690 / 439, 860px);
       position: absolute;
       inset: 0;
       width: var(--ancho);
       height: calc(var(--ancho) * 439 / 690);
       margin: auto;
+      border: 0.5px solid var(--borde); // Como la miniatura de la que sale.
       border-radius: ${RADIO}px;
       object-fit: cover;
       box-shadow: var(--sombra-foto); // Más marcada en oscuro (styles.scss).
       transform-origin: 0 0;
       will-change: transform;
-    }
-
-    .cerrar {
-      position: absolute;
-      top: calc(1rem + env(safe-area-inset-top, 0px));
-      right: var(--margen-derecho);
-      width: 2.75rem;
-      height: 2.75rem;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      background: var(--superficie);
-      color: var(--texto);
-      font-size: 1.25rem;
-      box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
-
-      &:hover:not(:disabled) {
-        border: 0;
-        background: var(--acento-suave);
-      }
     }
   `,
 })
@@ -112,17 +97,20 @@ export class VisorFotos {
 
   private readonly fondo = viewChild<ElementRef<HTMLElement>>('fondo');
   private readonly imagen = viewChild<ElementRef<HTMLElement>>('imagen');
-  private readonly boton = viewChild<ElementRef<HTMLElement>>('boton');
+  private readonly dialogo = viewChild<ElementRef<HTMLElement>>('dialogo');
   private cerrando = false;
 
   constructor() {
+    this.visor.cerrar = () => void this.cerrar();
+
     // En cuanto la foto grande está en la página (antes de pintarla), arranca la ampliación.
     afterRenderEffect(() => {
       const imagen = this.imagen();
       const foto = this.visor.foto();
       if (!imagen || !foto) return;
       foto.origen.style.visibility = 'hidden';
-      this.boton()!.nativeElement.focus({ preventScroll: true });
+      // El foco, en el diálogo: Escape lo cierra, y al cerrar vuelve a la miniatura.
+      this.dialogo()!.nativeElement.focus({ preventScroll: true });
       this.animar(foto, true);
     });
   }
@@ -178,7 +166,6 @@ export class VisorFotos {
         ),
         // Solo opacidad: animar el desenfoque en sí va a saltos en el móvil.
         this.fondo()!.nativeElement.animate(sentido([{ opacity: 0 }, {}]), opciones),
-        this.boton()!.nativeElement.animate(sentido([{ opacity: 0 }, {}]), opciones),
       ].map((animacion) => animacion.finished),
     );
   }

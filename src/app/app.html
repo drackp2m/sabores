@@ -7,7 +7,7 @@
       aria-controls="menu"
       [attr.aria-label]="menuAbierto() ? 'Cerrar el menú' : 'Abrir el menú'"
       [attr.aria-expanded]="menuAbierto()"
-      (click)="menuAbierto.set(!menuAbierto())"
+      (click)="alternarMenu()"
     >
       <app-icono [nombre]="menuAbierto() ? 'cerrar' : 'menu'" />
     </button>

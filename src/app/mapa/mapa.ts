@@ -79,7 +79,7 @@ const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').ma
       &.grande {
         position: fixed;
         inset: 0;
-        z-index: 1150; // Por encima de la cabecera y del botón «Volver»; por debajo del visor.
+        z-index: 1150; // Por encima de la cabecera y de los botones flotantes.
         padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
           env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
         background: var(--fondo);

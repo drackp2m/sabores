@@ -124,23 +124,34 @@ h2 {
   display: block;
   height: auto;
   padding: 0;
-  border: 0;
+  // Fino: las fotos de fondo claro no se funden con la ficha (0,5px: una línea de pantalla en móvil).
+  border: 0.5px solid var(--borde);
   border-radius: 8px;
   background: var(--borde);
   overflow: hidden;
   cursor: zoom-in;
 
   &:hover:not(:disabled) {
-    border: 0;
+    border-color: var(--borde);
     background: var(--borde);
   }
 
+  // Como en la galería: al pasar por encima, la foto se acerca un poco dentro de su hueco.
   img {
     display: block;
     width: 100%;
     height: auto;
     aspect-ratio: 690 / 439;
     object-fit: cover;
+    transition: transform 0.3s ease-out;
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  &:is(:hover, :focus-visible) img {
+    transform: scale(1.06);
   }
 }
 

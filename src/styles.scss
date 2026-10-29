@@ -419,6 +419,7 @@ button {
     height: auto;
     aspect-ratio: 690 / 439;
     object-fit: cover;
+    border: 0.5px solid var(--borde);
     border-radius: 6px;
     background: var(--borde);
   }

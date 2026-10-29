@@ -27,19 +27,20 @@
   box-sizing: border-box;
 }
 
-// El documento no hace scroll (lo hace app-root) y su fondo es el de la cabecera: así Safari no
-// tiene contenido que difuminar bajo la barra de estado y la pinta del color de la cabecera.
+// El documento no hace scroll (lo hace app-root) y su color de fondo es el de la cabecera: así
+// Safari no tiene contenido que difuminar bajo la barra de estado y la pinta del color de la
+// cabecera. Si asoma por algún hueco (bajo las barras de Safari), arriba es el de la cabecera y
+// abajo el de la página.
 html {
-  height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background: var(--acento);
+  background: linear-gradient(var(--acento) 50%, var(--fondo) 50%) var(--acento);
   // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
   touch-action: pan-x pan-y;
 }
 
 body {
-  height: 100%;
+  height: 100dvh;
   overflow: hidden;
   margin: 0;
   font-family:
@@ -49,7 +50,7 @@ body {
     Roboto,
     sans-serif;
   line-height: 1.45;
-  background: var(--acento);
+  background: inherit;
   color: var(--texto);
 }
 

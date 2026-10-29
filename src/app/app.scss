@@ -6,7 +6,7 @@
 // El scroll es de la app y no del documento (ver styles.scss).
 :host {
   display: block;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden auto;
   overscroll-behavior: none;
   background: var(--fondo);
@@ -78,11 +78,7 @@
   }
 }
 
-// Botón flotante para volver de la ficha a la galería; el padding inferior deja ver el final.
-.detalle {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
-}
-
+// Botón flotante para volver de la ficha a la galería (el pie deja hueco para él).
 .volver {
   position: fixed;
   left: var(--margen-izquierdo);
@@ -151,9 +147,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  // Abajo, además, la zona segura del indicador de inicio del iPhone.
-  padding: 1rem var(--margen-derecho) calc(1rem + env(safe-area-inset-bottom, 0px))
-    var(--margen-izquierdo);
+  padding: 1rem var(--margen-derecho) 1rem var(--margen-izquierdo);
   // El ancho máximo de .contenido es sin el padding, para alinearse con cabecera y filtros.
   box-sizing: content-box;
 }
@@ -207,6 +201,26 @@ main {
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
+}
+
+// Abajo, además, la zona segura del indicador de inicio del iPhone; en la ficha, también el hueco
+// del botón «Volver».
+.pie {
+  margin: 0;
+  padding: 0.5rem var(--margen-derecho) calc(1.5rem + env(safe-area-inset-bottom, 0px))
+    var(--margen-izquierdo);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--suave);
+
+  &.con-volver {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  a {
+    color: var(--acento);
+    font-weight: 600;
+  }
 }
 
 .estado {

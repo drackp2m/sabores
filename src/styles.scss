@@ -36,19 +36,24 @@
   // Márgenes laterales que respetan las zonas seguras (notch en horizontal, con viewport-fit=cover).
   --margen-izquierdo: max(1rem, env(safe-area-inset-left, 0px));
   --margen-derecho: max(1rem, env(safe-area-inset-right, 0px));
+  // Lo que flota sobre la página (el menú) y la foto ampliada.
+  --sombra-elevada: 0 18px 48px rgb(42 33 27 / 0.32), 0 4px 12px rgb(42 33 27 / 0.18);
+  --sombra-foto: 0 28px 72px rgb(0 0 0 / 0.5), 0 8px 20px rgb(0 0 0 / 0.3);
   color-scheme: light;
 }
 
-// El acento, algo más claro para leerse sobre fondo oscuro sin dejar de llevar texto blanco encima.
+// El acento, el de la cabecera con un poco de blanco para que se lea mejor sobre fondo oscuro (y al
+// pasar por encima, el de la cabecera tal cual). Las sombras, mucho más marcadas (y con un filo
+// claro) para verse sobre negro.
 @mixin paleta-oscura {
+  --acento: color-mix(in srgb, var(--cabecera) 88%, #fff);
+  --acento-oscuro: var(--cabecera);
   --fondo: #17120f;
   --superficie: #221b17;
   --texto: #f0e7df;
   --suave: #ab9d92;
   --borde: #362c26;
   --borde-control: #4a3d35;
-  --acento: #d0612f;
-  --acento-oscuro: #b4441b;
   --acento-suave: #3a2219;
   --verde: #7fcf97;
   --verde-suave: #1b3324;
@@ -57,6 +62,10 @@
   --rojo: #ff9a8f;
   --rojo-suave: #3f1d1b;
   --ambar: #f5a524;
+  --sombra-elevada:
+    0 0 0 1px rgb(255 255 255 / 0.06), 0 22px 56px rgb(0 0 0 / 0.85), 0 6px 16px rgb(0 0 0 / 0.6);
+  --sombra-foto:
+    0 0 0 1px rgb(255 255 255 / 0.08), 0 32px 90px rgb(0 0 0 / 0.95), 0 10px 28px rgb(0 0 0 / 0.75);
   color-scheme: dark;
 }
 
@@ -101,11 +110,13 @@ body {
   color: var(--texto);
 }
 
+// Si un nombre ocupa varias líneas, que sean de un largo parecido.
 h1,
 h2,
 h3 {
   margin: 0;
   line-height: 1.2;
+  text-wrap: balance;
 }
 
 button,
@@ -362,6 +373,10 @@ button {
   align-items: flex-start;
   gap: 0.2rem;
 
+  > strong {
+    text-wrap: balance;
+  }
+
   > span {
     color: var(--suave);
     font-size: 0.8rem;
@@ -410,8 +425,10 @@ button {
 
   figcaption {
     margin-top: 0.2rem;
+    text-align: center;
     font-size: 0.68rem;
     line-height: 1.2;
     color: var(--suave);
+    text-wrap: balance;
   }
 }

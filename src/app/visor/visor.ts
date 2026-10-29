@@ -24,7 +24,6 @@ export class Visor {
 }
 
 const DURACION = 380;
-const SOMBRA = '0 20px 60px rgb(0 0 0 / 0.35)';
 /** Radio de las esquinas de la foto grande. */
 const RADIO = 12;
 
@@ -82,7 +81,7 @@ const RADIO = 12;
       margin: auto;
       border-radius: ${RADIO}px;
       object-fit: cover;
-      box-shadow: ${SOMBRA};
+      box-shadow: var(--sombra-foto); // Más marcada en oscuro (styles.scss).
       transform-origin: 0 0;
       will-change: transform;
     }
@@ -153,6 +152,8 @@ export class VisorFotos {
     // El radio también se escala: se compensa para que en pantalla sea el de la miniatura (y no
     // cambie de golpe al llegar), en cada eje por separado porque la escala no es la misma.
     const radio = parseFloat(getComputedStyle(foto.origen).borderTopLeftRadius) || 0;
+    // La del tema en uso, ya resuelta (las animaciones no siempre resuelven variables CSS).
+    const sombra = getComputedStyle(imagen).boxShadow;
     const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const opciones: KeyframeAnimationOptions = {
       duration: reducido ? 0 : DURACION,
@@ -169,9 +170,9 @@ export class VisorFotos {
                 scale(${escalaX}, ${escalaY})`,
               borderRadius: `${radio / escalaX}px / ${radio / escalaY}px`,
               // La sombra aparece al despegar y se va al volver, sin desaparecer de golpe al final.
-              boxShadow: '0 0 0 rgb(0 0 0 / 0)',
+              boxShadow: 'none',
             },
-            { transform: 'none', boxShadow: SOMBRA, borderRadius: `${RADIO}px` },
+            { transform: 'none', boxShadow: sombra, borderRadius: `${RADIO}px` },
           ]),
           opciones,
         ),

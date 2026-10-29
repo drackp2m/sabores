@@ -81,8 +81,15 @@
     </summary>
     <dl>
       @for (d of dias; track d.id) {
-        <dt [class.activo]="d.id === dia()">{{ d.nombre }}</dt>
-        <dd>{{ formatearFranjas(local().schedule[d.id]) }}</dd>
+        @let esHoy = d.id === hoy();
+        <dt
+          [class.activo]="d.id === dia()"
+          [class.hoy]="esHoy"
+          [attr.aria-current]="esHoy ? 'date' : null"
+        >
+          {{ d.nombre }}
+        </dt>
+        <dd [class.hoy]="esHoy">{{ formatearFranjas(local().schedule[d.id]) }}</dd>
       }
     </dl>
   </details>

@@ -25,7 +25,7 @@ import { Visor } from '../visor/visor';
             <span class="numero">{{ local.number }}</span>
             <span class="titulo">
               <span class="nombre">
-                {{ local.name }}
+                <span class="texto">{{ local.name }}</span>
                 @if (ficha.gluten) {
                   <app-sello [tipo]="ficha.gluten" />
                 }
@@ -141,19 +141,26 @@ import { Visor } from '../visor/visor';
 
     .titulo {
       display: flex;
+      flex: 1;
       flex-direction: column;
       gap: 0.25rem;
       min-width: 0;
     }
 
+    // Como en las fichas: los sellos a la derecha, centrados con el nombre aunque ocupe varias líneas.
     .nombre {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 0.25rem 0.4rem;
+      gap: 0.35rem;
       font-size: 1rem;
       font-weight: 700;
       line-height: 1.2;
+    }
+
+    .texto {
+      flex: 1;
+      min-width: 0;
+      text-wrap: balance;
     }
 
     .datos {
@@ -197,12 +204,14 @@ import { Visor } from '../visor/visor';
       margin: 0;
     }
 
-    // El nombre de la tapa debajo de la foto, como en los popups del mapa.
+    // El nombre de la tapa centrado debajo de la foto, como en los popups del mapa.
     figcaption {
       margin-top: 0.25rem;
+      text-align: center;
       font-size: 0.75rem;
       line-height: 1.25;
       color: var(--suave);
+      text-wrap: balance;
     }
 
     // Por encima del ::after de la cabecera, para ampliarse en vez de abrir el local.

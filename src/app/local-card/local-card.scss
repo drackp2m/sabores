@@ -202,14 +202,46 @@ summary {
   }
 }
 
-// Padding y no margin, para que entre en la altura que se anima al abrir y cerrar.
+// Padding y no margin arriba, para que entre en la altura que se anima al abrir y cerrar. A los
+// lados sobresale lo que se rellenan las celdas, para que el texto siga alineado con el resto y el
+// resaltado de hoy tenga aire.
 dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.15rem 0.75rem;
-  margin: 0;
+  row-gap: 0.15rem;
+  margin: 0 -0.5rem;
   padding-top: 0.5rem;
   overflow: hidden;
+}
+
+dt,
+dd {
+  padding: 0.1rem 0.5rem;
+}
+
+// El hueco entre el día y su horario.
+dt {
+  padding-right: 0.75rem;
+}
+
+dd {
+  padding-left: 0;
+}
+
+// Hoy: la fila entera sobre el color suave del acento, con el día en el color del acento.
+.hoy {
+  background: var(--acento-suave);
+  font-weight: 600;
+}
+
+dt.hoy {
+  border-radius: 6px 0 0 6px;
+  color: var(--acento);
+  font-weight: 700;
+}
+
+dd.hoy {
+  border-radius: 0 6px 6px 0;
 }
 
 dt {

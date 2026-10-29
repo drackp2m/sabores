@@ -33,13 +33,25 @@
   }
 
   h1 {
+    display: flex;
     flex: 1;
+    align-items: baseline;
+    gap: 0.5rem;
     min-width: 0;
     font-size: 1.3rem;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
+}
+
+// Junto al nombre, más pequeña y suave.
+.edicion {
+  position: relative;
+  bottom: 0.02rem;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.85;
+  text-overflow: ellipsis;
 }
 
 .boton-menu {
@@ -70,7 +82,7 @@
   border-radius: var(--radio);
   background: var(--superficie);
   color: var(--texto);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.2);
+  box-shadow: var(--sombra-elevada);
   transform-origin: top right;
 
   &.entrando {
@@ -111,7 +123,6 @@
 }
 
 .volver {
-  position: fixed;
   left: var(--margen-izquierdo);
   padding: 0 1.2rem 0 1rem;
   border-radius: 999px;
@@ -123,20 +134,46 @@
   padding: 0;
   border-radius: 50%;
   font-size: 1.3rem;
+  // Se deforma apoyado en el suelo, como si cayera hacia arriba y rebotara.
+  transform-origin: 50% 100%;
+  // Lo que baja para quedar fuera de la pantalla: su alto, el margen y la zona segura.
+  --fuera: calc(100% + 1.5rem + env(safe-area-inset-bottom, 0px));
 
   &.entrando {
-    animation: asomar 0.2s ease-out;
+    animation: llegar 0.5s;
   }
 
   &.saliendo {
-    animation: asomar 0.15s ease-in reverse;
+    animation: irse 0.22s ease-in;
   }
 }
 
-@keyframes asomar {
-  from {
-    opacity: 0;
-    transform: translateY(1rem) scale(0.8);
+// Sube desde abajo estirado en vertical, se achata un poco al llegar y se queda en su sitio.
+@keyframes llegar {
+  0% {
+    transform: translateY(var(--fuera)) scale(0.9, 1.14);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  55% {
+    transform: translateY(0) scale(0.95, 1.06);
+    animation-timing-function: ease-out;
+  }
+
+  75% {
+    transform: translateY(0) scale(1.06, 0.93);
+    animation-timing-function: ease-in-out;
+  }
+
+  100% {
+    transform: none;
+  }
+}
+
+// Baja estirándose un poco.
+@keyframes irse {
+  to {
+    transform: translateY(var(--fuera)) scale(0.94, 1.1);
   }
 }
 
@@ -261,6 +298,10 @@ main {
   text-align: center;
   font-size: 0.8rem;
   color: var(--suave);
+
+  p {
+    margin: 0;
+  }
 
   a {
     color: var(--acento);

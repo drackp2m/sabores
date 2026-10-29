@@ -9,6 +9,7 @@ import {
   Llegada,
   Local,
   Tapa,
+  diaDe,
   formatearDistancia,
   formatearDuracion,
   formatearFranjas,
@@ -35,6 +36,8 @@ export class LocalCard {
   readonly verEnMapa = output<void>();
 
   protected readonly dias = DIAS;
+  /** Para resaltar el día de hoy en el horario. */
+  protected readonly hoy = computed(() => diaDe(this.ahora()));
   protected readonly formatearFranjas = formatearFranjas;
   protected readonly selloGluten = selloGluten;
   private readonly visor = inject(Visor);

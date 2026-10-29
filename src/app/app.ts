@@ -1,6 +1,7 @@
 import {
   Component,
   DestroyRef,
+  ElementRef,
   Injector,
   afterNextRender,
   computed,
@@ -55,6 +56,8 @@ const CLAVE_VISTA = 'ruta-tapas:vista';
   },
 })
 export class App {
+  /** Es lo que hace scroll, no la ventana (ver app.scss). */
+  private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
   protected readonly ubicacion = inject(Ubicacion);
   protected readonly dias = DIAS;
@@ -179,7 +182,7 @@ export class App {
 
   protected cambiarVista(vista: Vista): void {
     if (this.detalle() !== null) history.back();
-    else if (vista !== this.vista()) window.scrollTo({ top: 0 });
+    else if (vista !== this.vista()) this.host.scrollTo({ top: 0 });
     this.vista.set(vista);
     guardarVista(vista);
   }
@@ -196,10 +199,10 @@ export class App {
 
   /** Abre un local en una entrada nueva del historial: el botón «atrás» del navegador vuelve a la galería. */
   protected abrir(numero: number): void {
-    this.posicionGaleria = window.scrollY;
+    this.posicionGaleria = this.host.scrollTop;
     history.pushState({ local: numero }, '');
     this.detalle.set(numero);
-    window.scrollTo({ top: 0 });
+    this.host.scrollTo({ top: 0 });
   }
 
   protected volver(): void {
@@ -210,7 +213,7 @@ export class App {
     const numero = (event.state as { local?: number } | null)?.local ?? null;
     this.detalle.set(numero);
     const top = numero === null && this.vista() === 'fotos' ? this.posicionGaleria : 0;
-    afterNextRender(() => window.scrollTo({ top }), { injector: this.injector });
+    afterNextRender(() => this.host.scrollTo({ top }), { injector: this.injector });
   }
 }
 

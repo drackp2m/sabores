@@ -115,7 +115,7 @@ describe('App', () => {
   });
 
   it('en la vista «Fotos» abre un local y vuelve a la galería', async () => {
-    vi.spyOn(window, 'scrollTo').mockImplementation(() => {}); // jsdom no lo implementa
+    Element.prototype.scrollTo = () => {}; // jsdom no lo implementa
     const { el, pulsar } = await arrancar();
     await pulsar('.vistas button', 'Fotos');
     expect(el.querySelector('app-local-card')).toBeNull();

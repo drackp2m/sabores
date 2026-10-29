@@ -3,17 +3,22 @@
   margin-inline: auto;
 }
 
-// Hueco para la cabecera fija.
+// El scroll es de la app y no del documento (ver styles.scss).
 :host {
   display: block;
-  padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px));
+  height: 100dvh;
+  overflow: hidden auto;
+  overscroll-behavior: none;
+  background: var(--fondo);
+  // Al llevar algo a la vista (ficha, mapa), que quede por debajo de la cabecera fija, que también
+  // ocupa la zona segura de arriba (barra de estado).
+  scroll-padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
 }
 
-// Cabecera fija con el cambio de vista siempre a mano. Fixed y no sticky: Safari (iOS 26) solo toma
-// el color de los elementos fijos para teñir la barra de estado; si no, la deja difuminada.
+// Cabecera fija con el cambio de vista siempre a mano.
 .cabecera {
-  position: fixed;
-  inset: 0 0 auto;
+  position: sticky;
+  top: 0;
   z-index: 1100; // Por encima de los controles de Leaflet (1000).
   background: var(--acento);
   color: #fff;

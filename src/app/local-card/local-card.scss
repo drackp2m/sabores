@@ -201,15 +201,14 @@ summary {
   }
 }
 
-// Padding y no margin, para que entre en la altura que se anima al abrir y cerrar. Recorta solo en
-// vertical: los días entran desde un poco a la izquierda, dentro del padding de la ficha.
+// Padding y no margin, para que entre en la altura que se anima al abrir y cerrar.
 dl {
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: 0.15rem 0.75rem;
   margin: 0;
   padding-top: 0.5rem;
-  overflow: visible clip;
+  overflow: hidden;
 }
 
 dt {

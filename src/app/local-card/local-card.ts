@@ -63,8 +63,8 @@ export class LocalCard {
   });
 
   /**
-   * Abre el horario haciendo hueco poco a poco, mientras cada día entra deslizándose desde la
-   * izquierda un poco después que el anterior; al cerrar, se pliega y se desvanece.
+   * Abre el horario haciendo hueco poco a poco, mientras cada día aparece un poco después que el
+   * anterior; al cerrar, el hueco se recoge sin más.
    */
   protected alternarHorario(evento: Event, detalles: HTMLDetailsElement): void {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -85,7 +85,7 @@ export class LocalCard {
       });
       // dt y dd van en parejas: cada fila (día y horario) entra a la vez.
       [...lista.children].forEach((celda, i) =>
-        celda.animate([{ opacity: 0, transform: 'translateX(-0.75rem)' }, {}], {
+        celda.animate([{ opacity: 0 }, {}], {
           duration: 320,
           delay: 60 + Math.floor(i / 2) * 45,
           easing: 'ease-out',
@@ -94,13 +94,10 @@ export class LocalCard {
       );
     } else {
       this.plegando = true;
-      lista.animate(
-        [
-          { height: `${desde}px`, opacity: 1 },
-          { height: '0px', opacity: 0 },
-        ],
-        { duration: 250, easing: 'ease-in' },
-      ).onfinish = () => {
+      lista.animate([{ height: `${desde}px` }, { height: '0px' }], {
+        duration: 300,
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      }).onfinish = () => {
         detalles.open = false;
         this.plegando = false;
       };

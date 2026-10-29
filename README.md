@@ -119,6 +119,11 @@ src/app/
   icono/          iconos SVG
 ```
 
+Se puede instalar como app (*Añadir a pantalla de inicio* en el iPhone, *Instalar app* en Android):
+`public/manifest.webmanifest` y las etiquetas de Apple en `src/index.html`. Los iconos (`public/icon-*.png`,
+`apple-touch-icon.png`, `favicon.*`) son la «S» de `public/favicon.svg` exportada a PNG; la versión
+*maskable* deja margen para el recorte redondo de Android.
+
 ## Despliegue
 
 `.github/workflows/deploy.yml` pasa los tests, compila y publica `dist/ruta-tapas/browser` en GitHub Pages

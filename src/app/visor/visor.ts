@@ -85,7 +85,7 @@ const DURACION = 380;
     .cerrar {
       position: absolute;
       top: calc(1rem + env(safe-area-inset-top, 0px));
-      right: 1rem;
+      right: var(--margen-derecho);
       width: 2.75rem;
       height: 2.75rem;
       padding: 0;

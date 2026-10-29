@@ -48,7 +48,11 @@ const CLAVE_VISTA = 'ruta-tapas:vista';
   imports: [FormsModule, Galeria, Icono, LocalCard, Mapa, OrigenPanel, Sello, VisorFotos],
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  host: { '(window:popstate)': 'alNavegar($event)' },
+  host: {
+    '(window:popstate)': 'alNavegar($event)',
+    // Safari en iOS ignora user-scalable=no: el pellizco para hacer zoom se bloquea aquí.
+    '(document:gesturestart)': '$event.preventDefault()',
+  },
 })
 export class App {
   private readonly injector = inject(Injector);

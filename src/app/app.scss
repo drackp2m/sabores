@@ -10,7 +10,7 @@
   z-index: 1100; // Por encima de los controles de Leaflet (1000).
   background: var(--acento);
   color: #fff;
-  padding: env(safe-area-inset-top, 0px) 1rem 0;
+  padding: env(safe-area-inset-top, 0px) var(--margen-derecho) 0 var(--margen-izquierdo);
 
   .contenido {
     display: flex;
@@ -68,12 +68,12 @@
 
 // Botón flotante para volver de la ficha a la galería; el padding inferior deja ver el final.
 .detalle {
-  padding-bottom: 5rem;
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .volver {
   position: fixed;
-  left: 1rem;
+  left: var(--margen-izquierdo);
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   z-index: 1100;
   height: 3rem;
@@ -85,7 +85,7 @@
 .filtros {
   background: var(--superficie);
   border-bottom: 1px solid var(--borde);
-  padding: 0.75rem 1rem;
+  padding: 0.75rem var(--margen-derecho) 0.75rem var(--margen-izquierdo);
 
   .contenido {
     display: flex;
@@ -139,7 +139,9 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem;
+  // Abajo, además, la zona segura del indicador de inicio del iPhone.
+  padding: 1rem var(--margen-derecho) calc(1rem + env(safe-area-inset-bottom, 0px))
+    var(--margen-izquierdo);
   // El ancho máximo de .contenido es sin el padding, para alinearse con cabecera y filtros.
   box-sizing: content-box;
 }
@@ -186,7 +188,6 @@ main {
 
 .mapa {
   height: 320px;
-  scroll-margin-top: calc(var(--alto-cabecera) + 1rem);
 }
 
 .lista {
@@ -222,7 +223,7 @@ main {
   .resultados .mapa,
   .detalle .mapa {
     position: sticky;
-    top: calc(var(--alto-cabecera) + 1rem);
-    height: calc(100vh - var(--alto-cabecera) - 2rem);
+    top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
+    height: calc(100vh - var(--alto-cabecera) - env(safe-area-inset-top, 0px) - 2rem);
   }
 }

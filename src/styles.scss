@@ -17,11 +17,22 @@
   --radio: 12px;
   --alto-control: 2.5rem;
   --alto-cabecera: 3.5rem;
+  // Márgenes laterales que respetan las zonas seguras (notch en horizontal, con viewport-fit=cover).
+  --margen-izquierdo: max(1rem, env(safe-area-inset-left, 0px));
+  --margen-derecho: max(1rem, env(safe-area-inset-right, 0px));
   color-scheme: light;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  // Al llevar algo a la vista (ficha, mapa), que quede por debajo de la cabecera fija, que también
+  // ocupa la zona segura de arriba (barra de estado).
+  scroll-padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
+  // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
+  touch-action: pan-x pan-y;
 }
 
 body {

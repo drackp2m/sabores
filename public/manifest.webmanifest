@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "Sabores · Ruta de Tapas Castellón",
+  "short_name": "Sabores",
+  "description": "Locales, tapas, horarios y mapa de la Ruta de Tapas Sabores Castellón.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf6f0",
+  "theme_color": "#b4441b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

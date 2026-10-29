@@ -2,13 +2,23 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>Ruta de Tapas · Castellón</title>
+    <title>Sabores · Ruta de Tapas Castellón</title>
     <base href="/" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
     <link rel="icon" href="favicon.ico" sizes="32x32" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <meta name="theme-color" content="#b4441b" />
+    <!-- App instalable (manifest para Android y Chrome; las etiquetas de Apple, para el iPhone). -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Sabores" />
+    <!-- La barra de estado deja ver la cabecera, que ya se aparta con env(safe-area-inset-top). -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
   <body>
     <app-root></app-root>

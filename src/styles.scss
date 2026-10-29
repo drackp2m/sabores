@@ -12,7 +12,8 @@
   --verde-suave: #e3f2e8;
   --aviso: #8a5a00;
   --aviso-suave: #fff3d6;
-  --rojo: #c0262d;
+  --rojo: #a61e24;
+  --rojo-suave: #fde4e2;
   --ambar: #d97706;
   --radio: 12px;
   --alto-control: 2.5rem;
@@ -194,10 +195,10 @@ button {
     color: var(--aviso);
   }
 
-  // Cierra antes de que dé tiempo a llegar: rojo lleno, para no confundirlo con el sello Ruta Sabor.
+  // Cierra antes de que dé tiempo a llegar.
   &.tarde {
-    background: var(--rojo);
-    color: #fff;
+    background: var(--rojo-suave);
+    color: var(--rojo);
     cursor: help;
   }
 

@@ -51,21 +51,23 @@ import { Visor } from '../visor/visor';
           </button>
           <div class="fotos">
             @for (tapa of local.tapas; track tapa.number) {
-              <button
-                type="button"
-                class="foto"
-                [title]="tapa.name"
-                [attr.aria-label]="'Ampliar la foto de ' + tapa.name"
-                (click)="ampliar($event, tapa)"
-              >
-                <img
-                  [src]="'data/' + tapa.photo"
-                  [alt]="tapa.name"
-                  loading="lazy"
-                  width="690"
-                  height="439"
-                />
-              </button>
+              <figure>
+                <button
+                  type="button"
+                  class="foto"
+                  [attr.aria-label]="'Ampliar la foto de ' + tapa.name"
+                  (click)="ampliar($event, tapa)"
+                >
+                  <img
+                    [src]="'data/' + tapa.photo"
+                    [alt]="tapa.name"
+                    loading="lazy"
+                    width="690"
+                    height="439"
+                  />
+                </button>
+                <figcaption>{{ tapa.name }}</figcaption>
+              </figure>
             }
           </div>
         </li>
@@ -189,6 +191,18 @@ import { Visor } from '../visor/visor';
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0.4rem;
+    }
+
+    figure {
+      margin: 0;
+    }
+
+    // El nombre de la tapa debajo de la foto, como en los popups del mapa.
+    figcaption {
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+      line-height: 1.25;
+      color: var(--suave);
     }
 
     // Por encima del ::after de la cabecera, para ampliarse en vez de abrir el local.

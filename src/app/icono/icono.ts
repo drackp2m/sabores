@@ -38,6 +38,9 @@ const ICONOS = {
     'M12 11.5v1',
   ],
   cerrar: ['M6 6l12 12', 'M18 6L6 18'],
+  ampliar: ['M15 3h6v6', 'M9 21H3v-6', 'M21 3l-7 7', 'M3 21l7-7'],
+  reducir: ['M4 14h6v6', 'M20 10h-6V4', 'M14 10l7-7', 'M3 21l7-7'],
+  externo: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
   // Espiga de trigo en diagonal, tachada en perpendicular.
   sinGluten: [
     'M3 21L17 7',

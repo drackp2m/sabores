@@ -3,6 +3,8 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  afterRenderEffect,
+  computed,
   effect,
   inject,
   input,
@@ -12,8 +14,9 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 
-import { crearIcono } from '../icono/icono';
+import { Icono, crearIcono } from '../icono/icono';
 import { Coordenadas, Estado, Llegada, Local, formatearDuracion, pastillaEstado } from '../locales';
+import { buscarCamino, enlaceComoLlegar } from '../ruta';
 
 const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 
@@ -23,19 +26,106 @@ const CASTELLON: L.LatLngExpression = [39.986, -0.037];
  */
 const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').matches ?? false;
 
-/** Mapa de OpenStreetMap con un marcador por local; se ajusta a los locales filtrados. */
+/**
+ * Mapa de OpenStreetMap con un marcador por local; se ajusta a los locales filtrados. Con punto de
+ * partida, dibuja el camino hasta el local elegido (o el del popup abierto). Se puede ampliar a
+ * toda la pantalla y abrir el local en la app de mapas.
+ */
 @Component({
   selector: 'app-mapa',
+  imports: [Icono],
   template: `
-    <div #contenedor class="contenedor" (touchmove)="avisar($event)"></div>
-    <p class="aviso" [class.visible]="aviso()" aria-hidden="true">
-      Usa dos dedos para mover el mapa
-    </p>
+    <div class="marco" [class.grande]="grande()">
+      <div #contenedor class="contenedor" (touchmove)="avisar($event)"></div>
+      <div class="botones">
+        <button
+          type="button"
+          class="secundario icono"
+          [title]="grande() ? 'Reducir el mapa' : 'Ampliar el mapa'"
+          [attr.aria-label]="grande() ? 'Reducir el mapa' : 'Ampliar el mapa'"
+          (click)="grande.set(!grande())"
+        >
+          <app-icono [nombre]="grande() ? 'reducir' : 'ampliar'" />
+        </button>
+        @if (enlaceExterno(); as enlace) {
+          <a
+            class="secundario icono"
+            [href]="enlace"
+            target="_blank"
+            rel="noopener"
+            title="Cómo llegar en la app de mapas"
+            aria-label="Cómo llegar en la app de mapas"
+          >
+            <app-icono nombre="externo" />
+          </a>
+        }
+      </div>
+      <p class="aviso" [class.visible]="aviso()" aria-hidden="true">
+        Usa dos dedos para mover el mapa
+      </p>
+    </div>
   `,
+  host: { '(document:keydown.escape)': 'grande.set(false)' },
   styles: `
     :host {
-      position: relative;
       display: block;
+    }
+
+    // El hueco del mapa se queda en la página; al ampliarlo, solo el marco pasa a ocupar la pantalla.
+    .marco {
+      position: relative;
+      height: 100%;
+
+      &.grande {
+        position: fixed;
+        inset: 0;
+        z-index: 1150; // Por encima de la cabecera y del botón «Volver»; por debajo del visor.
+        padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+          env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+        background: var(--fondo);
+
+        .contenedor {
+          border: 0;
+          border-radius: 0;
+        }
+      }
+    }
+
+    // Arriba a la derecha, como los controles de Leaflet (que están a la izquierda).
+    .botones {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .grande & {
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        right: calc(10px + env(safe-area-inset-right, 0px));
+      }
+
+      .icono {
+        width: 2.25rem;
+        height: 2.25rem;
+        box-shadow: 0 1px 5px rgb(0 0 0 / 0.25);
+      }
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--acento);
+        border-radius: 8px;
+        background: var(--superficie);
+        color: var(--acento);
+        font-size: 1.1rem;
+
+        &:hover {
+          background: var(--acento-suave);
+        }
+      }
     }
 
     // Por encima de los controles de Leaflet, sin captar los toques.
@@ -76,14 +166,32 @@ export class Mapa {
   readonly estados = input<ReadonlyMap<number, Estado>>(new Map());
   readonly llegadas = input<ReadonlyMap<number, Llegada>>(new Map());
   readonly ahora = input(new Date());
+  /** Local al que dibujar siempre el camino (en la ficha); si no, el del popup abierto. */
+  readonly rutaHacia = input<number | null>(null);
   /** Número del local cuyo marcador se ha pinchado. */
   readonly seleccionar = output<number>();
+
+  /** A toda la pantalla. */
+  protected readonly grande = signal(false);
+  /** Local con el popup abierto. */
+  private readonly abierto = signal<number | null>(null);
+  private readonly destino = computed(() => {
+    const numero = this.rutaHacia() ?? this.abierto();
+    return this.locales().find((local) => local.number === numero && local.location);
+  });
+
+  protected readonly enlaceExterno = computed(() => {
+    const local = this.destino();
+    if (!local?.location) return null;
+    return enlaceComoLlegar(local.location, local.name, this.llegadas().get(local.number)?.modo);
+  });
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLElement>>('contenedor');
   private readonly mapa = signal<L.Map | undefined>(undefined);
   protected readonly aviso = signal(false);
   private ocultarAviso?: ReturnType<typeof setTimeout>;
   private readonly capa = new L.FeatureGroup();
+  private readonly capaCamino = new L.FeatureGroup();
   private readonly marcadores = new Map<number, L.CircleMarker>();
   private readonly marcadorOrigen = new L.CircleMarker(CASTELLON, {
     radius: 7,
@@ -106,8 +214,56 @@ export class Mapa {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(mapa);
+      // El camino, por debajo de los marcadores.
+      mapa.createPane('camino').style.zIndex = '350';
+      this.capaCamino.addTo(mapa);
       this.capa.addTo(mapa);
       this.mapa.set(mapa);
+    });
+
+    // Al ampliar o reducir, Leaflet tiene que volver a medir; ampliado, se mueve con un dedo (no hay
+    // página que desplazar).
+    afterRenderEffect(() => {
+      const mapa = this.mapa();
+      const grande = this.grande();
+      if (!mapa) return;
+      mapa.invalidateSize();
+      if (grande || !TACTIL) mapa.dragging.enable();
+      else mapa.dragging.disable();
+    });
+
+    // Camino por calles hasta el local, con el mismo medio (a pie o en coche) que el tiempo de llegada.
+    effect((onCleanup) => {
+      const mapa = this.mapa();
+      const origen = this.origen();
+      const local = this.destino();
+      const llegada = local && this.llegadas().get(local.number);
+      const fijo = this.rutaHacia() !== null;
+      this.capaCamino.clearLayers();
+      if (!mapa || !origen || !local?.location || !llegada) return;
+      let vigente = true;
+      onCleanup(() => (vigente = false));
+      void buscarCamino(origen, local.location, llegada.modo).then((camino) => {
+        if (!vigente || !camino) return;
+        const linea = new L.Polyline(camino, {
+          pane: 'camino',
+          color: '#2563eb',
+          weight: 5,
+          opacity: 0.85,
+          lineCap: 'round',
+          lineJoin: 'round',
+          // A pie, punteado; en coche, continuo.
+          dashArray: llegada.modo === 'pie' ? '1 9' : undefined,
+          interactive: false,
+        }).addTo(this.capaCamino);
+        // En la ficha, que se vea el camino entero; con un popup abierto no se mueve el mapa.
+        if (fijo) {
+          mapa.fitBounds(linea.getBounds().extend([origen.lat, origen.lng]), {
+            padding: [30, 30],
+            maxZoom: 17,
+          });
+        }
+      });
     });
 
     inject(DestroyRef).onDestroy(() => {
@@ -141,7 +297,7 @@ export class Mapa {
 
   /** Al intentar mover el mapa con un dedo, recuerda que son dos (y la página sigue haciendo scroll). */
   protected avisar(evento: TouchEvent): void {
-    if (!TACTIL || evento.touches.length !== 1) return;
+    if (!TACTIL || this.grande() || evento.touches.length !== 1) return;
     this.aviso.set(true);
     clearTimeout(this.ocultarAviso);
     this.ocultarAviso = setTimeout(() => this.aviso.set(false), 1200);
@@ -150,6 +306,7 @@ export class Mapa {
   private pintar(mapa: L.Map, locales: readonly Local[]): void {
     this.capa.clearLayers();
     this.marcadores.clear();
+    this.abierto.set(null);
     for (const local of locales) {
       if (!local.location) continue;
       const marcador = new L.CircleMarker([local.location.lat, local.location.lng], {
@@ -162,7 +319,9 @@ export class Mapa {
         // El contenido se genera al abrirlo, con el estado del horario de ese momento.
         .bindPopup(() => this.popup(local), { minWidth: 240, maxWidth: 240 })
         .on('click', () => this.seleccionar.emit(local.number))
-        .on('mouseover', () => marcador.bringToFront());
+        .on('mouseover', () => marcador.bringToFront())
+        .on('popupopen', () => this.abierto.set(local.number))
+        .on('popupclose', () => this.abierto.update((n) => (n === local.number ? null : n)));
       marcador.addTo(this.capa);
       this.marcadores.set(local.number, marcador);
     }

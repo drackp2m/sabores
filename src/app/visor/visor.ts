@@ -26,8 +26,8 @@ export class Visor {
 const DURACION = 380;
 
 /**
- * Foto ampliada: crece desde su miniatura hasta el centro mientras el fondo se desenfoca y pierde
- * color, y al cerrar (X, Escape o pinchando fuera) hace el mismo recorrido al revés.
+ * Foto ampliada: crece desde su miniatura hasta el centro mientras aparece el fondo, desenfocado y
+ * sin color, y al cerrar (X, Escape o pinchando fuera) hace el mismo recorrido al revés.
  */
 @Component({
   selector: 'app-visor-fotos',
@@ -66,6 +66,7 @@ const DURACION = 380;
       backdrop-filter: blur(10px) grayscale(0.5);
       -webkit-backdrop-filter: blur(10px) grayscale(0.5);
       touch-action: none;
+      will-change: opacity;
     }
 
     // Lo más grande posible sin pasar de 1,25 veces el tamaño real de las fotos (690×439).
@@ -80,6 +81,7 @@ const DURACION = 380;
       object-fit: cover;
       box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
       transform-origin: 0 0;
+      will-change: transform;
     }
 
     .cerrar {
@@ -146,7 +148,6 @@ export class VisorFotos {
       direction,
       fill: 'both',
     };
-    const sinFiltro = 'blur(0px) grayscale(0)';
     return Promise.all(
       [
         imagen.animate(
@@ -159,17 +160,8 @@ export class VisorFotos {
           ],
           opciones,
         ),
-        this.fondo()!.nativeElement.animate(
-          [
-            {
-              backgroundColor: 'rgb(42 33 27 / 0)',
-              backdropFilter: sinFiltro,
-              webkitBackdropFilter: sinFiltro,
-            },
-            {},
-          ],
-          opciones,
-        ),
+        // Solo opacidad: animar el desenfoque en sí va a saltos en el móvil.
+        this.fondo()!.nativeElement.animate([{ opacity: 0 }, {}], opciones),
         this.boton()!.nativeElement.animate([{ opacity: 0 }, {}], opciones),
       ].map((animacion) => animacion.finished),
     );

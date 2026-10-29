@@ -1,13 +1,14 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
 import { EstadoHorario } from '../estado-horario/estado-horario';
 import { Icono } from '../icono/icono';
-import { Estado, Llegada, Local, formatearDistancia, formatearDuracion } from '../locales';
+import { Estado, Llegada, Local, Tapa, formatearDistancia, formatearDuracion } from '../locales';
 import { Sello, selloGluten } from '../sello/sello';
+import { Visor } from '../visor/visor';
 
 /**
  * Vista «Fotos»: el nombre del local con sus sellos, cuánto se tarda en llegar, si está abierto y
- * las fotos de sus dos tapas.
+ * las fotos de sus dos tapas. La tarjeta abre el local y cada foto se amplía.
  */
 @Component({
   selector: 'app-galeria',
@@ -19,50 +20,54 @@ import { Sello, selloGluten } from '../sello/sello';
         @let llegada = llegadas().get(local.number);
         @let estado = estados().get(local.number);
         <li>
-          <button type="button" (click)="abrir.emit(local.number)">
-            <span class="cabeza">
-              <span class="numero">{{ local.number }}</span>
-              <span class="titulo">
-                <span class="nombre">
-                  {{ local.name }}
-                  @if (ficha.gluten) {
-                    <app-sello [tipo]="ficha.gluten" />
-                  }
-                  @if (ficha.ruta) {
-                    <app-sello tipo="ruta" />
-                  }
-                </span>
-                @if (llegada || estado) {
-                  <span class="datos">
-                    @if (llegada) {
-                      <span class="llegada">
-                        <app-icono [nombre]="llegada.modo" />
-                        {{ formatearDuracion(llegada.minutos) }} ·
-                        {{ formatearDistancia(llegada.metros) }}
-                      </span>
-                    }
-                    @if (estado) {
-                      <app-estado-horario [estado]="estado" [ahora]="ahora()" [llegada]="llegada" />
-                    }
-                  </span>
+          <!-- Su ::after cubre toda la tarjeta, así que se abre el local pinchando en cualquier sitio menos en las fotos. -->
+          <button type="button" class="cabeza" (click)="abrir.emit(local.number)">
+            <span class="numero">{{ local.number }}</span>
+            <span class="titulo">
+              <span class="nombre">
+                {{ local.name }}
+                @if (ficha.gluten) {
+                  <app-sello [tipo]="ficha.gluten" />
+                }
+                @if (ficha.ruta) {
+                  <app-sello tipo="ruta" />
                 }
               </span>
-            </span>
-            <span class="fotos">
-              @for (tapa of local.tapas; track tapa.number) {
-                <span class="foto">
-                  <img
-                    [src]="'data/' + tapa.photo"
-                    [alt]="tapa.name"
-                    [title]="tapa.name"
-                    loading="lazy"
-                    width="690"
-                    height="439"
-                  />
+              @if (llegada || estado) {
+                <span class="datos">
+                  @if (llegada) {
+                    <span class="llegada">
+                      <app-icono [nombre]="llegada.modo" />
+                      {{ formatearDuracion(llegada.minutos) }} ·
+                      {{ formatearDistancia(llegada.metros) }}
+                    </span>
+                  }
+                  @if (estado) {
+                    <app-estado-horario [estado]="estado" [ahora]="ahora()" [llegada]="llegada" />
+                  }
                 </span>
               }
             </span>
           </button>
+          <div class="fotos">
+            @for (tapa of local.tapas; track tapa.number) {
+              <button
+                type="button"
+                class="foto"
+                [title]="tapa.name"
+                [attr.aria-label]="'Ampliar la foto de ' + tapa.name"
+                (click)="ampliar($event, tapa)"
+              >
+                <img
+                  [src]="'data/' + tapa.photo"
+                  [alt]="tapa.name"
+                  loading="lazy"
+                  width="690"
+                  height="439"
+                />
+              </button>
+            }
+          </div>
         </li>
       }
     </ul>
@@ -81,30 +86,55 @@ import { Sello, selloGluten } from '../sello/sello';
       list-style: none;
     }
 
-    li > button {
+    li {
+      position: relative;
+      display: flex;
       flex-direction: column;
-      align-items: stretch;
       gap: 0.6rem;
-      width: 100%;
-      height: auto;
       padding: 0.6rem;
       border: 1px solid var(--borde);
       border-radius: var(--radio);
       background: var(--superficie);
-      color: var(--texto);
-      text-align: left;
-      white-space: normal;
+      transition: border-color 0.15s;
 
       &:hover {
         border-color: var(--borde-control);
-        background: var(--superficie);
       }
     }
 
-    .cabeza {
-      display: flex;
-      align-items: center;
+    .cabeza,
+    .cabeza:hover:not(:disabled) {
+      justify-content: flex-start;
       gap: 0.5rem;
+      height: auto;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--texto);
+      font-weight: 400;
+      text-align: left;
+      white-space: normal;
+    }
+
+    .cabeza {
+      position: static;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+      }
+
+      &:focus-visible {
+        outline: none;
+
+        &::after {
+          outline: 2px solid var(--acento);
+          outline-offset: 2px;
+          border-radius: var(--radio);
+        }
+      }
     }
 
     .titulo {
@@ -139,16 +169,20 @@ import { Sello, selloGluten } from '../sello/sello';
       gap: 0.2rem;
     }
 
+    // Como en las fichas: sale del borde izquierdo (tapándolo), redondeado solo por la derecha.
     .numero {
       flex: none;
       display: grid;
       place-items: center;
-      width: 1.6rem;
-      height: 1.6rem;
-      border-radius: 50%;
+      min-width: 2.1rem;
+      height: 1.75rem;
+      margin-left: calc(-0.6rem - 1px);
+      padding: 0 0.45rem 0 0.35rem;
+      border-radius: 0 999px 999px 0;
       background: var(--acento);
       color: #fff;
-      font-size: 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 700;
     }
 
     .fotos {
@@ -157,13 +191,21 @@ import { Sello, selloGluten } from '../sello/sello';
       gap: 0.4rem;
     }
 
-    // Al pasar por encima, las fotos se acercan un poco dentro de su hueco, sin mover nada más.
-    .foto {
-      overflow: hidden;
+    // Por encima del ::after de la cabecera, para ampliarse en vez de abrir el local.
+    .foto,
+    .foto:hover:not(:disabled) {
+      position: relative;
+      display: block;
+      height: auto;
+      padding: 0;
+      border: 0;
       border-radius: 8px;
       background: var(--borde);
+      overflow: hidden;
+      cursor: zoom-in;
     }
 
+    // Al pasar por encima, la foto se acerca un poco dentro de su hueco, sin mover nada más.
     img {
       display: block;
       width: 100%;
@@ -172,7 +214,7 @@ import { Sello, selloGluten } from '../sello/sello';
       object-fit: cover;
       transition: transform 0.3s ease-out;
 
-      button:is(:hover, :focus-visible) & {
+      .foto:is(:hover, :focus-visible) & {
         transform: scale(1.06);
       }
 
@@ -189,6 +231,8 @@ export class Galeria {
   readonly ahora = input(new Date());
   readonly abrir = output<number>();
 
+  private readonly visor = inject(Visor);
+
   protected readonly formatearDuracion = formatearDuracion;
   protected readonly formatearDistancia = formatearDistancia;
 
@@ -200,4 +244,12 @@ export class Galeria {
       ruta: local.tapas.some((t) => t.castelloRutaDeSabor),
     })),
   );
+
+  protected ampliar(evento: Event, tapa: Tapa): void {
+    this.visor.foto.set({
+      src: `data/${tapa.photo}`,
+      alt: tapa.name,
+      origen: evento.currentTarget as HTMLElement,
+    });
+  }
 }

@@ -3,10 +3,17 @@
   margin-inline: auto;
 }
 
-// Cabecera fija con el cambio de vista siempre a mano.
+// Hueco para la cabecera fija.
+:host {
+  display: block;
+  padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px));
+}
+
+// Cabecera fija con el cambio de vista siempre a mano. Fixed y no sticky: Safari (iOS 26) solo toma
+// el color de los elementos fijos para teñir la barra de estado; si no, la deja difuminada.
 .cabecera {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  inset: 0 0 auto;
   z-index: 1100; // Por encima de los controles de Leaflet (1000).
   background: var(--acento);
   color: #fff;

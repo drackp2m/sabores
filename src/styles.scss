@@ -1,4 +1,19 @@
+// Tema oscuro: con data-tema="oscuro" en <html>, o el del sistema si no se ha elegido claro (tema.ts).
+@mixin si-oscuro {
+  :root[data-tema='oscuro'] & {
+    @content;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema='claro']) & {
+      @content;
+    }
+  }
+}
+
 :root {
+  // La cabecera es del mismo color en los dos temas, como la barra de estado (theme-color).
+  --cabecera: #b4441b;
   --fondo: #faf6f0;
   --superficie: #fff;
   --texto: #2a211b;
@@ -24,6 +39,37 @@
   color-scheme: light;
 }
 
+// El acento, algo más claro para leerse sobre fondo oscuro sin dejar de llevar texto blanco encima.
+@mixin paleta-oscura {
+  --fondo: #17120f;
+  --superficie: #221b17;
+  --texto: #f0e7df;
+  --suave: #ab9d92;
+  --borde: #362c26;
+  --borde-control: #4a3d35;
+  --acento: #d0612f;
+  --acento-oscuro: #b4441b;
+  --acento-suave: #3a2219;
+  --verde: #7fcf97;
+  --verde-suave: #1b3324;
+  --aviso: #f0c060;
+  --aviso-suave: #3a2e14;
+  --rojo: #ff9a8f;
+  --rojo-suave: #3f1d1b;
+  --ambar: #f5a524;
+  color-scheme: dark;
+}
+
+:root[data-tema='oscuro'] {
+  @include paleta-oscura;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    @include paleta-oscura;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -35,7 +81,7 @@
 html {
   overflow: hidden;
   overscroll-behavior: none;
-  background: linear-gradient(var(--acento) 50%, var(--fondo) 50%) var(--acento);
+  background: linear-gradient(var(--cabecera) 50%, var(--fondo) 50%) var(--cabecera);
   // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
   touch-action: pan-x pan-y;
 }
@@ -171,6 +217,39 @@ button {
   }
 }
 
+// Selector segmentado (vista y tema, en el menú): la opción activa, como una pestaña sobre un carril.
+.segmentos {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  background: var(--fondo);
+
+  button {
+    flex: 1;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border-color: transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--suave);
+
+    &:hover:not(:disabled) {
+      border-color: transparent;
+      background: var(--acento-suave);
+      color: var(--texto);
+    }
+
+    &.activa,
+    &.activa:hover:not(:disabled) {
+      background: var(--superficie);
+      color: var(--acento);
+      box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+    }
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--acento);
   outline-offset: 2px;
@@ -206,6 +285,69 @@ button {
     background: var(--fondo);
     color: var(--suave);
   }
+}
+
+// Leaflet con los colores del tema (sus estilos van antes, en angular.json).
+.leaflet-container {
+  background: var(--fondo);
+}
+
+// En oscuro, el mapa invertido y con los tonos devueltos a su sitio (el agua azul, los parques verdes).
+.leaflet-tile-pane {
+  @include si-oscuro {
+    filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6);
+  }
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  border-bottom-color: var(--borde);
+  background-color: var(--superficie);
+  color: var(--texto);
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--fondo);
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--superficie) 80%, transparent);
+  color: var(--suave);
+
+  a {
+    color: var(--acento);
+  }
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-tooltip {
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.leaflet-tooltip {
+  border-color: var(--borde);
+}
+
+.leaflet-tooltip-top::before {
+  border-top-color: var(--superficie);
+}
+
+.leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--superficie);
+}
+
+.leaflet-tooltip-left::before {
+  border-left-color: var(--superficie);
+}
+
+.leaflet-tooltip-right::before {
+  border-right-color: var(--superficie);
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--suave);
 }
 
 // Popups del mapa (Leaflet los crea fuera de los componentes).

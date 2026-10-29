@@ -1,26 +1,66 @@
 <header class="cabecera">
   <div class="contenido">
     <h1>Sabores</h1>
-    <div class="vistas" role="group" aria-label="Vista">
-      <button
-        type="button"
-        title="Lista con todos los detalles y el mapa"
-        [class.activa]="vista() === 'detalles'"
-        [attr.aria-pressed]="vista() === 'detalles'"
-        (click)="cambiarVista('detalles')"
+    <button
+      type="button"
+      class="boton-menu"
+      aria-controls="menu"
+      [attr.aria-label]="menuAbierto() ? 'Cerrar el menú' : 'Abrir el menú'"
+      [attr.aria-expanded]="menuAbierto()"
+      (click)="menuAbierto.set(!menuAbierto())"
+    >
+      <app-icono [nombre]="menuAbierto() ? 'cerrar' : 'menu'" />
+    </button>
+
+    @if (menuAbierto()) {
+      <nav
+        id="menu"
+        class="menu"
+        aria-label="Menú"
+        animate.enter="entrando"
+        animate.leave="saliendo"
       >
-        <app-icono nombre="lista" />Detalles
-      </button>
-      <button
-        type="button"
-        title="Solo el nombre y las fotos de las tapas"
-        [class.activa]="vista() === 'fotos'"
-        [attr.aria-pressed]="vista() === 'fotos'"
-        (click)="cambiarVista('fotos')"
-      >
-        <app-icono nombre="fotos" />Fotos
-      </button>
-    </div>
+        <div class="grupo">
+          <span id="etiqueta-vista">Vista</span>
+          <div class="segmentos" role="group" aria-labelledby="etiqueta-vista">
+            <button
+              type="button"
+              title="Lista con todos los detalles y el mapa"
+              [class.activa]="vista() === 'detalles'"
+              [attr.aria-pressed]="vista() === 'detalles'"
+              (click)="cambiarVista('detalles')"
+            >
+              <app-icono nombre="lista" />Detalles
+            </button>
+            <button
+              type="button"
+              title="Solo el nombre y las fotos de las tapas"
+              [class.activa]="vista() === 'fotos'"
+              [attr.aria-pressed]="vista() === 'fotos'"
+              (click)="cambiarVista('fotos')"
+            >
+              <app-icono nombre="fotos" />Fotos
+            </button>
+          </div>
+        </div>
+
+        <div class="grupo">
+          <span id="etiqueta-tema">Tema</span>
+          <div class="segmentos" role="group" aria-labelledby="etiqueta-tema">
+            @for (opcion of temas; track opcion.tema) {
+              <button
+                type="button"
+                [class.activa]="tema.tema() === opcion.tema"
+                [attr.aria-pressed]="tema.tema() === opcion.tema"
+                (click)="tema.tema.set(opcion.tema)"
+              >
+                <app-icono [nombre]="opcion.icono" />{{ opcion.nombre }}
+              </button>
+            }
+          </div>
+        </div>
+      </nav>
+    }
   </div>
 </header>
 
@@ -183,9 +223,23 @@
   }
 }
 
-<footer class="pie" [class.con-volver]="localDetalle()">
+<footer class="pie">
   Desarrollado con mucho cariño por
   <a href="https://github.com/drackp2m" target="_blank" rel="noopener">@drackp2m</a>
 </footer>
+
+@if (verSubir()) {
+  <button
+    type="button"
+    class="subir"
+    title="Subir arriba"
+    aria-label="Subir arriba"
+    animate.enter="entrando"
+    animate.leave="saliendo"
+    (click)="subir()"
+  >
+    <app-icono nombre="arriba" />
+  </button>
+}
 
 <app-visor-fotos />

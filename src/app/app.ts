@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { catchError, map, of } from 'rxjs';
 
 import { Galeria } from './galeria/galeria';
-import { Icono } from './icono/icono';
+import { Icono, NombreIcono } from './icono/icono';
 import { LocalCard } from './local-card/local-card';
 import {
   DIAS,
@@ -34,6 +34,7 @@ import {
 import { Mapa } from './mapa/mapa';
 import { OrigenPanel } from './origen/origen';
 import { Sello } from './sello/sello';
+import { Tema, Temas } from './tema';
 import { VisorFotos } from './visor/visor';
 import { Ubicacion } from './ubicacion';
 
@@ -44,6 +45,12 @@ type Orden = 'numero' | 'cercania' | 'cierre';
 const ESCRITORIO = '(min-width: 960px)';
 const CLAVE_VISTA = 'ruta-tapas:vista';
 
+const TEMAS: readonly { tema: Tema; nombre: string; icono: NombreIcono }[] = [
+  { tema: 'claro', nombre: 'Claro', icono: 'sol' },
+  { tema: 'oscuro', nombre: 'Oscuro', icono: 'luna' },
+  { tema: 'sistema', nombre: 'Sistema', icono: 'sistema' },
+];
+
 @Component({
   selector: 'app-root',
   imports: [FormsModule, Galeria, Icono, LocalCard, Mapa, OrigenPanel, Sello, VisorFotos],
@@ -53,14 +60,23 @@ const CLAVE_VISTA = 'ruta-tapas:vista';
     '(window:popstate)': 'alNavegar($event)',
     // Safari en iOS ignora user-scalable=no: el pellizco para hacer zoom se bloquea aquí.
     '(document:gesturestart)': '$event.preventDefault()',
+    '(document:keydown.escape)': 'menuAbierto.set(false)',
+    '(document:click)': 'cerrarMenuFuera($event)',
   },
 })
 export class App {
   /** Es lo que hace scroll, no la ventana (ver app.scss). */
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly ubicacion = inject(Ubicacion);
+  protected readonly tema = inject(Temas);
   protected readonly dias = DIAS;
+  protected readonly temas = TEMAS;
+
+  protected readonly menuAbierto = signal(false);
+  /** El botón de subir, cuando ya no se ve el mapa (en la vista de fotos, el principio de la galería). */
+  protected readonly verSubir = signal(false);
 
   /** undefined mientras carga; null si no se ha podido cargar. */
   protected readonly datos = toSignal(
@@ -153,7 +169,38 @@ export class App {
 
   constructor() {
     const reloj = setInterval(() => this.ahora.set(new Date()), 30_000);
-    inject(DestroyRef).onDestroy(() => clearInterval(reloj));
+    this.destroyRef.onDestroy(() => clearInterval(reloj));
+
+    // A mano y pasivo: con un listener de Angular, cada evento de scroll repasaría toda la vista.
+    afterNextRender(() => {
+      const alHacerScroll = () => this.verSubir.set(this.pasadoElMapa());
+      this.host.addEventListener('scroll', alHacerScroll, { passive: true });
+      this.destroyRef.onDestroy(() => this.host.removeEventListener('scroll', alHacerScroll));
+    });
+  }
+
+  /**
+   * Si el principio de los resultados y el mapa (en el móvil va encima de la lista; en escritorio,
+   * a su lado, así que hay que bajar lo que mide) han quedado por encima de la cabecera.
+   */
+  private pasadoElMapa(): boolean {
+    const resultados = this.host.querySelector<HTMLElement>('.resultados, app-galeria');
+    if (!resultados || this.detalle() !== null) return false;
+    const mapa = resultados.querySelector<HTMLElement>('app-mapa');
+    const final = resultados.getBoundingClientRect().top + (mapa?.offsetHeight ?? 0);
+    return final < this.host.querySelector('.cabecera')!.getBoundingClientRect().bottom;
+  }
+
+  protected subir(): void {
+    const suave = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.host.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
+  }
+
+  /** Pinchar fuera del menú lo cierra (el botón del menú ya lo abre y cierra por su cuenta). */
+  protected cerrarMenuFuera(evento: MouseEvent): void {
+    const objetivo = evento.target as Element | null;
+    if (objetivo?.closest('.menu, .boton-menu')) return;
+    this.menuAbierto.set(false);
   }
 
   /** Locales que sirven tapas ahora mismo. */
@@ -181,6 +228,7 @@ export class App {
   }
 
   protected cambiarVista(vista: Vista): void {
+    this.menuAbierto.set(false);
     if (this.detalle() !== null) history.back();
     else if (vista !== this.vista()) this.host.scrollTo({ top: 0 });
     this.vista.set(vista);

@@ -117,7 +117,9 @@ describe('App', () => {
   it('en la vista «Fotos» abre un local y vuelve a la galería', async () => {
     Element.prototype.scrollTo = () => {}; // jsdom no lo implementa
     const { el, pulsar } = await arrancar();
-    await pulsar('.vistas button', 'Fotos');
+    await pulsar('.boton-menu');
+    await pulsar('.menu button', 'Fotos');
+    expect(el.querySelector('.menu')).toBeNull();
     expect(el.querySelector('app-local-card')).toBeNull();
     expect(el.querySelectorAll('app-galeria li').length).toBe(2);
 

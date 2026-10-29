@@ -96,7 +96,7 @@ const RADIO = 12;
       padding: 0;
       border: 0;
       border-radius: 50%;
-      background: #fff;
+      background: var(--superficie);
       color: var(--texto);
       font-size: 1.25rem;
       box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);

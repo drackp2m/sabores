@@ -18,6 +18,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Sabores" />
     <meta name="application-name" content="Sabores" />
+    <!-- El tema elegido (tema.ts), antes de pintar nada, para no ver un destello del otro. -->
+    <script>
+      try {
+        const tema = localStorage.getItem('ruta-tapas:tema');
+        if (tema === 'claro' || tema === 'oscuro') document.documentElement.dataset.tema = tema;
+      } catch {}
+    </script>
   </head>
   <body>
     <app-root></app-root>

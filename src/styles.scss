@@ -12,8 +12,11 @@
 }
 
 :root {
-  // La cabecera es del mismo color en los dos temas, como la barra de estado (theme-color).
-  --cabecera: #b4441b;
+  // El color de la marca, igual en los dos temas y siempre con texto blanco encima: la cabecera (como
+  // la barra de estado, theme-color), los botones y los números de los locales. --acento es para
+  // texto (enlaces, «Ver más»…), y en oscuro se aclara para leerse bien.
+  --marca: #b4441b;
+  --marca-oscuro: #973815;
   --fondo: #faf6f0;
   --superficie: #fff;
   --texto: #2a211b;
@@ -21,7 +24,6 @@
   --borde: #e8dfd3;
   --borde-control: #d9ccbc;
   --acento: #b4441b;
-  --acento-oscuro: #973815;
   --acento-suave: #fbe9df;
   --verde: #2f7d4a;
   --verde-suave: #e3f2e8;
@@ -42,12 +44,10 @@
   color-scheme: light;
 }
 
-// El acento, el de la cabecera con un poco de blanco para que se lea mejor sobre fondo oscuro (y al
-// pasar por encima, el de la cabecera tal cual). Las sombras, mucho más marcadas (y con un filo
-// claro) para verse sobre negro.
+// El acento, el de la marca con un poco de blanco para que se lea mejor sobre fondo oscuro. Las
+// sombras, mucho más marcadas (y con un filo claro) para verse sobre negro.
 @mixin paleta-oscura {
-  --acento: color-mix(in srgb, var(--cabecera) 88%, #fff);
-  --acento-oscuro: var(--cabecera);
+  --acento: color-mix(in srgb, var(--marca) 88%, #fff);
   --fondo: #17120f;
   --superficie: #221b17;
   --texto: #f0e7df;
@@ -90,7 +90,7 @@
 html {
   overflow: hidden;
   overscroll-behavior: none;
-  background: linear-gradient(var(--cabecera) 50%, var(--fondo) 50%) var(--cabecera);
+  background: linear-gradient(var(--marca) 50%, var(--fondo) 50%) var(--marca);
   // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
   touch-action: pan-x pan-y;
 }
@@ -189,9 +189,9 @@ button {
   gap: 0.4rem;
   height: var(--alto-control);
   padding: 0 0.9rem;
-  border: 1px solid var(--acento);
+  border: 1px solid var(--marca);
   border-radius: 8px;
-  background: var(--acento);
+  background: var(--marca);
   color: #fff;
   font-weight: 600;
   white-space: nowrap;
@@ -201,8 +201,8 @@ button {
     border-color 0.15s;
 
   &:hover:not(:disabled) {
-    background: var(--acento-oscuro);
-    border-color: var(--acento-oscuro);
+    background: var(--marca-oscuro);
+    border-color: var(--marca-oscuro);
   }
 
   &:disabled {
@@ -212,11 +212,11 @@ button {
 
   &.secundario {
     background: var(--superficie);
-    color: var(--acento);
+    color: var(--marca);
 
     &:hover:not(:disabled) {
       background: var(--acento-suave);
-      border-color: var(--acento);
+      border-color: var(--marca);
     }
   }
 
@@ -255,7 +255,7 @@ button {
     &.activa,
     &.activa:hover:not(:disabled) {
       background: var(--superficie);
-      color: var(--acento);
+      color: var(--marca);
       box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
     }
   }

@@ -73,23 +73,37 @@
   }
 
   <details #horario>
-    <summary (click)="alternarHorario($event, horario)">
+    <summary [class.abierto]="horarioAbierto()" (click)="alternarHorario($event, horario)">
       <span>Horario de tapas</span>
       @if (estado(); as estado) {
         <app-estado-horario [estado]="estado" [ahora]="ahora()" [llegada]="llegada()" />
       }
     </summary>
     <dl>
-      @for (d of dias; track d.id) {
+      <!-- Rejilla: día · mañana (a la derecha) · punto · tarde (a la izquierda) · relleno hasta el final. -->
+      @for (d of semana(); track d.id; let fila = $index) {
         @let esHoy = d.id === hoy();
         <dt
           [class.activo]="d.id === dia()"
           [class.hoy]="esHoy"
           [attr.aria-current]="esHoy ? 'date' : null"
+          [attr.data-fila]="fila"
         >
           {{ d.nombre }}
         </dt>
-        <dd [class.hoy]="esHoy">{{ formatearFranjas(local().schedule[d.id]) }}</dd>
+        @if (d.manana || d.tarde) {
+          <dd class="manana" [class.hoy]="esHoy" [attr.data-fila]="fila">{{ d.manana }}</dd>
+          <!-- El punto, con su aire, solo si hay dos franjas: si no hay ninguno, la columna no ocupa nada. -->
+          <dd class="separador" [class.hoy]="esHoy" [attr.data-fila]="fila" aria-hidden="true">
+            @if (d.manana && d.tarde) {
+              <span>·</span>
+            }
+          </dd>
+          <dd class="tarde" [class.hoy]="esHoy" [attr.data-fila]="fila">{{ d.tarde }}</dd>
+        } @else {
+          <dd class="sin-tapas" [class.hoy]="esHoy" [attr.data-fila]="fila">Sin tapas</dd>
+        }
+        <dd class="relleno" [class.hoy]="esHoy" [attr.data-fila]="fila" aria-hidden="true"></dd>
       }
     </dl>
   </details>

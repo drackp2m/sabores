@@ -44,7 +44,7 @@ header {
   margin-left: calc(-1rem - 1px);
   padding: 0 0.5rem 0 0.4rem;
   border-radius: 0 999px 999px 0;
-  background: var(--acento);
+  background: var(--marca);
   color: #fff;
   font-weight: 700;
 }
@@ -197,35 +197,66 @@ summary {
     transition: transform 0.15s;
   }
 
-  [open] > &::before {
-    transform: rotate(45deg);
+  // Abierta, apunta hacia abajo y sube un poco para quedar centrada con el texto.
+  &.abierto::before {
+    transform: translateY(-0.12rem) rotate(45deg);
   }
 }
 
-// Padding y no margin arriba, para que entre en la altura que se anima al abrir y cerrar. A los
-// lados sobresale lo que se rellenan las celdas, para que el texto siga alineado con el resto y el
-// resaltado de hoy tenga aire.
+// Rejilla de cinco columnas: el día; la franja de la mañana, a la derecha; el punto, centrado; la
+// de la tarde, a la izquierda (así el punto queda siempre en el mismo sitio), y un relleno con el
+// resto del ancho, para que el resaltado de hoy llegue hasta el final. Una columna sin nada en
+// ningún día (p. ej. sin mañanas) no ocupa nada. Padding y no margin arriba, para que entre en la
+// altura que se anima al abrir y cerrar; a los lados sobresale lo que se rellenan las celdas, para
+// que el texto siga alineado con el resto y el resaltado tenga aire.
 dl {
   display: grid;
-  grid-template-columns: max-content 1fr;
+  grid-template-columns: repeat(4, max-content) 1fr;
   row-gap: 0.15rem;
   margin: 0 -0.5rem;
   padding-top: 0.5rem;
   overflow: hidden;
+  font-variant-numeric: tabular-nums;
 }
 
 dt,
 dd {
-  padding: 0.1rem 0.5rem;
+  margin: 0;
+  padding: 0.1rem 0;
 }
 
-// El hueco entre el día y su horario.
 dt {
-  padding-right: 0.75rem;
+  padding: 0.1rem 1.25rem 0.1rem 0.5rem;
+  color: var(--suave);
+
+  &.activo {
+    color: var(--texto);
+    font-weight: 700;
+  }
 }
 
-dd {
-  padding-left: 0;
+.manana {
+  text-align: right;
+}
+
+.separador {
+  color: var(--suave);
+  text-align: center;
+
+  span {
+    padding-inline: 0.3rem;
+  }
+}
+
+// Centrado en el hueco de las dos franjas y el punto, sin contar el relleno.
+.sin-tapas {
+  grid-column: 2 / 5;
+  color: var(--suave);
+  text-align: center;
+}
+
+.relleno {
+  padding-right: 0.5rem;
 }
 
 // Hoy: la fila entera sobre el color suave del acento, con el día en el color del acento.
@@ -240,21 +271,8 @@ dt.hoy {
   font-weight: 700;
 }
 
-dd.hoy {
+.relleno.hoy {
   border-radius: 0 6px 6px 0;
-}
-
-dt {
-  color: var(--suave);
-
-  &.activo {
-    color: var(--texto);
-    font-weight: 700;
-  }
-}
-
-dd {
-  margin: 0;
 }
 
 footer {

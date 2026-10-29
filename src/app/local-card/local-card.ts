@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 
 import { EstadoHorario } from '../estado-horario/estado-horario';
 import { Icono } from '../icono/icono';
@@ -13,6 +13,7 @@ import {
   formatearDistancia,
   formatearDuracion,
   formatearFranjas,
+  repartirFranjas,
 } from '../locales';
 import { Plegable } from '../plegable/plegable';
 import { Sello, selloGluten } from '../sello/sello';
@@ -38,7 +39,15 @@ export class LocalCard {
   protected readonly dias = DIAS;
   /** Para resaltar el día de hoy en el horario. */
   protected readonly hoy = computed(() => diaDe(this.ahora()));
-  protected readonly formatearFranjas = formatearFranjas;
+  /** Cada día con sus franjas repartidas en columnas (mañana · tarde). */
+  protected readonly semana = computed(() =>
+    DIAS.map((dia) => ({ ...dia, ...repartirFranjas(this.local().schedule[dia.id]) })),
+  );
+  /**
+   * Lo que se ha pedido: la flecha gira en cuanto se pulsa, aunque al cerrar el horario siga abierto
+   * hasta que termina de recogerse.
+   */
+  protected readonly horarioAbierto = signal(false);
   protected readonly selloGluten = selloGluten;
   private readonly visor = inject(Visor);
   private plegando = false;
@@ -70,12 +79,13 @@ export class LocalCard {
    * anterior; al cerrar, el hueco se recoge sin más.
    */
   protected alternarHorario(evento: Event, detalles: HTMLDetailsElement): void {
+    const abrir = !detalles.open || this.plegando;
+    this.horarioAbierto.set(abrir);
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     evento.preventDefault();
     const lista = detalles.querySelector('dl')!;
     // Si se pulsa a medio camino, se sigue desde la altura que tenga en ese momento.
     const desde = detalles.open ? lista.getBoundingClientRect().height : 0;
-    const abrir = !detalles.open || this.plegando;
     for (const animacion of lista.getAnimations({ subtree: true })) animacion.cancel();
 
     if (abrir) {
@@ -86,11 +96,11 @@ export class LocalCard {
         duration: 400,
         easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
       });
-      // dt y dd van en parejas: cada fila (día y horario) entra a la vez.
-      [...lista.children].forEach((celda, i) =>
+      // Todas las celdas de una fila (data-fila) entran a la vez.
+      [...lista.children].forEach((celda) =>
         celda.animate([{ opacity: 0 }, {}], {
           duration: 320,
-          delay: 60 + Math.floor(i / 2) * 45,
+          delay: 60 + Number((celda as HTMLElement).dataset['fila']) * 45,
           easing: 'ease-out',
           fill: 'backwards',
         }),

@@ -17,6 +17,7 @@ import {
   ordenarBebidas,
   ordenarPor,
   pastillaEstado,
+  repartirFranjas,
   tipoEstado,
   tiposDeBebida,
 } from './locales';
@@ -331,5 +332,22 @@ describe('formatos', () => {
     expect(formatearDuracion(135)).toBe('2 h 15 min');
     expect(formatearDistancia(847)).toBe('850 m');
     expect(formatearDistancia(1234)).toBe('1,2 km');
+  });
+
+  it('reparte las franjas de un día en mañana y tarde', () => {
+    const franja = (open: string, close: string | null): Franja => ({ open, close });
+    expect(repartirFranjas([franja('12:00', '16:00'), franja('19:00', null)])).toEqual({
+      manana: '12:00–16:00',
+      tarde: '19:00–cierre',
+    });
+    expect(repartirFranjas([franja('13:00', '15:00')])).toEqual({
+      manana: '13:00–15:00',
+      tarde: null,
+    });
+    expect(repartirFranjas([franja('19:00', '21:00')])).toEqual({
+      manana: null,
+      tarde: '19:00–21:00',
+    });
+    expect(repartirFranjas([])).toEqual({ manana: null, tarde: null });
   });
 });

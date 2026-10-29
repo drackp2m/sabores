@@ -116,10 +116,10 @@ const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').ma
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid var(--acento);
+        border: 1px solid var(--marca);
         border-radius: 8px;
         background: var(--superficie);
-        color: var(--acento);
+        color: var(--marca);
         font-size: 1.1rem;
 
         &:hover {

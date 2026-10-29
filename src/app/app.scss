@@ -20,7 +20,10 @@
   position: sticky;
   top: 0;
   z-index: 1100; // Por encima de los controles de Leaflet (1000).
-  background: var(--cabecera);
+  // El borde, del color del fondo, la separa de lo que pase por debajo con su mismo color (botones,
+  // números de los locales).
+  border-bottom: 1px solid var(--fondo);
+  background: var(--marca);
   color: #fff;
   padding: env(safe-area-inset-top, 0px) var(--margen-derecho) 0 var(--margen-izquierdo);
 
@@ -56,6 +59,7 @@
 
 .boton-menu {
   width: 2.5rem;
+  color: #fff;
   margin-right: -0.5rem; // El icono, alineado con el borde como el resto del contenido.
   padding: 0;
   border-color: transparent;

@@ -188,7 +188,7 @@ import { Visor } from '../visor/visor';
       margin-left: calc(-0.6rem - 1px);
       padding: 0 0.45rem 0 0.35rem;
       border-radius: 0 999px 999px 0;
-      background: var(--acento);
+      background: var(--marca);
       color: #fff;
       font-size: 0.85rem;
       font-weight: 700;

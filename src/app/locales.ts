@@ -129,7 +129,35 @@ export function abiertoEntre(franjas: readonly Franja[], desde: string, hasta: s
 
 export function formatearFranjas(franjas: readonly Franja[]): string {
   if (!franjas.length) return 'Sin tapas';
-  return franjas.map((f) => `${f.open}–${f.close ?? 'cierre'}`).join(' · ');
+  return franjas.map(formatearFranja).join(' · ');
+}
+
+function formatearFranja(franja: Franja): string {
+  return `${franja.open}–${franja.close ?? 'cierre'}`;
+}
+
+/** Las franjas de un día en dos columnas, la de la mañana (o mediodía) y la de la tarde (o noche). */
+export interface FranjasDia {
+  manana: string | null;
+  tarde: string | null;
+}
+
+/**
+ * Reparte las franjas de un día para alinearlas en columnas: con dos, una en cada; con una sola, en
+ * la de la mañana si empieza antes de las 15:00 y si no en la de la tarde.
+ */
+export function repartirFranjas(franjas: readonly Franja[]): FranjasDia {
+  if (!franjas.length) return { manana: null, tarde: null };
+  if (franjas.length === 1) {
+    const texto = formatearFranja(franjas[0]);
+    return franjas[0].open < '15:00'
+      ? { manana: texto, tarde: null }
+      : { manana: null, tarde: texto };
+  }
+  return {
+    manana: formatearFranja(franjas[0]),
+    tarde: franjas.slice(1).map(formatearFranja).join(' · '),
+  };
 }
 
 /** Tipos de bebida con cuántos locales la sirven: primero los más habituales. */

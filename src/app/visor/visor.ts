@@ -121,7 +121,7 @@ export class VisorFotos {
       if (!imagen || !foto) return;
       foto.origen.style.visibility = 'hidden';
       this.boton()!.nativeElement.focus({ preventScroll: true });
-      this.animar(foto, 'normal');
+      this.animar(foto, true);
     });
   }
 
@@ -129,15 +129,19 @@ export class VisorFotos {
     const foto = this.visor.foto();
     if (!foto || this.cerrando) return;
     this.cerrando = true;
-    await this.animar(foto, 'reverse');
+    await this.animar(foto, false);
     foto.origen.style.visibility = '';
     foto.origen.focus({ preventScroll: true });
     this.visor.foto.set(null);
     this.cerrando = false;
   }
 
-  /** De la miniatura a la foto grande ('normal') o al revés ('reverse'). */
-  private animar(foto: FotoAmpliada, direction: PlaybackDirection): Promise<unknown> {
+  /**
+   * De la miniatura a la foto grande (abrir) o al revés. Se invierten los fotogramas y no la
+   * animación (direction: 'reverse'), que también invertiría la curva: así siempre arranca rápido y
+   * frena al llegar.
+   */
+  private animar(foto: FotoAmpliada, abrir: boolean): Promise<unknown> {
     const imagen = this.imagen()!.nativeElement;
     const desde = foto.origen.getBoundingClientRect();
     const hasta = imagen.getBoundingClientRect();
@@ -145,24 +149,24 @@ export class VisorFotos {
     const opciones: KeyframeAnimationOptions = {
       duration: reducido ? 0 : DURACION,
       easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-      direction,
       fill: 'both',
     };
+    const sentido = (fotogramas: Keyframe[]) => (abrir ? fotogramas : fotogramas.reverse());
     return Promise.all(
       [
         imagen.animate(
-          [
+          sentido([
             {
               transform: `translate(${desde.left - hasta.left}px, ${desde.top - hasta.top}px)
                 scale(${desde.width / hasta.width}, ${desde.height / hasta.height})`,
             },
             { transform: 'none' },
-          ],
+          ]),
           opciones,
         ),
         // Solo opacidad: animar el desenfoque en sí va a saltos en el móvil.
-        this.fondo()!.nativeElement.animate([{ opacity: 0 }, {}], opciones),
-        this.boton()!.nativeElement.animate([{ opacity: 0 }, {}], opciones),
+        this.fondo()!.nativeElement.animate(sentido([{ opacity: 0 }, {}]), opciones),
+        this.boton()!.nativeElement.animate(sentido([{ opacity: 0 }, {}]), opciones),
       ].map((animacion) => animacion.finished),
     );
   }

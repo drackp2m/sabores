@@ -1,6 +1,9 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 
+import { Almacen } from '../almacen';
 import { EstadoHorario } from '../estado-horario/estado-horario';
+import { Estrellas } from '../estrellas/estrellas';
+import { Favorito } from '../favorito/favorito';
 import { Icono } from '../icono/icono';
 import {
   DIAS,
@@ -9,6 +12,7 @@ import {
   Llegada,
   Local,
   Tapa,
+  claveTapa,
   diaDe,
   formatearDistancia,
   formatearDuracion,
@@ -21,7 +25,7 @@ import { Visor } from '../visor/visor';
 
 @Component({
   selector: 'app-local-card',
-  imports: [EstadoHorario, Icono, Plegable, Sello],
+  imports: [EstadoHorario, Estrellas, Favorito, Icono, Plegable, Sello],
   templateUrl: './local-card.html',
   styleUrl: './local-card.scss',
 })
@@ -49,6 +53,8 @@ export class LocalCard {
    */
   protected readonly horarioAbierto = signal(false);
   protected readonly selloGluten = selloGluten;
+  protected readonly claveTapa = claveTapa;
+  protected readonly valoraciones = inject(Almacen).valoraciones;
   private readonly visor = inject(Visor);
   private plegando = false;
 
@@ -118,10 +124,6 @@ export class LocalCard {
   }
 
   protected ampliar(evento: Event, tapa: Tapa): void {
-    this.visor.foto.set({
-      src: `data/${tapa.photo}`,
-      alt: tapa.name,
-      origen: evento.currentTarget as HTMLElement,
-    });
+    this.visor.ampliar(evento.currentTarget as HTMLElement, this.local().number, tapa);
   }
 }

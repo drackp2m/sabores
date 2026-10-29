@@ -35,11 +35,16 @@
 
   <ul class="tapas">
     @for (tapa of local().tapas; track tapa.number) {
+      @let estrellas = valoraciones().get(claveTapa(local().number, tapa.number)) ?? 0;
       <li>
         <button
           type="button"
           class="foto"
-          [attr.aria-label]="'Ampliar la foto de ' + tapa.name"
+          [attr.aria-label]="
+            'Ampliar y valorar la foto de ' +
+            tapa.name +
+            (estrellas ? ' (' + estrellas + ' de 5 estrellas)' : ' (sin valorar)')
+          "
           (click)="ampliar($event, tapa)"
         >
           <img
@@ -49,6 +54,7 @@
             width="690"
             height="439"
           />
+          <app-estrellas class="estrellas" aria-hidden="true" [valor]="estrellas" />
         </button>
         <div class="cabeza">
           <h3>{{ tapa.name }}</h3>
@@ -108,19 +114,19 @@
     </dl>
   </details>
 
-  @if (local().phone || local().instagram) {
-    <footer>
-      @if (local().phone; as telefono) {
-        <a [href]="'tel:' + telefono"><app-icono nombre="telefono" />{{ telefono }}</a>
-      }
-      @if (local().instagram; as instagram) {
-        <a
-          [href]="'https://www.instagram.com/' + instagram.replace('@', '')"
-          target="_blank"
-          rel="noopener"
-          ><app-icono nombre="instagram" />{{ instagram }}</a
-        >
-      }
-    </footer>
-  }
+  <!-- Abajo a la derecha, el corazón de favorito. -->
+  <footer>
+    @if (local().phone; as telefono) {
+      <a [href]="'tel:' + telefono"><app-icono nombre="telefono" />{{ telefono }}</a>
+    }
+    @if (local().instagram; as instagram) {
+      <a
+        [href]="'https://www.instagram.com/' + instagram.replace('@', '')"
+        target="_blank"
+        rel="noopener"
+        ><app-icono nombre="instagram" />{{ instagram }}</a
+      >
+    }
+    <app-favorito [local]="local()" />
+  </footer>
 </article>

@@ -212,12 +212,30 @@
   }
 
   &.hora {
-    flex: 1 1 13rem;
+    flex: 1 1 12.5rem; // Junto al día también en un móvil de 375 px.
   }
 
-  &.sello {
-    flex: 0 1 auto;
+  &.solo {
+    flex: 1 1 auto;
   }
+}
+
+// Las dos casillas, en la misma fila si caben, repartiéndose el ancho (en escritorio, sin pasar de
+// 15rem); si no, cada una en la suya.
+.casillas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .control {
+    flex: 1 1 auto;
+    max-width: 15rem;
+  }
+}
+
+.corazon {
+  color: var(--corazon);
+  --relleno-icono: currentColor;
 }
 
 .rango {

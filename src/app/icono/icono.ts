@@ -1,6 +1,10 @@
 import { Component, computed, input } from '@angular/core';
 
-/** Trazos de cada icono en un viewBox de 24×24, con línea de 2 y extremos redondeados. */
+/**
+ * Trazos de cada icono en un viewBox de 24×24, con línea de 2 (o la de --trazo-icono) y extremos
+ * redondeados. Sin relleno, salvo que se le dé uno con --relleno-icono (la estrella valorada, el
+ * corazón de los favoritos).
+ */
 const ICONOS = {
   pin: [
     'M12 21.5s-6.75-5.85-6.75-11.25a6.75 6.75 0 0 1 13.5 0c0 5.4-6.75 11.25-6.75 11.25z',
@@ -60,6 +64,12 @@ const ICONOS = {
   ampliar: ['M15 3h6v6', 'M9 21H3v-6', 'M21 3l-7 7', 'M3 21l7-7'],
   reducir: ['M4 14h6v6', 'M20 10h-6V4', 'M14 10l7-7', 'M3 21l7-7'],
   externo: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
+  estrella: [
+    'M12 2.9L14.44 9.54L21.51 9.81L15.95 14.18L17.88 20.99L12 17.05L6.12 20.99L8.05 14.18L2.49 9.81L9.56 9.54z',
+  ],
+  corazon: [
+    'M12 20.25C7.2 16.9 3 13.3 3 9.1C3 6.3 5.1 4.25 7.75 4.25c1.8 0 3.3.95 4.25 2.5c.95-1.55 2.45-2.5 4.25-2.5C18.9 4.25 21 6.3 21 9.1c0 4.2-4.2 7.8-9 11.15z',
+  ],
   // Espiga de trigo en diagonal, tachada en perpendicular.
   sinGluten: [
     'M3 21L17 7',
@@ -104,6 +114,8 @@ export type NombreIcono = keyof typeof ICONOS;
     svg {
       width: 100%;
       height: 100%;
+      fill: var(--relleno-icono, none);
+      stroke-width: var(--trazo-icono, 2);
     }
   `,
 })

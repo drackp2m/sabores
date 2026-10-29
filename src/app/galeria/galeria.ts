@@ -1,18 +1,30 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 
+import { Almacen } from '../almacen';
 import { EstadoHorario } from '../estado-horario/estado-horario';
+import { Estrellas } from '../estrellas/estrellas';
+import { Favorito } from '../favorito/favorito';
 import { Icono } from '../icono/icono';
-import { Estado, Llegada, Local, Tapa, formatearDistancia, formatearDuracion } from '../locales';
+import {
+  Estado,
+  Llegada,
+  Local,
+  Tapa,
+  claveTapa,
+  formatearDistancia,
+  formatearDuracion,
+} from '../locales';
 import { Sello, selloGluten } from '../sello/sello';
 import { Visor } from '../visor/visor';
 
 /**
- * Vista «Fotos»: el nombre del local con sus sellos, cuánto se tarda en llegar, si está abierto y
- * las fotos de sus dos tapas. La tarjeta abre el local y cada foto se amplía.
+ * Vista «Fotos»: el nombre del local con sus sellos y el corazón de favorito, cuánto se tarda en
+ * llegar, si está abierto y las fotos de sus dos tapas con sus estrellas. La tarjeta abre el local y
+ * cada foto se amplía (y ahí se valora).
  */
 @Component({
   selector: 'app-galeria',
-  imports: [EstadoHorario, Icono, Sello],
+  imports: [EstadoHorario, Estrellas, Favorito, Icono, Sello],
   template: `
     <ul>
       @for (ficha of fichas(); track ficha.local.number) {
@@ -20,19 +32,22 @@ import { Visor } from '../visor/visor';
         @let llegada = llegadas().get(local.number);
         @let estado = estados().get(local.number);
         <li>
-          <!-- Su ::after cubre toda la tarjeta, así que se abre el local pinchando en cualquier sitio menos en las fotos. -->
-          <button type="button" class="cabeza" (click)="abrir.emit(local.number)">
+          <div class="cabeza">
             <span class="numero">{{ local.number }}</span>
-            <span class="titulo">
-              <span class="nombre">
-                <span class="texto">{{ local.name }}</span>
+            <div class="titulo">
+              <div class="nombre">
+                <!-- Su ::after cubre toda la tarjeta: se abre el local pinchando en cualquier sitio menos en las fotos y el corazón. -->
+                <button type="button" class="abrir" (click)="abrir.emit(local.number)">
+                  {{ local.name }}
+                </button>
                 @if (ficha.gluten) {
                   <app-sello [tipo]="ficha.gluten" />
                 }
                 @if (ficha.ruta) {
                   <app-sello tipo="ruta" />
                 }
-              </span>
+                <app-favorito [local]="local" />
+              </div>
               @if (llegada || estado) {
                 <span class="datos">
                   @if (llegada) {
@@ -47,16 +62,21 @@ import { Visor } from '../visor/visor';
                   }
                 </span>
               }
-            </span>
-          </button>
+            </div>
+          </div>
           <div class="fotos">
             @for (tapa of local.tapas; track tapa.number) {
+              @let estrellas = valoraciones().get(claveTapa(local.number, tapa.number)) ?? 0;
               <figure>
                 <button
                   type="button"
                   class="foto"
-                  [attr.aria-label]="'Ampliar la foto de ' + tapa.name"
-                  (click)="ampliar($event, tapa)"
+                  [attr.aria-label]="
+                    'Ampliar y valorar la foto de ' +
+                    tapa.name +
+                    (estrellas ? ' (' + estrellas + ' de 5 estrellas)' : ' (sin valorar)')
+                  "
+                  (click)="ampliar($event, local, tapa)"
                 >
                   <img
                     [src]="'data/' + tapa.photo"
@@ -65,6 +85,7 @@ import { Visor } from '../visor/visor';
                     width="690"
                     height="439"
                   />
+                  <app-estrellas class="estrellas" aria-hidden="true" [valor]="estrellas" />
                 </button>
                 <figcaption>{{ tapa.name }}</figcaption>
               </figure>
@@ -104,21 +125,30 @@ import { Visor } from '../visor/visor';
       }
     }
 
-    .cabeza,
-    .cabeza:hover:not(:disabled) {
-      justify-content: flex-start;
+    .cabeza {
+      display: flex;
+      align-items: center;
       gap: 0.5rem;
+    }
+
+    // El nombre, como texto: el botón es para abrir el local desde toda la tarjeta.
+    .abrir,
+    .abrir:hover:not(:disabled) {
+      flex: 1;
+      justify-content: flex-start;
+      min-width: 0;
       height: auto;
       padding: 0;
       border: 0;
       background: none;
       color: var(--texto);
-      font-weight: 400;
+      font-weight: inherit;
       text-align: left;
       white-space: normal;
+      text-wrap: balance;
     }
 
-    .cabeza {
+    .abrir {
       position: static;
 
       &::after {
@@ -147,7 +177,8 @@ import { Visor } from '../visor/visor';
       min-width: 0;
     }
 
-    // Como en las fichas: los sellos a la derecha, centrados con el nombre aunque ocupe varias líneas.
+    // Como en las fichas: los sellos y el corazón a la derecha, centrados con el nombre aunque ocupe
+    // varias líneas.
     .nombre {
       display: flex;
       align-items: center;
@@ -157,10 +188,8 @@ import { Visor } from '../visor/visor';
       line-height: 1.2;
     }
 
-    .texto {
-      flex: 1;
-      min-width: 0;
-      text-wrap: balance;
+    app-favorito {
+      margin-left: 0.1rem;
     }
 
     .datos {
@@ -245,6 +274,15 @@ import { Visor } from '../visor/visor';
         transition: none;
       }
     }
+
+    // Abajo en el centro de la foto (en el visor van a ponerse debajo de ella, en grande).
+    .estrellas {
+      position: absolute;
+      bottom: 0.3rem;
+      left: 50%;
+      font-size: 0.8rem;
+      translate: -50%;
+    }
   `,
 })
 export class Galeria {
@@ -255,7 +293,9 @@ export class Galeria {
   readonly abrir = output<number>();
 
   private readonly visor = inject(Visor);
+  protected readonly valoraciones = inject(Almacen).valoraciones;
 
+  protected readonly claveTapa = claveTapa;
   protected readonly formatearDuracion = formatearDuracion;
   protected readonly formatearDistancia = formatearDistancia;
 
@@ -268,11 +308,7 @@ export class Galeria {
     })),
   );
 
-  protected ampliar(evento: Event, tapa: Tapa): void {
-    this.visor.foto.set({
-      src: `data/${tapa.photo}`,
-      alt: tapa.name,
-      origen: evento.currentTarget as HTMLElement,
-    });
+  protected ampliar(evento: Event, local: Local, tapa: Tapa): void {
+    this.visor.ampliar(evento.currentTarget as HTMLElement, local.number, tapa);
   }
 }

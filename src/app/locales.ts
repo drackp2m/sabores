@@ -82,7 +82,14 @@ export interface Filtros {
   /** Tipo de bebida (Bebida.type). */
   bebida: string;
   rutaDeSabor: boolean;
+  /** Solo los locales marcados con el corazón. */
+  favoritos: boolean;
+  /** Según las tapas valoradas (las que tienen estrellas se dan por probadas). */
+  probadas: Probadas;
 }
+
+/** 'pendientes': le queda alguna tapa sin probar; 'ninguna': no se ha probado ninguna; 'todas': ya están todas. */
+export type Probadas = '' | 'pendientes' | 'ninguna' | 'todas';
 
 export const SIN_FILTROS: Filtros = {
   texto: '',
@@ -92,13 +99,35 @@ export const SIN_FILTROS: Filtros = {
   sinGluten: '',
   bebida: '',
   rutaDeSabor: false,
+  favoritos: false,
+  probadas: '',
 };
 
-export function filtrarLocales(locales: readonly Local[], filtros: Filtros): Local[] {
+/** Lo que ha marcado el usuario (almacen.ts): los locales favoritos y las estrellas de cada tapa. */
+export interface Marcas {
+  favoritos: ReadonlySet<number>;
+  /** Por claveTapa(); sin entrada, sin probar. */
+  valoraciones: ReadonlyMap<string, number>;
+}
+
+export const SIN_MARCAS: Marcas = { favoritos: new Set(), valoraciones: new Map() };
+
+/** Una tapa se identifica por el número de su local y el suyo dentro de él (1 o 2). */
+export function claveTapa(local: number, tapa: number): string {
+  return `${local}-${tapa}`;
+}
+
+export function filtrarLocales(
+  locales: readonly Local[],
+  filtros: Filtros,
+  marcas: Marcas = SIN_MARCAS,
+): Local[] {
   const texto = normalizar(filtros.texto.trim());
-  const { dia, desde, hasta, sinGluten, bebida, rutaDeSabor } = filtros;
+  const { dia, desde, hasta, sinGluten, bebida, rutaDeSabor, favoritos, probadas } = filtros;
   return locales.filter(
     (local) =>
+      (!favoritos || marcas.favoritos.has(local.number)) &&
+      (!probadas || cumpleProbadas(local, probadas, marcas.valoraciones)) &&
       (!texto || textoDe(local).includes(texto)) &&
       (!dia || abiertoEntre(local.schedule[dia], desde, hasta)) &&
       (!sinGluten ||
@@ -109,6 +138,22 @@ export function filtrarLocales(locales: readonly Local[], filtros: Filtros): Loc
       (!bebida || local.drinks.some((b) => b.type === bebida)) &&
       (!rutaDeSabor || local.tapas.some((t) => t.castelloRutaDeSabor)),
   );
+}
+
+function cumpleProbadas(
+  local: Local,
+  probadas: Exclude<Probadas, ''>,
+  valoraciones: ReadonlyMap<string, number>,
+): boolean {
+  const probada = (t: Tapa) => valoraciones.has(claveTapa(local.number, t.number));
+  switch (probadas) {
+    case 'pendientes':
+      return !local.tapas.every(probada);
+    case 'ninguna':
+      return !local.tapas.some(probada);
+    case 'todas':
+      return local.tapas.every(probada);
+  }
 }
 
 /**

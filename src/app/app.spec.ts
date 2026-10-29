@@ -2,15 +2,18 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
+import { Almacen } from './almacen';
 import { App } from './app';
 import { DatosRuta, Local } from './locales';
 
-// jsdom no tiene ResizeObserver (texto plegable de las fichas) ni animate y matchMedia (visor de fotos).
+// jsdom no tiene ResizeObserver (texto plegable de las fichas), animate y getAnimations (visor de
+// fotos, estrellas, corazón) ni matchMedia. Tampoco IndexedDB: el almacén se queda en memoria.
 globalThis.ResizeObserver ??= class {
   observe() {}
   disconnect() {}
 } as unknown as typeof ResizeObserver;
 Element.prototype.animate ??= () => ({ finished: Promise.resolve() }) as unknown as Animation;
+Element.prototype.getAnimations ??= () => [];
 window.matchMedia ??= () => ({ matches: false }) as MediaQueryList;
 
 function local(number: number, name: string, drinks: [string, string][]): Local {
@@ -133,7 +136,7 @@ describe('App', () => {
     await new Promise((r) => setTimeout(r));
     expect(el.querySelector('app-local-card')).toBeNull();
     expect(el.querySelectorAll('app-galeria li').length).toBe(2);
-    expect(localStorage.getItem('ruta-tapas:vista')).toBe('fotos');
+    expect(TestBed.inject(Almacen).ajuste('vista')).toBe('fotos');
   });
 
   it('amplía una foto al pincharla y la cierra pinchando en cualquier sitio', async () => {
@@ -158,6 +161,91 @@ describe('App', () => {
     await fixture.whenStable();
     expect(el.querySelector('app-visor-fotos [role=dialog]')).toBeNull();
     expect(el.querySelector('.menu')).not.toBeNull();
+  });
+
+  it('valora una tapa en la foto ampliada, con las estrellas o el teclado', async () => {
+    const { fixture, el, pulsar } = await arrancar();
+    const estrellas = () => [...el.querySelectorAll('app-visor-fotos app-estrellas button')];
+    const marcada = () =>
+      estrellas().findIndex((b) => b.getAttribute('aria-pressed') === 'true') + 1;
+    await pulsar('app-local-card .foto');
+    expect(marcada()).toBe(0);
+    expect(el.querySelector('app-visor-fotos .frase')!.textContent).toContain(
+      '¿Qué te ha parecido?',
+    );
+
+    await pulsar('app-visor-fotos app-estrellas button:nth-child(4)');
+    expect(marcada()).toBe(4);
+    expect(estrellas()[3].getAttribute('aria-label')).toBe('4 estrellas: Esto está increíble');
+    // Pulsar las estrellas no cierra la foto.
+    expect(el.querySelector('app-visor-fotos [role=dialog]')).not.toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: '2' }));
+    await fixture.whenStable();
+    expect(marcada()).toBe(2);
+
+    await pulsar('app-visor-fotos .fondo');
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+    expect(el.querySelector('app-local-card .foto')!.getAttribute('aria-label')).toBe(
+      'Ampliar y valorar la foto de TAPA 1.1 (2 de 5 estrellas)',
+    );
+    expect(TestBed.inject(Almacen).valoraciones().get('1-1')).toBe(2);
+
+    // Pulsar la que ya está marcada quita la valoración.
+    await pulsar('app-local-card .foto');
+    await pulsar('app-visor-fotos app-estrellas button:nth-child(2)');
+    expect(marcada()).toBe(0);
+    expect(TestBed.inject(Almacen).valoraciones().has('1-1')).toBe(false);
+  });
+
+  it('marca favoritos y filtra por ellos y por las tapas probadas', async () => {
+    const { fixture, el, pulsar } = await arrancar();
+    const nombres = () => [...el.querySelectorAll('app-local-card h2')].map((h) => h.textContent);
+    const corazon = (n: number) => el.querySelectorAll('app-local-card app-favorito button')[n];
+
+    await pulsar('app-local-card:nth-of-type(2) app-favorito button');
+    expect(corazon(1).getAttribute('aria-pressed')).toBe('true');
+    expect(corazon(0).getAttribute('aria-pressed')).toBe('false');
+    await pulsar('.campo input[type=checkbox]');
+    expect(nombres()).toEqual(['CÚPULA']);
+    await pulsar('.campo input[type=checkbox]');
+
+    // Las dos tapas de ORIGEN, probadas (valoradas).
+    const almacen = TestBed.inject(Almacen);
+    almacen.valorar(1, 1, 5);
+    almacen.valorar(1, 2, 3);
+    const probadas = [...el.querySelectorAll('.campo')]
+      .find((c) => c.textContent!.includes('Probadas'))!
+      .querySelector('select')!;
+    probadas.value = 'pendientes';
+    probadas.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(nombres()).toEqual(['CÚPULA']);
+    probadas.value = 'todas';
+    probadas.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(nombres()).toEqual(['ORIGEN']);
+
+    await pulsar('.acciones button', 'Limpiar');
+    expect(nombres()).toEqual(['ORIGEN', 'CÚPULA']);
+  });
+
+  it('al volver a abrir la app, los filtros, el orden y la vista son los que se dejaron', async () => {
+    const primera = await arrancar();
+    const buscar = primera.el.querySelector<HTMLInputElement>('.campo.texto input')!;
+    buscar.value = 'cúpula';
+    buscar.dispatchEvent(new Event('input'));
+    await primera.fixture.whenStable();
+    expect(primera.el.querySelectorAll('app-local-card').length).toBe(1);
+    await primera.pulsar('.boton-menu');
+    await primera.pulsar('.menu button', 'Fotos');
+    primera.fixture.destroy();
+
+    // El almacén es el mismo (en la app, el que se carga de IndexedDB al arrancar).
+    const { el } = await arrancar();
+    expect(el.querySelector<HTMLInputElement>('.campo.texto input')!.value).toBe('cúpula');
+    expect(el.querySelectorAll('app-galeria li').length).toBe(1);
   });
 
   it('pinta los iconos como SVG', async () => {

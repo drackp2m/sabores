@@ -5,6 +5,7 @@ import {
   Injector,
   afterNextRender,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -13,6 +14,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, map, of } from 'rxjs';
 
+import { Almacen } from './almacen';
 import { Galeria } from './galeria/galeria';
 import { Icono, NombreIcono } from './icono/icono';
 import { LocalCard } from './local-card/local-card';
@@ -22,6 +24,8 @@ import {
   Dia,
   Filtros,
   Llegada,
+  Probadas,
+  SIN_FILTROS,
   claveCierre,
   diaDe,
   estadoHorario,
@@ -45,6 +49,7 @@ type Orden = 'numero' | 'cercania' | 'cierre';
 const ESCRITORIO = '(min-width: 960px)';
 /** Igual que en styles.scss: en pantallas táctiles hace scroll app-root; en el resto, el documento. */
 const TACTIL = '(hover: none) and (pointer: coarse)';
+/** Donde se guardaba la vista antes de tener el almacén. */
 const CLAVE_VISTA = 'ruta-tapas:vista';
 
 const TEMAS: readonly { tema: Tema; nombre: string; icono: NombreIcono }[] = [
@@ -73,6 +78,8 @@ export class App {
   protected readonly ubicacion = inject(Ubicacion);
   protected readonly tema = inject(Temas);
   private readonly visor = inject(Visor);
+  /** Ya cargado al arrancar (app.config.ts): los filtros, el orden y la vista empiezan como se dejaron. */
+  private readonly almacen = inject(Almacen);
   protected readonly dias = DIAS;
   protected readonly temas = TEMAS;
 
@@ -90,16 +97,35 @@ export class App {
       ),
   );
 
-  protected readonly texto = signal('');
-  protected readonly dia = signal<Dia | ''>('');
-  protected readonly desde = signal('');
-  protected readonly hasta = signal('');
-  protected readonly sinGluten = signal<Filtros['sinGluten']>('');
-  protected readonly bebida = signal('');
-  protected readonly rutaDeSabor = signal(false);
+  /** Con los que falten (los que se hayan añadido después de guardarlos), vacíos. */
+  private readonly guardados: Filtros = {
+    ...SIN_FILTROS,
+    ...this.almacen.ajuste<Partial<Filtros>>('filtros'),
+  };
+  protected readonly texto = signal(this.guardados.texto);
+  protected readonly dia = signal<Dia | ''>(this.guardados.dia);
+  protected readonly desde = signal(this.guardados.desde);
+  protected readonly hasta = signal(this.guardados.hasta);
+  protected readonly sinGluten = signal<Filtros['sinGluten']>(this.guardados.sinGluten);
+  protected readonly bebida = signal(this.guardados.bebida);
+  protected readonly rutaDeSabor = signal(this.guardados.rutaDeSabor);
+  protected readonly favoritos = signal(this.guardados.favoritos);
+  protected readonly probadas = signal<Probadas>(this.guardados.probadas);
 
-  protected readonly orden = signal<Orden>('numero');
-  protected readonly vista = signal<Vista>(leerVista());
+  private readonly filtros = computed<Filtros>(() => ({
+    texto: this.texto(),
+    dia: this.dia(),
+    desde: this.desde(),
+    hasta: this.hasta(),
+    sinGluten: this.sinGluten(),
+    bebida: this.bebida(),
+    rutaDeSabor: this.rutaDeSabor(),
+    favoritos: this.favoritos(),
+    probadas: this.probadas(),
+  }));
+
+  protected readonly orden = signal<Orden>(this.almacen.ajuste<Orden>('orden') ?? 'numero');
+  protected readonly vista = signal<Vista>(this.almacen.ajuste<Vista>('vista') ?? vistaAnterior());
   /** Local abierto desde la vista de fotos. */
   protected readonly detalle = signal<number | null>(null);
   /** Local cuyo marcador se acaba de pinchar, para resaltarlo en la lista. */
@@ -109,14 +135,9 @@ export class App {
   protected readonly bebidas = computed(() => tiposDeBebida(this.datos()?.locales ?? []));
 
   protected readonly filtrados = computed(() =>
-    filtrarLocales(this.datos()?.locales ?? [], {
-      texto: this.texto(),
-      dia: this.dia(),
-      desde: this.desde(),
-      hasta: this.hasta(),
-      sinGluten: this.sinGluten(),
-      bebida: this.bebida(),
-      rutaDeSabor: this.rutaDeSabor(),
+    filtrarLocales(this.datos()?.locales ?? [], this.filtros(), {
+      favoritos: this.almacen.favoritos(),
+      valoraciones: this.almacen.valoraciones(),
     }),
   );
 
@@ -172,6 +193,7 @@ export class App {
   constructor() {
     const reloj = setInterval(() => this.ahora.set(new Date()), 30_000);
     this.destroyRef.onDestroy(() => clearInterval(reloj));
+    effect(() => this.almacen.guardarAjuste('filtros', this.filtros()));
 
     // A mano y pasivo: con un listener de Angular, cada evento de scroll repasaría toda la vista. En
     // los dos sitios que pueden hacer scroll: app-root o el documento.
@@ -237,11 +259,14 @@ export class App {
     this.sinGluten.set('');
     this.bebida.set('');
     this.rutaDeSabor.set(false);
+    this.favoritos.set(false);
+    this.probadas.set('');
   }
 
   /** Para ordenar por cercanía hace falta un punto de partida: si no lo hay, pide la ubicación. */
   protected ordenar(orden: Orden): void {
     this.orden.set(orden);
+    this.almacen.guardarAjuste('orden', orden);
     if (orden === 'cercania' && !this.ubicacion.origen()) this.ubicacion.usarMiUbicacion();
   }
 
@@ -250,7 +275,7 @@ export class App {
     if (this.detalle() !== null) history.back();
     else if (vista !== this.vista()) this.desplazador.scrollTo({ top: 0 });
     this.vista.set(vista);
-    guardarVista(vista);
+    this.almacen.guardarAjuste('vista', vista);
   }
 
   /** En escritorio, al pinchar un marcador lleva la lista hasta su ficha. */
@@ -283,18 +308,11 @@ export class App {
   }
 }
 
-function leerVista(): Vista {
+/** La que se eligió antes de que se guardara en el almacén. */
+function vistaAnterior(): Vista {
   try {
     return localStorage.getItem(CLAVE_VISTA) === 'fotos' ? 'fotos' : 'detalles';
   } catch {
     return 'detalles';
-  }
-}
-
-function guardarVista(vista: Vista): void {
-  try {
-    localStorage.setItem(CLAVE_VISTA, vista);
-  } catch {
-    // Sin almacenamiento (modo privado…): se queda solo para esta visita.
   }
 }

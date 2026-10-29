@@ -118,8 +118,9 @@ h2 {
   }
 }
 
-// La foto es un botón que la amplía (visor/visor.ts).
+// La foto es un botón que la amplía (visor/visor.ts), con sus estrellas encima.
 .foto {
+  position: relative;
   grid-area: foto;
   display: block;
   height: auto;
@@ -153,6 +154,15 @@ h2 {
   &:is(:hover, :focus-visible) img {
     transform: scale(1.06);
   }
+}
+
+// Abajo en el centro de la foto (en el visor van a ponerse debajo de ella, en grande).
+.estrellas {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  font-size: 0.8rem;
+  translate: -50%;
 }
 
 app-plegable {
@@ -289,6 +299,7 @@ dt.hoy {
 footer {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem 1.25rem;
   font-size: 0.88rem;
 
@@ -298,4 +309,10 @@ footer {
     gap: 0.35rem;
     color: var(--acento);
   }
+}
+
+// En la esquina, aunque no haya teléfono ni Instagram; sin sumar alto a la fila.
+app-favorito {
+  margin: -0.5rem -0.2rem -0.2rem auto;
+  font-size: 1.4rem;
 }

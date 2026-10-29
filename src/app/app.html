@@ -134,14 +134,31 @@
         </select>
       </label>
 
-      <label class="campo sello">
-        <span>Sello</span>
-        <span class="control casilla">
-          <input type="checkbox" [(ngModel)]="rutaDeSabor" />
-          <app-sello tipo="ruta" aria-hidden="true" />
-          Castelló Ruta de Sabor
-        </span>
+      <label class="campo">
+        <span>Probadas</span>
+        <select title="Las tapas con estrellas cuentan como probadas" [(ngModel)]="probadas">
+          <option value="">Indiferente</option>
+          <option value="pendientes">Alguna sin probar</option>
+          <option value="ninguna">Ninguna probada</option>
+          <option value="todas">Todas probadas</option>
+        </select>
       </label>
+
+      <div class="campo solo" role="group" aria-labelledby="etiqueta-solo">
+        <span id="etiqueta-solo">Mostrar solo</span>
+        <div class="casillas">
+          <label class="control">
+            <input type="checkbox" [(ngModel)]="favoritos" />
+            <app-icono class="corazon" nombre="corazon" />
+            Favoritos
+          </label>
+          <label class="control" title="Castelló Ruta de Sabor">
+            <input type="checkbox" [(ngModel)]="rutaDeSabor" />
+            <app-sello tipo="ruta" aria-hidden="true" />
+            Ruta de Sabor
+          </label>
+        </div>
+      </div>
 
       <div class="acciones">
         <button type="button" (click)="abiertoAhora()">Abierto ahora</button>

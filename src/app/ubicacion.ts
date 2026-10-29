@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { Almacen } from './almacen';
 import { Coordenadas, Medio } from './locales';
 
 export interface Origen extends Coordenadas {
@@ -16,12 +17,17 @@ const VIEWBOX = '-0.12,40.03,0.07,39.93';
 @Injectable({ providedIn: 'root' })
 export class Ubicacion {
   private readonly http = inject(HttpClient);
+  private readonly almacen = inject(Almacen);
 
   readonly origen = signal<Origen | null>(null);
-  /** Cómo se calcula el tiempo de llegada; '' = según la distancia. */
-  readonly medio = signal<Medio | ''>('');
+  /** Cómo se calcula el tiempo de llegada; '' = según la distancia. Se recuerda para la próxima vez. */
+  readonly medio = signal<Medio | ''>(this.almacen.ajuste<Medio>('medio') ?? '');
   readonly buscando = signal(false);
   readonly error = signal('');
+
+  constructor() {
+    effect(() => this.almacen.guardarAjuste('medio', this.medio()));
+  }
 
   usarMiUbicacion(): void {
     if (!('geolocation' in navigator)) {

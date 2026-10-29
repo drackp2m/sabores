@@ -7,6 +7,7 @@ import {
   Tapa,
   abiertoEntre,
   claveCierre,
+  claveTapa,
   describirEstado,
   diaDe,
   estadoHorario,
@@ -150,6 +151,40 @@ describe('filtrarLocales', () => {
 
   it('filtra por sello Castelló Ruta de Sabor', () => {
     expect(nombres({ rutaDeSabor: true })).toEqual(['ORIGEN']);
+  });
+});
+
+describe('filtrarLocales con favoritos y valoraciones', () => {
+  // Tres locales de dos tapas: en el 1 se han probado las dos, en el 2 una y en el 3 ninguna.
+  const locales = [1, 2, 3].map((number) => {
+    const base = local(`LOCAL ${number}`, {}, {}, { number });
+    return { ...base, tapas: [base.tapas[0], { ...base.tapas[0], number: 2 }] };
+  });
+  const marcas = {
+    favoritos: new Set([2, 3]),
+    valoraciones: new Map([
+      [claveTapa(1, 1), 5],
+      [claveTapa(1, 2), 3],
+      [claveTapa(2, 2), 1],
+    ]),
+  };
+  const numeros = (filtros: Partial<Filtros>) =>
+    filtrarLocales(locales, { ...SIN_FILTROS, ...filtros }, marcas).map((l) => l.number);
+
+  it('solo los favoritos', () => {
+    expect(numeros({ favoritos: true })).toEqual([2, 3]);
+  });
+
+  it('según las tapas probadas (las valoradas)', () => {
+    expect(numeros({ probadas: 'pendientes' })).toEqual([2, 3]);
+    expect(numeros({ probadas: 'ninguna' })).toEqual([3]);
+    expect(numeros({ probadas: 'todas' })).toEqual([1]);
+    expect(numeros({ probadas: 'pendientes', favoritos: true })).toEqual([2, 3]);
+  });
+
+  it('sin marcas, nada es favorito ni está probado', () => {
+    expect(filtrarLocales(locales, { ...SIN_FILTROS, probadas: 'ninguna' }).length).toBe(3);
+    expect(filtrarLocales(locales, { ...SIN_FILTROS, favoritos: true })).toEqual([]);
   });
 });
 

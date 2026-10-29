@@ -58,7 +58,12 @@ export class Mapa {
 
   constructor() {
     afterNextRender(() => {
-      const mapa = new L.Map(this.contenedor().nativeElement, { center: CASTELLON, zoom: 14 });
+      // Sin zoom con la rueda: al hacer scroll por la página, pasar por encima del mapa no lo mueve.
+      const mapa = new L.Map(this.contenedor().nativeElement, {
+        center: CASTELLON,
+        zoom: 14,
+        scrollWheelZoom: false,
+      });
       new L.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',

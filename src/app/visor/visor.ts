@@ -1,0 +1,177 @@
+import {
+  Component,
+  ElementRef,
+  Injectable,
+  afterRenderEffect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
+
+import { Icono } from '../icono/icono';
+
+export interface FotoAmpliada {
+  src: string;
+  alt: string;
+  /** Miniatura desde la que se amplía y a la que vuelve (y el foco, al cerrar). */
+  origen: HTMLElement;
+}
+
+/** Foto que se está viendo en grande. */
+@Injectable({ providedIn: 'root' })
+export class Visor {
+  readonly foto = signal<FotoAmpliada | null>(null);
+}
+
+const DURACION = 380;
+
+/**
+ * Foto ampliada: crece desde su miniatura hasta el centro mientras el fondo se desenfoca y pierde
+ * color, y al cerrar (X, Escape o pinchando fuera) hace el mismo recorrido al revés.
+ */
+@Component({
+  selector: 'app-visor-fotos',
+  imports: [Icono],
+  template: `
+    @if (visor.foto(); as foto) {
+      <!-- Sin scroll de la página mientras se ve la foto. -->
+      <div
+        class="visor"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="foto.alt"
+        (wheel)="$event.preventDefault()"
+        (touchmove)="$event.preventDefault()"
+      >
+        <div #fondo class="fondo" (click)="cerrar()"></div>
+        <img #imagen [src]="foto.src" [alt]="foto.alt" width="690" height="439" />
+        <button #boton type="button" class="cerrar" aria-label="Cerrar" (click)="cerrar()">
+          <app-icono nombre="cerrar" />
+        </button>
+      </div>
+    }
+  `,
+  host: { '(document:keydown.escape)': 'cerrar()' },
+  styles: `
+    .visor {
+      position: fixed;
+      inset: 0;
+      z-index: 1200; // Por encima de la cabecera.
+    }
+
+    .fondo {
+      position: absolute;
+      inset: 0;
+      background: rgb(42 33 27 / 0.35);
+      backdrop-filter: blur(10px) grayscale(0.5);
+      -webkit-backdrop-filter: blur(10px) grayscale(0.5);
+      touch-action: none;
+    }
+
+    // Lo más grande posible sin pasar de 1,25 veces el tamaño real de las fotos (690×439).
+    img {
+      --ancho: min(92vw, 85dvh * 690 / 439, 860px);
+      position: absolute;
+      inset: 0;
+      width: var(--ancho);
+      height: calc(var(--ancho) * 439 / 690);
+      margin: auto;
+      border-radius: 12px;
+      object-fit: cover;
+      box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+      transform-origin: 0 0;
+    }
+
+    .cerrar {
+      position: absolute;
+      top: calc(1rem + env(safe-area-inset-top, 0px));
+      right: 1rem;
+      width: 2.75rem;
+      height: 2.75rem;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #fff;
+      color: var(--texto);
+      font-size: 1.25rem;
+      box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
+
+      &:hover:not(:disabled) {
+        border: 0;
+        background: var(--acento-suave);
+      }
+    }
+  `,
+})
+export class VisorFotos {
+  protected readonly visor = inject(Visor);
+
+  private readonly fondo = viewChild<ElementRef<HTMLElement>>('fondo');
+  private readonly imagen = viewChild<ElementRef<HTMLElement>>('imagen');
+  private readonly boton = viewChild<ElementRef<HTMLElement>>('boton');
+  private cerrando = false;
+
+  constructor() {
+    // En cuanto la foto grande está en la página (antes de pintarla), arranca la ampliación.
+    afterRenderEffect(() => {
+      const imagen = this.imagen();
+      const foto = this.visor.foto();
+      if (!imagen || !foto) return;
+      foto.origen.style.visibility = 'hidden';
+      this.boton()!.nativeElement.focus({ preventScroll: true });
+      this.animar(foto, 'normal');
+    });
+  }
+
+  protected async cerrar(): Promise<void> {
+    const foto = this.visor.foto();
+    if (!foto || this.cerrando) return;
+    this.cerrando = true;
+    await this.animar(foto, 'reverse');
+    foto.origen.style.visibility = '';
+    foto.origen.focus({ preventScroll: true });
+    this.visor.foto.set(null);
+    this.cerrando = false;
+  }
+
+  /** De la miniatura a la foto grande ('normal') o al revés ('reverse'). */
+  private animar(foto: FotoAmpliada, direction: PlaybackDirection): Promise<unknown> {
+    const imagen = this.imagen()!.nativeElement;
+    const desde = foto.origen.getBoundingClientRect();
+    const hasta = imagen.getBoundingClientRect();
+    const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const opciones: KeyframeAnimationOptions = {
+      duration: reducido ? 0 : DURACION,
+      easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      direction,
+      fill: 'both',
+    };
+    const sinFiltro = 'blur(0px) grayscale(0)';
+    return Promise.all(
+      [
+        imagen.animate(
+          [
+            {
+              transform: `translate(${desde.left - hasta.left}px, ${desde.top - hasta.top}px)
+                scale(${desde.width / hasta.width}, ${desde.height / hasta.height})`,
+            },
+            { transform: 'none' },
+          ],
+          opciones,
+        ),
+        this.fondo()!.nativeElement.animate(
+          [
+            {
+              backgroundColor: 'rgb(42 33 27 / 0)',
+              backdropFilter: sinFiltro,
+              webkitBackdropFilter: sinFiltro,
+            },
+            {},
+          ],
+          opciones,
+        ),
+        this.boton()!.nativeElement.animate([{ opacity: 0 }, {}], opciones),
+      ].map((animacion) => animacion.finished),
+    );
+  }
+}

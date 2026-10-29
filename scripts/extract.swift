@@ -193,6 +193,52 @@ func join(_ frs: [Fragment]) -> String {
     .replacingOccurrences(of: "  ", with: " ")
 }
 
+// Bebidas tal y como aparecen en la guía → nombre sin sinónimos (TERCIO = 1/3 CERVEZA…) y tipo por el
+// que se filtra en la app. Las que no estén aquí salen tal cual, con un aviso para añadirlas.
+let drinkNames: [String: (name: String, type: String)] = [
+  "1/3 CERVEZA": ("Tercio", "Cerveza"),
+  "1/5 CERVEZA": ("Quinto", "Cerveza"),
+  "AGUA": ("Agua", "Agua"),
+  "CAFÉ": ("Café", "Café"),
+  "CAVA": ("Copa de cava", "Cava"),
+  "CAÑA": ("Caña", "Cerveza"),
+  "CERVEZA": ("Cerveza", "Cerveza"),
+  "CERVEZA 0’0": ("Cerveza sin alcohol", "Cerveza sin alcohol"),
+  "CERVEZA SIN ALCOHOL": ("Cerveza sin alcohol", "Cerveza sin alcohol"),
+  "CERVEZA SIN GLUTEN": ("Cerveza sin gluten", "Cerveza sin gluten"),
+  "CHILCANO APASIONADA": ("Chilcano apasionada", "Cóctel"),
+  "COPA ALBARIÑO": ("Copa de albariño", "Vino"),
+  "COPA DE CAVA PARA LA NAVAJA": ("Copa de cava (con la navaja)", "Cava"),
+  "COPA DE VINO": ("Copa de vino", "Vino"),
+  "COPA DE VINO (RIOJA, VERDEJO)": ("Copa de vino (Rioja o Verdejo)", "Vino"),
+  "LICOR": ("Licor", "Licor"),
+  "LOLEA": ("Lolea", "Sangría"),
+  "MARTINI": ("Martini", "Vermut"),
+  "MICHELADA": ("Michelada", "Cóctel"),
+  "PAPELÓN CON LIMÓN": ("Papelón con limón", "Refresco"),
+  "REFRESCO": ("Refresco", "Refresco"),
+  "TERCIO": ("Tercio", "Cerveza"),
+  "VERMUT": ("Vermut", "Vermut"),
+  "VERMUT CASERO": ("Vermut casero", "Vermut"),
+  "ZURITO DE CERVEZA": ("Zurito de cerveza", "Cerveza"),
+  "ZURITO DE VINO BLANCO O TINTO": ("Zurito de vino (blanco o tinto)", "Vino"),
+]
+
+/// Bebidas normalizadas, sin repetidas y en orden alfabético.
+func parseDrinks(_ s: String, warn: (String) -> Void) -> [[String: String]] {
+  var seen = Set<String>()
+  return s.components(separatedBy: "·").map { $0.trimmingCharacters(in: .whitespaces) }
+    .filter { !$0.isEmpty }
+    .map { raw -> (name: String, type: String) in
+      if let d = drinkNames[raw] { return d }
+      warn("bebida sin normalizar '\(raw)': añádela a drinkNames")
+      return (raw, raw)
+    }
+    .filter { seen.insert($0.name).inserted }
+    .sorted { $0.name.compare($1.name, locale: Locale(identifier: "es")) == .orderedAscending }
+    .map { ["name": $0.name, "type": $0.type] }
+}
+
 var locales: [[String: Any]] = []
 var warnings: [String] = []
 
@@ -296,8 +342,7 @@ for pi in 0..<doc.pageCount {
       "number": num,
       "name": join(nameFr),
       "address": c.address,
-      "drinks": join(drinks).components(separatedBy: "·").map { $0.trimmingCharacters(in: .whitespaces) }
-        .filter { !$0.isEmpty },
+      "drinks": parseDrinks(join(drinks)) { warnings.append("\(id): \($0)") },
       "schedule": schedule,
       "tapas": tapas,
       "page": pi + 1,

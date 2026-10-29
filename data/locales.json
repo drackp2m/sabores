@@ -11,9 +11,18 @@
     {
       "address" : "C/ CARCAGENTE, 17",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "TERCIO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Tercio",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@origen_castellon",
       "location" : {
@@ -121,9 +130,18 @@
     {
       "address" : "C/ PADRE RICARDO, 28",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@somos.dosenverde",
       "location" : {
@@ -195,9 +213,18 @@
     {
       "address" : "C/ DESIERTO DE LAS PALMAS, 3",
       "drinks" : [
-        "1/5 CERVEZA",
-        "COPA DE VINO",
-        "PAPELÓN CON LIMÓN"
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Papelón con limón",
+          "type" : "Refresco"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@_costadeoro",
       "location" : {
@@ -275,8 +302,14 @@
     {
       "address" : "C/ NAVARRA, 4",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@elporton_castellon",
       "location" : {
@@ -361,8 +394,14 @@
     {
       "address" : "C/ PINTOR SOLER BLANCO, 16",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@elalquimista.res",
       "location" : {
@@ -448,10 +487,22 @@
     {
       "address" : "C/ NAVARRA, 3",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "AGUA",
-        "COPA DE CAVA PARA LA NAVAJA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de cava (con la navaja)",
+          "type" : "Cava"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@atemporal_castellon",
       "location" : {
@@ -536,8 +587,14 @@
     {
       "address" : "C/ CABALLEROS, 20",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@madhur_gastrobar",
       "location" : {
@@ -630,9 +687,18 @@
     {
       "address" : "C/JOSÉ Mª MULET ORTIZ, 26",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@restaurantenorteno",
       "location" : {
@@ -716,8 +782,14 @@
     {
       "address" : "C/ ALICANTE, 34",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@mejorana_gastrobar",
       "location" : {
@@ -785,8 +857,14 @@
     {
       "address" : "AV/ CAMP DE MORVEDRE, 111",
       "drinks" : [
-        "ZURITO DE CERVEZA",
-        "ZURITO DE VINO BLANCO O TINTO"
+        {
+          "name" : "Zurito de cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Zurito de vino (blanco o tinto)",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@labelepoc_gastrobar",
       "location" : {
@@ -884,9 +962,18 @@
     {
       "address" : "C/ MAESTRO FALLA, 16",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@cafeteria_blesa",
       "location" : {
@@ -967,10 +1054,22 @@
     {
       "address" : "C/DR. FLEMING, 24",
       "drinks" : [
-        "COPA DE VINO",
-        "1/5 CERVEZA",
-        "MARTINI",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Martini",
+          "type" : "Vermut"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : null,
       "location" : {
@@ -1071,9 +1170,18 @@
     {
       "address" : "CAMINO SERRADAL, 13 (GRAO)",
       "drinks" : [
-        "COPA DE VINO",
-        "1/5 CERVEZA",
-        "REFRESCO"
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@cafeteriababys",
       "location" : {
@@ -1159,8 +1267,14 @@
     {
       "address" : "C/ ASENSI, 14",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@asensi_14",
       "location" : {
@@ -1247,8 +1361,14 @@
     {
       "address" : "AV/ LIDÓN, 20",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@tabernalidon20",
       "location" : {
@@ -1328,10 +1448,22 @@
     {
       "address" : "C/OBISPO CLIMENT, 4",
       "drinks" : [
-        "COPA DE VINO",
-        "CERVEZA",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@jorge_malasana",
       "location" : {
@@ -1429,9 +1561,18 @@
     {
       "address" : "AV/ CAPUCHINOS, 27",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "VERMUT CASERO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Vermut casero",
+          "type" : "Vermut"
+        }
       ],
       "instagram" : "@taperiabocateriamissdaisy",
       "location" : {
@@ -1543,11 +1684,26 @@
     {
       "address" : "C/ MAYOR, 42",
       "drinks" : [
-        "COPA DE VINO",
-        "CERVEZA",
-        "CERVEZA 0’0",
-        "CERVEZA SIN GLUTEN",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Cerveza sin alcohol",
+          "type" : "Cerveza sin alcohol"
+        },
+        {
+          "name" : "Cerveza sin gluten",
+          "type" : "Cerveza sin gluten"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@barista.castellon",
       "location" : {
@@ -1620,9 +1776,18 @@
     {
       "address" : "PZA. ESPAÑA, 1",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@lacomarca_taberna",
       "location" : {
@@ -1727,10 +1892,22 @@
     {
       "address" : "C/TEMPRADO, 7",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "1/5 CERVEZA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@pizzeriadanubio",
       "location" : {
@@ -1830,8 +2007,14 @@
     {
       "address" : "C/ FOLA, 2",
       "drinks" : [
-        "COPA DE VINO",
-        "CERVEZA"
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@comoencasacastellon",
       "location" : {
@@ -1928,9 +2111,18 @@
     {
       "address" : "C/ MAESTRO RIPOLLÉS, 12",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@tasca.argentina.laloca",
       "location" : {
@@ -2011,11 +2203,26 @@
     {
       "address" : "PZA. BORRULL, 5",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO",
-        "MICHELADA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Michelada",
+          "type" : "Cóctel"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@elpasotexmexx",
       "location" : {
@@ -2113,9 +2320,18 @@
     {
       "address" : "PLA. VILANOVA D’ALCOLEA, 4",
       "drinks" : [
-        "COPA DE VINO",
-        "CERVEZA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@cupula.castellon",
       "location" : {
@@ -2184,9 +2400,18 @@
     {
       "address" : "C/ DOCTOR FLEMING, 9",
       "drinks" : [
-        "COPA DE VINO",
-        "CERVEZA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : null,
       "location" : {
@@ -2291,8 +2516,14 @@
     {
       "address" : "C/ CARCAGENTE, 7",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : null,
       "location" : {
@@ -2376,11 +2607,26 @@
     {
       "address" : "AV/ LIDÓN, 14",
       "drinks" : [
-        "CAÑA",
-        "1/3 CERVEZA",
-        "COPA DE VINO",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        },
+        {
+          "name" : "Tercio",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@eldespatarrao",
       "location" : {
@@ -2455,7 +2701,10 @@
     {
       "address" : "AV/ CASALDUCH, 28",
       "drinks" : [
-        "COPA DE VINO"
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@rustico.mmgrupo",
       "location" : {
@@ -2542,9 +2791,18 @@
     {
       "address" : "C/ ENSEÑANZA, 3",
       "drinks" : [
-        "1/5 CERVEZA",
-        "COPA DE VINO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@bajo_32",
       "location" : {
@@ -2634,9 +2892,18 @@
     {
       "address" : "C/ SAINZ DE BREMOND, 4",
       "drinks" : [
-        "CAÑA",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : null,
       "location" : {
@@ -2741,9 +3008,18 @@
     {
       "address" : "AV/ BENICÀSSIM, 6",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@montecristo_restaurant",
       "location" : {
@@ -2837,10 +3113,22 @@
     {
       "address" : "C/ALCALÁ GALIANO, 3 (GRAO)",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@nouescull",
       "location" : {
@@ -2915,9 +3203,18 @@
     {
       "address" : "PZA. FADRELL (ESQUINA SEGARRA RIBES)",
       "drinks" : [
-        "CAÑA",
-        "LOLEA",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Lolea",
+          "type" : "Sangría"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@laparadadefadrell",
       "location" : {
@@ -3028,9 +3325,18 @@
     {
       "address" : "PZA. RÍO ALVENTOSA, 1",
       "drinks" : [
-        "CERVEZA",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@casapena",
       "location" : {
@@ -3135,8 +3441,14 @@
     {
       "address" : "C/ Mª ROSA MOLÁS, 15",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@rokelincastellon",
       "location" : {
@@ -3208,9 +3520,18 @@
     {
       "address" : "C/MAESTRO RIPOLLÉS, 7",
       "drinks" : [
-        "CAÑA",
-        "COPA ALBARIÑO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de albariño",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@bier_castello",
       "location" : {
@@ -3295,9 +3616,18 @@
     {
       "address" : "C/ TRIPULANTS DE LA PACA, 2 (GRAO)",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@panderolabar",
       "location" : {
@@ -3383,11 +3713,26 @@
     {
       "address" : "C/ GOBERNADOR, 53",
       "drinks" : [
-        "CAÑA",
-        "CERVEZA",
-        "COPA DE VINO (RIOJA, VERDEJO)",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino (Rioja o Verdejo)",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@ginvincastellon",
       "location" : {
@@ -3459,9 +3804,18 @@
     {
       "address" : "CRTA. RIBESALBES, 54",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@benadressa_bar",
       "location" : {
@@ -3536,8 +3890,14 @@
     {
       "address" : "C/ASTRÓNOMO FRANCESC ARAGÓ, 2 (GRAO)",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@impalacafegrao",
       "location" : {
@@ -3609,10 +3969,22 @@
     {
       "address" : "C/ CAMPOAMOR, 11",
       "drinks" : [
-        "CAÑA",
-        "VERMUT",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        },
+        {
+          "name" : "Vermut",
+          "type" : "Vermut"
+        }
       ],
       "instagram" : "@homenaje.cs",
       "location" : {
@@ -3681,11 +4053,26 @@
     {
       "address" : "C/ ONDA, 36",
       "drinks" : [
-        "CAÑA",
-        "1/5 CERVEZA",
-        "COPA DE VINO",
-        "CAVA",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de cava",
+          "type" : "Cava"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@restcorporesano",
       "location" : {
@@ -3768,11 +4155,26 @@
     {
       "address" : "C/ ALLOZA, 164",
       "drinks" : [
-        "CAÑA",
-        "CERVEZA SIN ALCOHOL",
-        "COPA DE VINO",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Cerveza sin alcohol",
+          "type" : "Cerveza sin alcohol"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@aglio.nero.castellon",
       "location" : {
@@ -3856,9 +4258,18 @@
     {
       "address" : "PUERTA DEL SOL, 1",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@linoterrace",
       "location" : {
@@ -3956,11 +4367,26 @@
     {
       "address" : "C/ ORTEGA Y GASSET, 3",
       "drinks" : [
-        "COPA DE VINO",
-        "VERMUT",
-        "1/5 CERVEZA",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        },
+        {
+          "name" : "Vermut",
+          "type" : "Vermut"
+        }
       ],
       "instagram" : "@labancada",
       "location" : {
@@ -4035,8 +4461,14 @@
     {
       "address" : "C/ ESCULTOR VICIANO, 13",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@lodepepe_castellon",
       "location" : {
@@ -4117,10 +4549,22 @@
     {
       "address" : "C/ MOYANO, 4",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@elbartortilla",
       "location" : {
@@ -4220,9 +4664,18 @@
     {
       "address" : "C/ ANTONIO MAURA, 31",
       "drinks" : [
-        "CAÑA",
-        "VERMUT",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Vermut",
+          "type" : "Vermut"
+        }
       ],
       "instagram" : "@arre_restaurant",
       "location" : {
@@ -4301,8 +4754,14 @@
     {
       "address" : "C/ CARCAGENTE, 9",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@barlamorena22",
       "location" : {
@@ -4400,7 +4859,10 @@
     {
       "address" : "AV. DEL REY, 5",
       "drinks" : [
-        "CAÑA"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@alessandromaino_restaurant",
       "location" : {
@@ -4490,8 +4952,14 @@
     {
       "address" : "AV/ CAPUCHINOS, 1",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@venecia_by_la_garnatxa",
       "location" : {
@@ -4588,9 +5056,18 @@
     {
       "address" : "AV/ ALCORA, 246",
       "drinks" : [
-        "COPA DE VINO",
-        "CERVEZA",
-        "REFRESCO"
+        {
+          "name" : "Cerveza",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@restaurante_portoles",
       "location" : {
@@ -4659,9 +5136,18 @@
     {
       "address" : "PZA. MAR MEDITERRÁNEO, 1",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@blancoroto_restaurante",
       "location" : {
@@ -4773,10 +5259,22 @@
     {
       "address" : "C/ AMADEO I, 8",
       "drinks" : [
-        "CHILCANO APASIONADA",
-        "1/5 CERVEZA",
-        "COPA DE VINO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Chilcano apasionada",
+          "type" : "Cóctel"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Quinto",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@restauranteelbuensaborperuano",
       "location" : {
@@ -4851,9 +5349,18 @@
     {
       "address" : "PZA. VILANOVA D’ALCOLEA, 4",
       "drinks" : [
-        "COPA DE VINO",
-        "CAÑA",
-        "VERMUT"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Vermut",
+          "type" : "Vermut"
+        }
       ],
       "instagram" : "@suglagu",
       "location" : {
@@ -4926,7 +5433,10 @@
     {
       "address" : "C/MAYOR, 36",
       "drinks" : [
-        "CAÑA"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@barrita____",
       "location" : {
@@ -5010,8 +5520,14 @@
     {
       "address" : "C/ ESCULTOR VICIANO, 5",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        }
       ],
       "instagram" : "@copacabanacs",
       "location" : {
@@ -5116,9 +5632,18 @@
     {
       "address" : "MERCAT CENTRAL CASTELLÓ",
       "drinks" : [
-        "CAÑA",
-        "COPA DE VINO",
-        "REFRESCO"
+        {
+          "name" : "Caña",
+          "type" : "Cerveza"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        }
       ],
       "instagram" : "@elbardelmercat__",
       "location" : {
@@ -5189,10 +5714,22 @@
     {
       "address" : "PARQUE GEÓLOGO JOSÉ ROYO",
       "drinks" : [
-        "1/3 CERVEZA",
-        "COPA DE VINO",
-        "REFRESCO",
-        "AGUA"
+        {
+          "name" : "Agua",
+          "type" : "Agua"
+        },
+        {
+          "name" : "Copa de vino",
+          "type" : "Vino"
+        },
+        {
+          "name" : "Refresco",
+          "type" : "Refresco"
+        },
+        {
+          "name" : "Tercio",
+          "type" : "Cerveza"
+        }
       ],
       "instagram" : "@quioscodellago",
       "location" : {
@@ -5303,8 +5840,14 @@
     {
       "address" : "C/NAVARRA, 125",
       "drinks" : [
-        "CAFÉ",
-        "LICOR"
+        {
+          "name" : "Café",
+          "type" : "Café"
+        },
+        {
+          "name" : "Licor",
+          "type" : "Licor"
+        }
       ],
       "instagram" : "@alvostregust",
       "location" : {

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 7 173 113">
+  <title>Castelló Ruta de Sabor</title>
+  <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="10" y1="50" x2="190" y2="140">
+    <stop offset="0.05" stop-color="#3d84c6"/>
+    <stop offset="0.2" stop-color="#358f9f"/>
+    <stop offset="0.4" stop-color="#2f9a48"/>
+    <stop offset="0.47" stop-color="#7d9a33"/>
+    <stop offset="0.53" stop-color="#f28c1e"/>
+    <stop offset="0.68" stop-color="#ef6328"/>
+    <stop offset="0.82" stop-color="#e5302b"/>
+  </linearGradient>
+  <path fill="none" stroke="url(#g)" stroke-width="34" d="M90.04 55.94L86.15 52.05A28.5 28.5 0 1 0 86.15 92.35L145.5 33.02L164.24 51.76A26.5 26.5 0 0 1 126.76 89.24L122.87 85.35"/>
+</svg>

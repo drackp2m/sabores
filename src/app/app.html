@@ -1,70 +1,185 @@
 <header class="cabecera">
   <div class="contenido">
-    <h1>{{ datos()?.event.name ?? 'Ruta de Tapas' }}</h1>
-    @if (datos(); as ruta) {
-      <p>{{ ruta.event.edition }} · {{ periodo() }} · {{ ruta.event.price }}</p>
-    }
+    <h1>Sabores</h1>
+    <div class="vistas" role="group" aria-label="Vista">
+      <button
+        type="button"
+        title="Lista con todos los detalles y el mapa"
+        [class.activa]="vista() === 'detalles'"
+        [attr.aria-pressed]="vista() === 'detalles'"
+        (click)="cambiarVista('detalles')"
+      >
+        <app-icono nombre="lista" />Detalles
+      </button>
+      <button
+        type="button"
+        title="Solo el nombre y las fotos de las tapas"
+        [class.activa]="vista() === 'fotos'"
+        [attr.aria-pressed]="vista() === 'fotos'"
+        (click)="cambiarVista('fotos')"
+      >
+        <app-icono nombre="fotos" />Fotos
+      </button>
+    </div>
   </div>
 </header>
 
-<section class="filtros" aria-label="Filtros">
-  <div class="contenido">
-    <label class="campo texto">
-      <span>Buscar</span>
-      <input type="search" placeholder="Local, tapa, ingrediente, calle…" [(ngModel)]="texto" />
-    </label>
-
-    <label class="campo">
-      <span>Día</span>
-      <select [(ngModel)]="dia">
-        <option value="">Cualquiera</option>
-        @for (d of dias; track d.id) {
-          <option [value]="d.id">{{ d.nombre }}</option>
-        }
-      </select>
-    </label>
-
-    <label class="campo">
-      <span>Hora</span>
-      <input type="time" [(ngModel)]="hora" [disabled]="!dia()" />
-    </label>
-
-    <label class="campo">
-      <span>Sin gluten</span>
-      <select [(ngModel)]="sinGluten">
-        <option value="">Indiferente</option>
-        <option value="yes">Sin gluten</option>
-        <option value="optional">Incluye «bajo petición»</option>
-      </select>
-    </label>
-
-    <label class="check">
-      <input type="checkbox" [(ngModel)]="rutaDeSabor" />
-      Castelló Ruta de Sabor
-    </label>
-
-    <div class="acciones">
-      <button type="button" (click)="ahora()">Abierto ahora</button>
-      <button type="button" class="secundario" (click)="limpiar()">Limpiar</button>
-    </div>
-  </div>
-</section>
-
-@if (datos(); as ruta) {
-  <div class="resultados contenido">
-    <app-mapa #mapa class="mapa" [locales]="filtrados()" />
-
-    <section class="lista">
-      <p class="resumen">{{ filtrados().length }} de {{ ruta.locales.length }} locales</p>
-      @for (local of filtrados(); track local.number) {
-        <app-local-card [local]="local" [dia]="dia()" (verEnMapa)="mapa.enfocar(local.number)" />
-      } @empty {
-        <p class="estado">Ningún local cumple los filtros.</p>
-      }
-    </section>
-  </div>
-} @else if (datos() === null) {
-  <p class="estado error">No se han podido cargar los datos (<code>data/locales.json</code>).</p>
+@if (localDetalle(); as local) {
+  <main class="detalle contenido">
+    <app-local-card
+      [local]="local"
+      [dia]="dia()"
+      [estado]="estados().get(local.number)"
+      [ahora]="ahora()"
+      [llegada]="llegadas().get(local.number) ?? null"
+      (verEnMapa)="mapaDetalle.enfocar(local.number)"
+    />
+    <app-mapa
+      #mapaDetalle
+      class="mapa"
+      [locales]="soloDetalle()"
+      [origen]="ubicacion.origen()"
+      [estados]="estados()"
+      [llegadas]="llegadas()"
+      [ahora]="ahora()"
+    />
+    <button type="button" class="volver" (click)="volver()">
+      <app-icono nombre="atras" />Volver
+    </button>
+  </main>
 } @else {
-  <p class="estado">Cargando locales…</p>
+  <section class="filtros" aria-label="Filtros">
+    <div class="contenido">
+      <label class="campo texto">
+        <span>Buscar</span>
+        <input type="search" placeholder="Local, tapa, ingrediente, calle…" [(ngModel)]="texto" />
+      </label>
+
+      <label class="campo">
+        <span>Día</span>
+        <select [(ngModel)]="dia">
+          <option value="">Cualquiera</option>
+          @for (d of dias; track d.id) {
+            <option [value]="d.id">{{ d.nombre }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="campo hora" role="group" aria-labelledby="etiqueta-hora">
+        <span id="etiqueta-hora">Hora</span>
+        <div class="rango">
+          <input type="time" aria-label="Desde" [(ngModel)]="desde" [disabled]="!dia()" />
+          <span aria-hidden="true">–</span>
+          <input type="time" aria-label="Hasta" [(ngModel)]="hasta" [disabled]="!dia()" />
+        </div>
+      </div>
+
+      <label class="campo">
+        <span>Sin gluten</span>
+        <select [(ngModel)]="sinGluten">
+          <option value="">Indiferente</option>
+          <option value="yes">Sin gluten</option>
+          <option value="optional">Bajo petición</option>
+        </select>
+      </label>
+
+      <label class="campo">
+        <span>Bebida</span>
+        <select [(ngModel)]="bebida">
+          <option value="">Cualquiera</option>
+          @for (b of bebidas(); track b.tipo) {
+            <option [value]="b.tipo">{{ b.tipo }} ({{ b.locales }})</option>
+          }
+        </select>
+      </label>
+
+      <label class="campo sello">
+        <span>Sello</span>
+        <span class="control casilla">
+          <input type="checkbox" [(ngModel)]="rutaDeSabor" />
+          <app-sello tipo="ruta" aria-hidden="true" />
+          Castelló Ruta de Sabor
+        </span>
+      </label>
+
+      <div class="acciones">
+        <button type="button" (click)="abiertoAhora()">Abierto ahora</button>
+        <button type="button" class="secundario" (click)="limpiar()">Limpiar</button>
+      </div>
+    </div>
+  </section>
+
+  @if (datos(); as ruta) {
+    <main class="contenido">
+      <div class="resumen">
+        <p class="leyenda">
+          <span><app-sello tipo="sin-gluten" aria-hidden="true" />Sin gluten</span>
+          <span><app-sello tipo="bajo-peticion" aria-hidden="true" />Bajo petición</span>
+          <span><app-sello tipo="ruta" aria-hidden="true" />Ruta de Sabor</span>
+        </p>
+        <p>{{ visibles().length }} de {{ ruta.locales.length }} locales</p>
+      </div>
+
+      <label class="orden">
+        <span>Ordenar por</span>
+        <select [ngModel]="orden()" (ngModelChange)="ordenar($event)">
+          <option value="numero">Número</option>
+          <option value="cercania">Cercanía</option>
+          <option value="cierre">Cierre más próximo</option>
+        </select>
+      </label>
+      @if (orden() === 'cercania' || ubicacion.origen()) {
+        <app-origen />
+      }
+
+      @if (vista() === 'detalles') {
+        <div class="resultados">
+          <app-mapa
+            #mapa
+            class="mapa"
+            [locales]="visibles()"
+            [origen]="ubicacion.origen()"
+            [estados]="estados()"
+            [llegadas]="llegadas()"
+            [ahora]="ahora()"
+            (seleccionar)="mostrarEnLista($event)"
+          />
+
+          <section class="lista" aria-label="Locales">
+            @for (local of visibles(); track local.number) {
+              <app-local-card
+                [attr.id]="'local-' + local.number"
+                [class.destacado]="destacado() === local.number"
+                [local]="local"
+                [dia]="dia()"
+                [estado]="estados().get(local.number)"
+                [ahora]="ahora()"
+                [llegada]="llegadas().get(local.number) ?? null"
+                (verEnMapa)="mapa.enfocar(local.number)"
+              />
+            } @empty {
+              <p class="estado">Ningún local cumple los filtros.</p>
+            }
+          </section>
+        </div>
+      } @else {
+        <app-galeria
+          [locales]="visibles()"
+          [estados]="estados()"
+          [llegadas]="llegadas()"
+          [ahora]="ahora()"
+          (abrir)="abrir($event)"
+        />
+        @if (!visibles().length) {
+          <p class="estado">Ningún local cumple los filtros.</p>
+        }
+      }
+    </main>
+  } @else if (datos() === null) {
+    <p class="estado error">No se han podido cargar los datos (<code>data/locales.json</code>).</p>
+  } @else {
+    <p class="estado">Cargando locales…</p>
+  }
 }
+
+<app-visor-fotos />

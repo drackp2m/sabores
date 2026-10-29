@@ -6,12 +6,14 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
 import * as L from 'leaflet';
 
-import { Local } from '../locales';
+import { crearIcono } from '../icono/icono';
+import { Coordenadas, Estado, Llegada, Local, formatearDuracion, pastillaEstado } from '../locales';
 
 const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 
@@ -33,11 +35,26 @@ const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 })
 export class Mapa {
   readonly locales = input.required<readonly Local[]>();
+  /** Punto de partida, si se ha elegido. */
+  readonly origen = input<Coordenadas | null>(null);
+  /** Estado del horario y tiempo de llegada a cada local, para el popup. */
+  readonly estados = input<ReadonlyMap<number, Estado>>(new Map());
+  readonly llegadas = input<ReadonlyMap<number, Llegada>>(new Map());
+  readonly ahora = input(new Date());
+  /** Número del local cuyo marcador se ha pinchado. */
+  readonly seleccionar = output<number>();
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLElement>>('contenedor');
   private readonly mapa = signal<L.Map | undefined>(undefined);
   private readonly capa = new L.FeatureGroup();
   private readonly marcadores = new Map<number, L.CircleMarker>();
+  private readonly marcadorOrigen = new L.CircleMarker(CASTELLON, {
+    radius: 7,
+    color: '#fff',
+    weight: 3,
+    fillColor: '#2563eb',
+    fillOpacity: 1,
+  }).bindTooltip('Punto de partida');
 
   constructor() {
     afterNextRender(() => {
@@ -55,6 +72,14 @@ export class Mapa {
     effect(() => {
       const mapa = this.mapa();
       if (mapa) this.pintar(mapa, this.locales());
+    });
+
+    effect(() => {
+      const mapa = this.mapa();
+      const origen = this.origen();
+      if (!mapa) return;
+      if (origen) this.marcadorOrigen.setLatLng([origen.lat, origen.lng]).addTo(mapa);
+      else this.marcadorOrigen.remove();
     });
   }
 
@@ -79,7 +104,11 @@ export class Mapa {
         weight: 2,
         fillColor: '#b4441b',
         fillOpacity: 0.9,
-      }).bindPopup(popup(local));
+      })
+        // El contenido se genera al abrirlo, con el estado del horario de ese momento.
+        .bindPopup(() => this.popup(local), { minWidth: 240, maxWidth: 240 })
+        .on('click', () => this.seleccionar.emit(local.number))
+        .on('mouseover', () => marcador.bringToFront());
       marcador.addTo(this.capa);
       this.marcadores.set(local.number, marcador);
     }
@@ -87,15 +116,53 @@ export class Mapa {
       mapa.fitBounds(this.capa.getBounds(), { padding: [30, 30], maxZoom: 16 });
     }
   }
-}
 
-function popup(local: Local): HTMLElement {
-  const div = document.createElement('div');
-  const titulo = document.createElement('strong');
-  titulo.textContent = `${local.number}. ${local.name}`;
-  div.append(titulo, document.createElement('br'), local.address);
-  for (const tapa of local.tapas) {
-    div.append(document.createElement('br'), `· ${tapa.name}`);
+  /**
+   * Nombre, dirección, tiempo de llegada, estado del horario y fotos de las tapas (estilos en
+   * styles.scss: Leaflet lo pinta fuera del componente).
+   */
+  private popup(local: Local): HTMLElement {
+    const div = document.createElement('div');
+    div.className = 'popup-local';
+    const titulo = document.createElement('strong');
+    titulo.textContent = `${local.number}. ${local.name}`;
+    const direccion = document.createElement('span');
+    direccion.textContent = local.address;
+    div.append(titulo, direccion);
+    const fila = document.createElement('div');
+    fila.className = 'popup-estado';
+    const llegada = this.llegadas().get(local.number);
+    if (llegada) {
+      const tiempo = document.createElement('span');
+      tiempo.className = 'popup-llegada';
+      tiempo.append(crearIcono(llegada.modo), formatearDuracion(llegada.minutos));
+      fila.append(tiempo);
+    }
+    const estado = this.estados().get(local.number);
+    if (estado) {
+      const { texto, tipo, aviso } = pastillaEstado(estado, this.ahora(), llegada);
+      const pastilla = document.createElement('span');
+      pastilla.className = `estado-horario ${tipo}`;
+      pastilla.textContent = texto;
+      if (aviso) pastilla.title = aviso;
+      fila.append(pastilla);
+    }
+    if (fila.childElementCount) div.append(fila);
+    const tapas = document.createElement('div');
+    tapas.className = 'popup-tapas';
+    for (const tapa of local.tapas) {
+      const figura = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = `data/${tapa.photo}`;
+      img.alt = '';
+      img.width = 690;
+      img.height = 439;
+      const nombre = document.createElement('figcaption');
+      nombre.textContent = tapa.name;
+      figura.append(img, nombre);
+      tapas.append(figura);
+    }
+    div.append(tapas);
+    return div;
   }
-  return div;
 }

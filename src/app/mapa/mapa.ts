@@ -17,13 +17,48 @@ import { Coordenadas, Estado, Llegada, Local, formatearDuracion, pastillaEstado 
 
 const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 
+/**
+ * Pantalla táctil (sin ratón): un dedo hace scroll de la página y el mapa se mueve con dos, al
+ * pellizcar (Leaflet desplaza el mapa con el punto medio entre los dedos mientras hace zoom).
+ */
+const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').matches ?? false;
+
 /** Mapa de OpenStreetMap con un marcador por local; se ajusta a los locales filtrados. */
 @Component({
   selector: 'app-mapa',
-  template: '<div #contenedor class="contenedor"></div>',
+  template: `
+    <div #contenedor class="contenedor" (touchmove)="avisar($event)"></div>
+    <p class="aviso" [class.visible]="aviso()" aria-hidden="true">
+      Usa dos dedos para mover el mapa
+    </p>
+  `,
   styles: `
     :host {
+      position: relative;
       display: block;
+    }
+
+    // Por encima de los controles de Leaflet, sin captar los toques.
+    .aviso {
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      padding: 1rem;
+      border-radius: var(--radio);
+      background: rgb(0 0 0 / 0.45);
+      color: #fff;
+      font-weight: 600;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+
+      &.visible {
+        opacity: 1;
+      }
     }
 
     .contenedor {
@@ -46,6 +81,8 @@ export class Mapa {
 
   private readonly contenedor = viewChild.required<ElementRef<HTMLElement>>('contenedor');
   private readonly mapa = signal<L.Map | undefined>(undefined);
+  protected readonly aviso = signal(false);
+  private ocultarAviso?: ReturnType<typeof setTimeout>;
   private readonly capa = new L.FeatureGroup();
   private readonly marcadores = new Map<number, L.CircleMarker>();
   private readonly marcadorOrigen = new L.CircleMarker(CASTELLON, {
@@ -63,6 +100,7 @@ export class Mapa {
         center: CASTELLON,
         zoom: 14,
         scrollWheelZoom: false,
+        dragging: !TACTIL,
       });
       new L.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -72,7 +110,10 @@ export class Mapa {
       this.mapa.set(mapa);
     });
 
-    inject(DestroyRef).onDestroy(() => this.mapa()?.remove());
+    inject(DestroyRef).onDestroy(() => {
+      this.mapa()?.remove();
+      clearTimeout(this.ocultarAviso);
+    });
 
     effect(() => {
       const mapa = this.mapa();
@@ -96,6 +137,14 @@ export class Mapa {
     this.contenedor().nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     mapa.setView(marcador.getLatLng(), 17);
     marcador.openPopup();
+  }
+
+  /** Al intentar mover el mapa con un dedo, recuerda que son dos (y la página sigue haciendo scroll). */
+  protected avisar(evento: TouchEvent): void {
+    if (!TACTIL || evento.touches.length !== 1) return;
+    this.aviso.set(true);
+    clearTimeout(this.ocultarAviso);
+    this.ocultarAviso = setTimeout(() => this.aviso.set(false), 1200);
   }
 
   private pintar(mapa: L.Map, locales: readonly Local[]): void {

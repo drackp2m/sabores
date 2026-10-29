@@ -38,6 +38,7 @@ export class LocalCard {
   protected readonly formatearFranjas = formatearFranjas;
   protected readonly selloGluten = selloGluten;
   private readonly visor = inject(Visor);
+  private plegando = false;
 
   protected readonly horarioDia = computed(() => {
     const dia = DIAS.find((d) => d.id === this.dia());
@@ -60,6 +61,51 @@ export class LocalCard {
       detalle: `≈ ${formatearDistancia(llegada.metros)} en línea recta, ${aPie ? 'a pie' : 'en coche'}`,
     };
   });
+
+  /**
+   * Abre el horario haciendo hueco poco a poco, mientras cada día entra deslizándose desde la
+   * izquierda un poco después que el anterior; al cerrar, se pliega y se desvanece.
+   */
+  protected alternarHorario(evento: Event, detalles: HTMLDetailsElement): void {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    evento.preventDefault();
+    const lista = detalles.querySelector('dl')!;
+    // Si se pulsa a medio camino, se sigue desde la altura que tenga en ese momento.
+    const desde = detalles.open ? lista.getBoundingClientRect().height : 0;
+    const abrir = !detalles.open || this.plegando;
+    for (const animacion of lista.getAnimations({ subtree: true })) animacion.cancel();
+
+    if (abrir) {
+      this.plegando = false;
+      detalles.open = true;
+      const hasta = lista.getBoundingClientRect().height;
+      lista.animate([{ height: `${desde}px` }, { height: `${hasta}px` }], {
+        duration: 400,
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      });
+      // dt y dd van en parejas: cada fila (día y horario) entra a la vez.
+      [...lista.children].forEach((celda, i) =>
+        celda.animate([{ opacity: 0, transform: 'translateX(-0.75rem)' }, {}], {
+          duration: 320,
+          delay: 60 + Math.floor(i / 2) * 45,
+          easing: 'ease-out',
+          fill: 'backwards',
+        }),
+      );
+    } else {
+      this.plegando = true;
+      lista.animate(
+        [
+          { height: `${desde}px`, opacity: 1 },
+          { height: '0px', opacity: 0 },
+        ],
+        { duration: 250, easing: 'ease-in' },
+      ).onfinish = () => {
+        detalles.open = false;
+        this.plegando = false;
+      };
+    }
+  }
 
   protected ampliar(evento: Event, tapa: Tapa): void {
     this.visor.foto.set({

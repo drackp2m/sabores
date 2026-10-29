@@ -72,8 +72,8 @@
     </p>
   }
 
-  <details>
-    <summary>
+  <details #horario>
+    <summary (click)="alternarHorario($event, horario)">
       <span>Horario de tapas</span>
       @if (estado(); as estado) {
         <app-estado-horario [estado]="estado" [ahora]="ahora()" [llegada]="llegada()" />

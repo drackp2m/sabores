@@ -83,21 +83,16 @@
   box-sizing: border-box;
 }
 
-// El documento no hace scroll (lo hace app-root) y su color de fondo es el de la cabecera: así
-// Safari no tiene contenido que difuminar bajo la barra de estado y la pinta del color de la
-// cabecera. Si asoma por algún hueco (bajo las barras de Safari), arriba es el de la cabecera y
-// abajo el de la página.
 html {
-  overflow: hidden;
-  overscroll-behavior: none;
-  background: linear-gradient(var(--marca) 50%, var(--fondo) 50%) var(--marca);
+  background: var(--fondo);
+  // Al llevar algo a la vista (ficha, mapa), que quede por debajo de la cabecera fija, que también
+  // ocupa la zona segura de arriba (barra de estado). Lo mismo en app-root, si es el que hace scroll.
+  scroll-padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
   // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
   touch-action: pan-x pan-y;
 }
 
 body {
-  height: 100dvh;
-  overflow: hidden;
   margin: 0;
   font-family:
     system-ui,
@@ -106,8 +101,39 @@ body {
     Roboto,
     sans-serif;
   line-height: 1.45;
-  background: inherit;
+  background: var(--fondo);
   color: var(--texto);
+}
+
+// En pantallas táctiles el documento no hace scroll (lo hace app-root, ver app.scss) y su color de
+// fondo es el de la cabecera: así Safari en iOS no tiene contenido que difuminar bajo la barra de
+// estado y la pinta del color de la cabecera. Si asoma por algún hueco (bajo las barras de Safari),
+// arriba es el de la cabecera y abajo el de la página. En el resto, el documento hace scroll como
+// siempre: Safari en el Mac descoloca los elementos sticky (cabecera, mapa) al hacer scroll rápido
+// dentro de un contenedor.
+@media (hover: none) and (pointer: coarse) {
+  html {
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: linear-gradient(var(--marca) 50%, var(--fondo) 50%) var(--marca);
+  }
+
+  body {
+    height: 100dvh;
+    overflow: hidden;
+    background: inherit;
+  }
+}
+
+// Mientras arranca la app: la franja de la cabecera ya en su sitio y el resto con el fondo (si no,
+// se vería el fondo del documento, media pantalla del color de la cabecera en el móvil).
+app-root:empty {
+  display: block;
+  height: 100dvh;
+  background: linear-gradient(
+    var(--marca) calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px)),
+    var(--fondo) 0
+  );
 }
 
 // Si un nombre ocupa varias líneas, que sean de un largo parecido.

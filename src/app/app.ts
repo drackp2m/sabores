@@ -43,6 +43,8 @@ type Orden = 'numero' | 'cercania' | 'cierre';
 
 /** Igual que en app.scss: lista a la izquierda y mapa a la derecha. */
 const ESCRITORIO = '(min-width: 960px)';
+/** Igual que en styles.scss: en pantallas táctiles hace scroll app-root; en el resto, el documento. */
+const TACTIL = '(hover: none) and (pointer: coarse)';
 const CLAVE_VISTA = 'ruta-tapas:vista';
 
 const TEMAS: readonly { tema: Tema; nombre: string; icono: NombreIcono }[] = [
@@ -65,7 +67,6 @@ const TEMAS: readonly { tema: Tema; nombre: string; icono: NombreIcono }[] = [
   },
 })
 export class App {
-  /** Es lo que hace scroll, no la ventana (ver app.scss). */
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
@@ -172,12 +173,21 @@ export class App {
     const reloj = setInterval(() => this.ahora.set(new Date()), 30_000);
     this.destroyRef.onDestroy(() => clearInterval(reloj));
 
-    // A mano y pasivo: con un listener de Angular, cada evento de scroll repasaría toda la vista.
+    // A mano y pasivo: con un listener de Angular, cada evento de scroll repasaría toda la vista. En
+    // los dos sitios que pueden hacer scroll: app-root o el documento.
     afterNextRender(() => {
       const alHacerScroll = () => this.verSubir.set(this.pasadoElMapa());
-      this.host.addEventListener('scroll', alHacerScroll, { passive: true });
-      this.destroyRef.onDestroy(() => this.host.removeEventListener('scroll', alHacerScroll));
+      for (const objetivo of [this.host, window]) {
+        objetivo.addEventListener('scroll', alHacerScroll, { passive: true });
+        this.destroyRef.onDestroy(() => objetivo.removeEventListener('scroll', alHacerScroll));
+      }
     });
+  }
+
+  /** Lo que hace scroll: app-root en pantallas táctiles, el documento en el resto (ver styles.scss). */
+  private get desplazador(): Element {
+    if (globalThis.matchMedia?.(TACTIL).matches) return this.host;
+    return document.scrollingElement ?? document.documentElement;
   }
 
   /**
@@ -194,7 +204,7 @@ export class App {
 
   protected subir(): void {
     const suave = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.host.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
+    this.desplazador.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
   }
 
   /** Al abrir el menú, si hay una foto ampliada, se cierra (la cabecera queda por encima de ella). */
@@ -238,7 +248,7 @@ export class App {
   protected cambiarVista(vista: Vista): void {
     this.menuAbierto.set(false);
     if (this.detalle() !== null) history.back();
-    else if (vista !== this.vista()) this.host.scrollTo({ top: 0 });
+    else if (vista !== this.vista()) this.desplazador.scrollTo({ top: 0 });
     this.vista.set(vista);
     guardarVista(vista);
   }
@@ -255,10 +265,10 @@ export class App {
 
   /** Abre un local en una entrada nueva del historial: el botón «atrás» del navegador vuelve a la galería. */
   protected abrir(numero: number): void {
-    this.posicionGaleria = this.host.scrollTop;
+    this.posicionGaleria = this.desplazador.scrollTop;
     history.pushState({ local: numero }, '');
     this.detalle.set(numero);
-    this.host.scrollTo({ top: 0 });
+    this.desplazador.scrollTo({ top: 0 });
   }
 
   protected volver(): void {
@@ -269,7 +279,7 @@ export class App {
     const numero = (event.state as { local?: number } | null)?.local ?? null;
     this.detalle.set(numero);
     const top = numero === null && this.vista() === 'fotos' ? this.posicionGaleria : 0;
-    afterNextRender(() => this.host.scrollTo({ top }), { injector: this.injector });
+    afterNextRender(() => this.desplazador.scrollTo({ top }), { injector: this.injector });
   }
 }
 

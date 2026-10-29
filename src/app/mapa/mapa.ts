@@ -40,7 +40,7 @@ const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').ma
       <div class="botones">
         <button
           type="button"
-          class="secundario icono"
+          class="secundario icono ampliar"
           [title]="grande() ? 'Reducir el mapa' : 'Ampliar el mapa'"
           [attr.aria-label]="grande() ? 'Reducir el mapa' : 'Ampliar el mapa'"
           (click)="grande.set(!grande())"
@@ -76,18 +76,28 @@ const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').ma
       position: relative;
       height: 100%;
 
-      &.grande {
-        position: fixed;
-        inset: 0;
-        z-index: 1150; // Por encima de la cabecera y de los botones flotantes.
-        padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
-          env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-        background: var(--fondo);
+      // Solo en el móvil: en escritorio el mapa ya es grande, y al ir sticky (ver app.scss) quedaría
+      // por debajo de la cabecera y del resto de la página.
+      @media (max-width: 959.98px) {
+        &.grande {
+          position: fixed;
+          inset: 0;
+          z-index: 1150; // Por encima de la cabecera y de los botones flotantes.
+          padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+            env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+          background: var(--fondo);
 
-        .contenedor {
-          border: 0;
-          border-radius: 0;
+          .contenedor {
+            border: 0;
+            border-radius: 0;
+          }
         }
+      }
+    }
+
+    @media (min-width: 960px) {
+      .ampliar {
+        display: none;
       }
     }
 

@@ -83,7 +83,6 @@ const RADIO = 12;
       width: var(--ancho);
       height: calc(var(--ancho) * 439 / 690);
       margin: auto;
-      border: 0.5px solid var(--borde); // Como la miniatura de la que sale.
       border-radius: ${RADIO}px;
       object-fit: cover;
       box-shadow: var(--sombra-foto); // Más marcada en oscuro (styles.scss).

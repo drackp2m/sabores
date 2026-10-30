@@ -88,9 +88,10 @@
 
 html {
   background: var(--fondo);
-  // Todo va en rem: en pantallas estrechas (menos de 400px), todo un poco más pequeño. En %, para
-  // respetar el tamaño de letra que cada uno haya elegido en el navegador o el sistema.
-  @media (max-width: 399.98px) {
+  // Todo va en rem: en pantallas estrechas (menos de 375px, como los 360 de muchos Android), todo un
+  // poco más pequeño; los iPhone (375–430) se quedan como están. En %, para respetar el tamaño de
+  // letra que cada uno haya elegido en el navegador o el sistema.
+  @media (max-width: 374.98px) {
     font-size: 87.5%;
   }
 
@@ -345,15 +346,45 @@ button {
   }
 }
 
-.leaflet-bar a,
-.leaflet-bar a:hover {
-  border-bottom-color: var(--borde);
-  background-color: var(--superficie);
-  color: var(--texto);
-}
+// Los botones de zoom, como los de la derecha del mapa (botones secundarios con icono, en mapa.ts):
+// sueltos y no unidos en una barra. Con .leaflet-container delante para ganar a los de Leaflet en
+// pantallas táctiles (.leaflet-touch .leaflet-bar a:last-child…).
+.leaflet-container .leaflet-control-zoom.leaflet-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 
-.leaflet-bar a:hover {
-  background-color: var(--fondo);
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--marca);
+    border-radius: 0.5rem;
+    background: var(--superficie);
+    box-shadow: 0 1px 5px rgb(0 0 0 / 0.25);
+    color: var(--marca);
+    font-size: 1.1rem;
+    transition: background-color 0.15s;
+
+    &:hover:not(.leaflet-disabled) {
+      background: var(--acento-suave);
+    }
+
+    // En el zoom máximo o mínimo.
+    &.leaflet-disabled {
+      opacity: 0.5;
+    }
+
+    svg {
+      width: 1.15em;
+      height: 1.15em;
+    }
+  }
 }
 
 .leaflet-container .leaflet-control-attribution {
@@ -409,7 +440,7 @@ button {
     height: 0.75rem;
     border: 2px solid #fff;
     border-radius: 50%;
-    background: var(--marca);
+    background: var(--color-marcador, var(--marca));
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
     transition:
       background-color 0.15s,
@@ -418,6 +449,23 @@ button {
 
   &:hover::after {
     transform: scale(1.15);
+  }
+
+  // Del color del texto de su pastilla de horario (.estado-horario).
+  &.abierto {
+    --color-marcador: var(--verde);
+  }
+
+  &.pronto {
+    --color-marcador: var(--aviso);
+  }
+
+  &.tarde {
+    --color-marcador: var(--rojo);
+  }
+
+  &.cerrado {
+    --color-marcador: var(--suave);
   }
 
   &.activo::after {

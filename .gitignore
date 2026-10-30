@@ -40,6 +40,9 @@ testem.log
 /typings
 __screenshots__/
 
+# Certificados de mkcert para `pnpm start:safari`
+/.cert/
+
 # System files
 .DS_Store
 Thumbs.db

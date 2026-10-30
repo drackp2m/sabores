@@ -1,13 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="18 7 173 113">
   <title>Castelló Ruta de Sabor</title>
-  <linearGradient id="g" gradientUnits="userSpaceOnUse" x1="10" y1="50" x2="190" y2="140">
-    <stop offset="0.05" stop-color="#3d84c6"/>
-    <stop offset="0.2" stop-color="#358f9f"/>
-    <stop offset="0.4" stop-color="#2f9a48"/>
-    <stop offset="0.47" stop-color="#7d9a33"/>
-    <stop offset="0.53" stop-color="#f28c1e"/>
-    <stop offset="0.68" stop-color="#ef6328"/>
-    <stop offset="0.82" stop-color="#e5302b"/>
+  <!-- Como el original, cada tramo con su degradado: el bucle de azul (arriba a la izquierda) a
+       verde, en franjas paralelas a la barra; la gota de naranja a rojo (abajo a la derecha) y,
+       por encima, la barra entera, que pasa poco a poco del verde (donde sale del bucle) al
+       naranja antes de la punta de la gota, para fundirse con ella sin que se note dónde acaba.
+       Los extremos del bucle y de la gota se quedan a 8 unidades de la barra, para que se vea el
+       corte. -->
+  <linearGradient id="bucle" gradientUnits="userSpaceOnUse" x1="30" y1="33" x2="76" y2="81">
+    <stop offset="0" stop-color="#0a9ce4"/>
+    <stop offset="1" stop-color="#0ea03c"/>
   </linearGradient>
-  <path fill="none" stroke="url(#g)" stroke-width="34" d="M90.04 55.94L86.15 52.05A28.5 28.5 0 1 0 86.15 92.35L145.5 33.02L164.24 51.76A26.5 26.5 0 0 1 126.76 89.24L122.87 85.35"/>
+  <linearGradient id="gota" gradientUnits="userSpaceOnUse" x1="145" y1="45" x2="182" y2="95">
+    <stop offset="0.15" stop-color="#ff9a08"/>
+    <stop offset="0.5" stop-color="#ff6a14"/>
+    <stop offset="0.95" stop-color="#ec1717"/>
+  </linearGradient>
+  <linearGradient id="barra" gradientUnits="userSpaceOnUse" x1="86.15" y1="92.35" x2="145.5" y2="33.02">
+    <stop offset="0" stop-color="#0ea03c"/>
+    <stop offset="0.4" stop-color="#9c9a24"/>
+    <stop offset="0.78" stop-color="#ff9a08"/>
+  </linearGradient>
+  <g fill="none" stroke-width="34">
+    <path stroke="url(#bucle)" d="M88.54 54.44L86.15 52.05A28.5 28.5 0 1 0 86.15 92.35L102 76.5"/>
+    <path stroke="url(#gota)" d="M129 49.5L145.5 33.02L164.24 51.76A26.5 26.5 0 0 1 126.76 89.24L125.69 88.17"/>
+    <path stroke="url(#barra)" d="M86.15 92.35L145.5 33.02"/>
+  </g>
 </svg>

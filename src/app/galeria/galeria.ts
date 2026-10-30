@@ -243,11 +243,14 @@ import { Visor } from '../visor/visor';
       text-wrap: balance;
     }
 
-    // Por encima del ::after de la cabecera, para ampliarse en vez de abrir el local.
+    // Por encima del ::after de la cabecera, para ampliarse en vez de abrir el local. Con todo el
+    // ancho: un botón se ajusta a lo que tiene dentro, y hasta que carga la foto (en diferido) no
+    // mediría nada, ni se cargaría en algunos navegadores.
     .foto,
     .foto:hover:not(:disabled) {
       position: relative;
       display: block;
+      width: 100%;
       height: auto;
       padding: 0;
       border: 0.5px solid var(--borde); // Fino, para las fotos de fondo claro (como en las fichas).

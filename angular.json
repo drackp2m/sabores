@@ -71,6 +71,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": [".local"]
+          },
           "configurations": {
             "production": {
               "buildTarget": "ruta-tapas:build:production"

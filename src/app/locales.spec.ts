@@ -176,8 +176,9 @@ describe('filtrarLocales con favoritos y valoraciones', () => {
   });
 
   it('según las tapas probadas (las valoradas)', () => {
-    expect(numeros({ probadas: 'pendientes' })).toEqual([2, 3]);
     expect(numeros({ probadas: 'ninguna' })).toEqual([3]);
+    expect(numeros({ probadas: 'alguna' })).toEqual([1, 2]);
+    expect(numeros({ probadas: 'pendientes' })).toEqual([2, 3]);
     expect(numeros({ probadas: 'todas' })).toEqual([1]);
     expect(numeros({ probadas: 'pendientes', favoritos: true })).toEqual([2, 3]);
   });

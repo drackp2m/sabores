@@ -16,7 +16,16 @@ import {
 import * as L from 'leaflet';
 
 import { Icono, crearIcono } from '../icono/icono';
-import { Coordenadas, Estado, Llegada, Local, formatearDuracion, pastillaEstado } from '../locales';
+import {
+  Coordenadas,
+  Estado,
+  Llegada,
+  Local,
+  TipoEstado,
+  formatearDuracion,
+  pastillaEstado,
+  tipoEstado,
+} from '../locales';
 import { buscarCamino, enlaceComoLlegar } from '../ruta';
 
 const CASTELLON: L.LatLngExpression = [39.986, -0.037];
@@ -26,6 +35,17 @@ const CASTELLON: L.LatLngExpression = [39.986, -0.037];
  * pellizcar (Leaflet desplaza el mapa con el punto medio entre los dedos mientras hace zoom).
  */
 const TACTIL = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').matches ?? false;
+
+const TIPOS_ESTADO: TipoEstado[] = ['abierto', 'pronto', 'tarde', 'cerrado'];
+
+/** Lo que tiene que moverse un dedo para saber hacia dónde va (al tocar, el dedo tiembla un poco). */
+const UMBRAL_ARRASTRE = 10;
+
+/**
+ * Si ya ha movido el mapa con dos dedos: entonces ya lo sabe y no se le vuelve a avisar. Para toda
+ * la sesión, en los dos mapas (lista y ficha).
+ */
+let sabeMoverlo = false;
 
 /**
  * Marcador de un local: un punto pequeño (styles.scss) en el centro de una zona de 1,875rem para
@@ -55,7 +75,13 @@ function remEnPx(): number {
   imports: [Icono],
   template: `
     <div class="marco" [class.grande]="grande()">
-      <div #contenedor class="contenedor" (touchmove)="avisar($event)"></div>
+      <div
+        #contenedor
+        class="contenedor"
+        (touchstart)="empezarToque($event)"
+        (touchmove)="avisar($event)"
+        (touchend)="inicioToque = undefined"
+      ></div>
       <div class="botones">
         <button
           type="button"
@@ -225,6 +251,11 @@ export class Mapa {
   private readonly mapa = signal<L.Map | undefined>(undefined);
   protected readonly aviso = signal(false);
   private ocultarAviso?: ReturnType<typeof setTimeout>;
+  /**
+   * Dónde se ha puesto un dedo en el mapa, hasta saber hacia dónde va. Al soltarlo se borra: los
+   * controles y popups de Leaflet no dejan pasar el touchstart y quedaría el del toque anterior.
+   */
+  protected inicioToque?: { x: number; y: number };
   private readonly capa = new L.FeatureGroup();
   private readonly capaCamino = new L.FeatureGroup();
   private readonly marcadores = new Map<number, L.Marker>();
@@ -244,7 +275,15 @@ export class Mapa {
         zoom: 14,
         scrollWheelZoom: false,
         dragging: !TACTIL,
+        zoomControl: false,
       });
+      // Los botones de zoom, con nuestros iconos (como los de la derecha, ver styles.scss).
+      new L.Control.Zoom({
+        zoomInText: crearIcono('mas').outerHTML,
+        zoomInTitle: 'Acercar',
+        zoomOutText: crearIcono('menos').outerHTML,
+        zoomOutTitle: 'Alejar',
+      }).addTo(mapa);
       new L.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -321,12 +360,20 @@ export class Mapa {
       if (mapa) untracked(() => this.pintar(mapa, locales));
     });
 
-    // El activo, dorado (como las estrellas) y por encima de los demás.
+    // Cada uno, del color de su pastilla de horario (abierto, a punto de cerrar, no da tiempo,
+    // cerrado); el activo, dorado (como las estrellas) y por encima de los demás.
     effect(() => {
       const activo = this.activo();
-      this.mapa(); // Tras pintar los marcadores.
+      const estados = this.estados();
+      const llegadas = this.llegadas();
+      this.mapa();
+      this.locales(); // Tras pintar los marcadores.
       for (const [numero, marcador] of this.marcadores) {
-        marcador.getElement()?.classList.toggle('activo', numero === activo);
+        const clases = marcador.getElement()?.classList;
+        const estado = estados.get(numero);
+        clases?.remove(...TIPOS_ESTADO);
+        if (estado) clases?.add(tipoEstado(estado, llegadas.get(numero)));
+        clases?.toggle('activo', numero === activo);
         marcador.setZIndexOffset(numero === activo ? 1000 : 0);
       }
     });
@@ -350,9 +397,26 @@ export class Mapa {
     marcador.openPopup();
   }
 
-  /** Al intentar mover el mapa con un dedo, recuerda que son dos (y la página sigue haciendo scroll). */
+  protected empezarToque(evento: TouchEvent): void {
+    if (evento.touches.length > 1) sabeMoverlo = true;
+    const [dedo] = evento.touches;
+    this.inicioToque =
+      evento.touches.length === 1 ? { x: dedo.clientX, y: dedo.clientY } : undefined;
+  }
+
+  /**
+   * Al intentar mover el mapa con un dedo, recuerda que son dos (y la página sigue haciendo scroll).
+   * Solo si arrastra de lado: en vertical está desplazando la página, que es lo que quería.
+   */
   protected avisar(evento: TouchEvent): void {
-    if (!TACTIL || this.grande() || evento.touches.length !== 1) return;
+    const inicio = this.inicioToque;
+    if (!inicio || !TACTIL || this.grande() || sabeMoverlo || evento.touches.length !== 1) return;
+    const [dedo] = evento.touches;
+    const dx = Math.abs(dedo.clientX - inicio.x);
+    const dy = Math.abs(dedo.clientY - inicio.y);
+    if (Math.max(dx, dy) < UMBRAL_ARRASTRE) return;
+    this.inicioToque = undefined; // Decidido para todo el arrastre.
+    if (dx <= dy) return;
     this.aviso.set(true);
     clearTimeout(this.ocultarAviso);
     this.ocultarAviso = setTimeout(() => this.aviso.set(false), 1200);

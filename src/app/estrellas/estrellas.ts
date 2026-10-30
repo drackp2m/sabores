@@ -57,7 +57,8 @@ export const FRASES = [
     '[attr.aria-label]': 'editable() ? "Valoración" : descripcion()',
   },
   styles: `
-    // Con un filo de luz arriba y a la izquierda, como un cristal.
+    // Con un filo de luz arriba y a la izquierda, como un cristal. Sin backdrop-filter: con dos por
+    // local, al hacer scroll da tirones (hasta en un iPhone 15 Pro Max).
     :host {
       --trazo-icono: 1.5;
       display: inline-flex;
@@ -65,10 +66,8 @@ export const FRASES = [
       gap: 0.1em;
       padding: 0.2em 0.35em;
       border-radius: 999px;
-      background: rgb(38 38 38 / 0.3);
+      background: rgb(38 38 38 / 0.4);
       box-shadow: inset 1px 1px 0 rgb(255 255 255 / 0.3);
-      -webkit-backdrop-filter: blur(4px);
-      backdrop-filter: blur(4px);
       color: rgb(255 255 255 / 0.7);
       line-height: 1;
     }

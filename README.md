@@ -76,9 +76,27 @@ generados no sobrescriben los que ya existen, así que se conserva el código de
 `package.json`, solo hace `pnpm install`.
 
 ```sh
-pnpm start   # ng serve --host 0.0.0.0 → http://localhost:4200
-pnpm test    # tests unitarios
+pnpm start          # ng serve --host 0.0.0.0 → http://localhost:4200
+pnpm start:safari   # lo mismo por HTTPS, para el iPhone en la red local → https://<mac>.local:4200
+pnpm test           # tests unitarios
 ```
+
+Safari en el iPhone necesita HTTPS con un certificado en el que confíe, servido en HTTP/1.1 (con el
+HTTP/2 de `ng serve --ssl` no carga). `pnpm start:safari` ([scripts/safari.mjs](scripts/safari.mjs))
+arranca `ng serve` en el 4201 y pone delante, en el 4200, un proxy TLS en HTTP/1.1 con el
+certificado de `.cert/` (fuera de git). Se genera una vez con [mkcert](https://github.com/FiloSottile/mkcert)
+en una terminal del Mac, no en la del contenedor (`scutil` e `ipconfig` son de macOS, y la CA en la
+que confía el iPhone es la del mkcert del Mac), desde la carpeta del proyecto:
+
+```sh
+mkdir -p .cert && mkcert -cert-file .cert/cert.pem -key-file .cert/key.pem \
+  "$(scutil --get LocalHostName).local" "$(ipconfig getifaddr en0)" localhost
+```
+
+El iPhone tiene que confiar en la CA de mkcert (`mkcert -CAROOT` → `rootCA.pem`: se instala como
+perfil y se activa en Ajustes → General → Información → Ajustes de confianza de certificados), y VS
+Code tiene que reenviar los puertos a toda la red: `"remote.localPortHost": "allInterfaces"` en los
+ajustes de usuario.
 
 El terminal usa zsh con Powerlevel10k, zsh-autosuggestions y zsh-syntax-highlighting. Su
 configuración está en `.devcontainer/zsh/` (`ZDOTDIR`): ahí van `.p10k.zsh` (o ejecuta

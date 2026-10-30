@@ -88,8 +88,11 @@ export interface Filtros {
   probadas: Probadas;
 }
 
-/** 'pendientes': le queda alguna tapa sin probar; 'ninguna': no se ha probado ninguna; 'todas': ya están todas. */
-export type Probadas = '' | 'pendientes' | 'ninguna' | 'todas';
+/**
+ * 'ninguna': no se ha probado ninguna tapa; 'alguna': se ha probado al menos una; 'pendientes': le
+ * queda alguna sin probar; 'todas': ya están todas.
+ */
+export type Probadas = '' | 'ninguna' | 'alguna' | 'pendientes' | 'todas';
 
 export const SIN_FILTROS: Filtros = {
   texto: '',
@@ -147,10 +150,12 @@ function cumpleProbadas(
 ): boolean {
   const probada = (t: Tapa) => valoraciones.has(claveTapa(local.number, t.number));
   switch (probadas) {
-    case 'pendientes':
-      return !local.tapas.every(probada);
     case 'ninguna':
       return !local.tapas.some(probada);
+    case 'alguna':
+      return local.tapas.some(probada);
+    case 'pendientes':
+      return !local.tapas.every(probada);
     case 'todas':
       return local.tapas.every(probada);
   }

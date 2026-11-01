@@ -50,9 +50,12 @@ export const PHRASES = [
   `,
   host: { class: 'stars-pill', role: 'group', 'aria-label': 'Valoración' },
   styles: `
+    // A transform of its own, to stay where it goes: without one, Safari paints each <svg> on whole
+    // CSS pixels, and in the thumbnail's size that's a good part of a screen pixel.
     app-icon {
       width: 1em;
       height: 1em;
+      transform: translate(0);
     }
 
     // The outline stays white: on the yellow, it still shows a little.

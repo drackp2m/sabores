@@ -1,5 +1,6 @@
 import { Component, ElementRef, computed, inject, input } from '@angular/core';
 
+import { STAR_PATH } from '../icon/icon';
 import { Store } from '../store';
 import { Tapa, photoUrl } from '../venues';
 import { Viewer } from '../viewer/viewer';
@@ -19,7 +20,23 @@ import { Viewer } from '../viewer/viewer';
       width="690"
       height="439"
     />
-    <span class="stars stars-pill" aria-hidden="true" [style.--value]="rating()"></span>
+    <span class="stars stars-pill" aria-hidden="true">
+      <svg
+        viewBox="-8.4 -4.8 146.4 33.6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+      >
+        @for (x of stars; track x) {
+          <path
+            [attr.d]="star"
+            [attr.transform]="'translate(' + x + ')'"
+            [class.filled]="$index < rating()"
+          />
+        }
+      </svg>
+    </span>
   `,
   host: {
     type: 'button',
@@ -48,7 +65,8 @@ import { Viewer } from '../viewer/viewer';
       cursor: zoom-in;
     }
 
-    // On hover, the photo moves a little closer within its frame, without moving anything else.
+    // On hover, the photo moves a little closer within its frame, without moving anything else. Not
+    // on touch screens: there the hover stays on after tapping.
     img {
       display: block;
       width: 100%;
@@ -57,8 +75,10 @@ import { Viewer } from '../viewer/viewer';
       object-fit: cover;
       transition: transform 0.3s ease-out;
 
-      :host(:is(:hover, :focus-visible)) & {
-        transform: scale(1.06);
+      @media (hover: hover) {
+        :host(:is(:hover, :focus-visible)) & {
+          transform: scale(1.06);
+        }
       }
 
       @include media.reduced-motion {
@@ -66,46 +86,31 @@ import { Viewer } from '../viewer/viewer';
       }
     }
 
-    // The star from ICONS (icon.ts) with the stars' 1.5 stroke, in a slot 1.1em wide: the star and the
-    // gap up to the next one.
-    $star-path: 'M12 2.9L14.44 9.54L21.51 9.81L15.95 14.18L17.88 20.99L12 17.05L6.12 20.99L8.05 14.18L2.49 9.81L9.56 9.54z';
-    @function star($paint) {
-      @return url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26.4 24'%3E%3Cpath d='#{$star-path}' stroke-linejoin='round' #{$paint}/%3E%3C/svg%3E");
-    }
-
-    // At the bottom center of the photo (in the viewer they move below it, large). All five in a
-    // single element, the same size as the viewer's (stars.ts): the outline of them all (::after) on
-    // top of the fill of the rated ones (::before), with the star as a mask.
+    // At the bottom center of the photo (in the viewer they move below it, large), the same size as
+    // the viewer's (stars.ts): its padding, in the viewBox, and 1.1em per star. Centered with margins
+    // and not with a transform, so that it's painted on whole pixels like the photo.
     .stars {
       position: absolute;
+      inset-inline: 0;
       bottom: 0.3rem;
-      left: 50%;
+      width: 6.1em;
+      height: 1.4em;
+      margin-inline: auto;
+      padding: 0;
       font-size: 0.8rem;
-      translate: -50%;
 
-      &::before,
-      &::after {
-        content: '';
-        height: 1em;
-        mask-position: 0 0;
-        mask-size: 1.1em 1em;
-        mask-repeat: repeat-x;
-      }
-
-      &::before {
+      // All five in a single <svg>, and not as a mask: Safari rounds a mask's size to whole pixels,
+      // and they'd come out wider than the viewer's. The transform, for the same reason as in stars.ts.
+      svg {
         position: absolute;
-        top: 0.2em;
-        left: 0.35em;
-        width: calc(var(--value) * 1.1em);
-        background: var(--star);
-        mask-image: star("fill='%23000'");
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform: translate(0);
       }
 
-      &::after {
-        position: relative;
-        width: 5.4em;
-        background: currentColor;
-        mask-image: star("fill='none' stroke='%23000' stroke-width='1.5'");
+      .filled {
+        fill: var(--star);
       }
     }
   `,
@@ -118,6 +123,9 @@ export class TapaPhoto {
   private readonly store = inject(Store);
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
 
+  protected readonly star = STAR_PATH;
+  /** Where each star starts: every 1.1em, with the 24 of the icons being 1em. */
+  protected readonly stars = [0, 26.4, 52.8, 79.2, 105.6];
   protected readonly photo = computed(() => photoUrl(this.tapa(), 500));
   protected readonly rating = computed(() => this.store.stars(this.venue(), this.tapa().number));
   protected readonly label = computed(() => {

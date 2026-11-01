@@ -9,15 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { SETTLE, animateHeight } from '../animate-height';
+import { animateHeight, unfold } from '../animate-height';
 import { reducedMotion } from '../media';
-
-/**
- * Text clamped to three lines, with «Ver más / Ver menos» if it doesn't fit. Like the cards' schedule:
- * on opening, the height grows and the new lines appear behind it; on closing, it just folds.
- */
-/** Height of the gradient through which the lines appear on opening (about two lines). */
-const FADE = 40;
 
 const onResize = new WeakMap<Element, () => void>();
 let observer: ResizeObserver | undefined;
@@ -32,6 +25,10 @@ function observeSize(element: Element, callback: () => void): () => void {
   return () => shared.unobserve(element);
 }
 
+/**
+ * Text clamped to three lines, with «Ver más / Ver menos» if it doesn't fit. Like the cards' schedule:
+ * on opening, the height grows and the new lines appear behind it; on closing, it just folds.
+ */
 @Component({
   selector: 'app-collapsible',
   template: `
@@ -122,20 +119,7 @@ export class Collapsible {
 
     if (open) {
       this.clamped.set(false);
-      animateHeight(paragraph, from, full);
-      // A mask ending in a gradient moves down a bit behind the height: each new line appears little
-      // by little, after room has been made for it.
-      const mask = (height: number): Keyframe => ({
-        maskImage: `linear-gradient(#000 calc(100% - ${FADE}px), transparent)`,
-        maskRepeat: 'no-repeat',
-        maskSize: `100% ${height + FADE}px`,
-      });
-      paragraph.animate([mask(from), mask(full)], {
-        duration: 550,
-        delay: 100,
-        easing: SETTLE,
-        fill: 'backwards',
-      });
+      unfold(paragraph, from, full);
     } else {
       // It gets clamped at the end: otherwise, the ellipsis would show up too early.
       animateHeight(paragraph, from, clamped).onfinish = () => this.clamped.set(true);

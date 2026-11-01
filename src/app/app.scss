@@ -15,6 +15,7 @@
 // On touch screens the app scrolls instead of the document (see styles/_base.scss).
 @include media.touch {
   :host {
+    position: relative; // The enlarged photo scrolls with the page (viewer.ts).
     height: 100%;
     overflow: hidden auto;
     overscroll-behavior: none;

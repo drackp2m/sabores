@@ -179,7 +179,7 @@ dd {
 
 // The gap under the summary goes on the first row and not as padding on the list: a box can't be
 // shorter than its padding, so the animated height would stop there and jump when it finishes closing.
-[data-row='0'] {
+.first {
   margin-top: 0.5rem;
 }
 

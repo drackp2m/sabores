@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 
-import { animateHeight } from '../animate-height';
+import { animateHeight, unfold } from '../animate-height';
 import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Collapsible } from '../collapsible/collapsible';
@@ -68,8 +68,8 @@ export class VenueCard {
   protected readonly arrival = computed(() => this.tapasRoute.arrivals().get(this.venue().number));
 
   /**
-   * Opens the schedule making room little by little, while each day appears a bit after the one
-   * before; on closing, the room just folds away.
+   * Opens the schedule making room little by little, with the days appearing behind it from top to
+   * bottom; on closing, the room just folds away.
    */
   protected toggleSchedule(event: Event, details: HTMLDetailsElement): void {
     const open = !details.open || this.folding;
@@ -90,21 +90,12 @@ export class VenueCard {
   private animateSchedule(details: HTMLDetailsElement, list: HTMLElement, open: boolean): void {
     // If pressed halfway through, it continues from the height it has at that moment.
     const from = details.open ? list.getBoundingClientRect().height : 0;
-    for (const animation of list.getAnimations({ subtree: true })) animation.cancel();
+    for (const animation of list.getAnimations()) animation.cancel();
 
     if (open) {
       this.folding = false;
       details.open = true;
-      animateHeight(list, from, list.getBoundingClientRect().height);
-      // All the cells in a row (data-row) come in at once.
-      [...list.children].forEach((cell) =>
-        cell.animate([{ opacity: 0 }, {}], {
-          duration: 320,
-          delay: 60 + Number((cell as HTMLElement).dataset['row']) * 45,
-          easing: 'ease-out',
-          fill: 'backwards',
-        }),
-      );
+      unfold(list, from, list.getBoundingClientRect().height);
     } else {
       this.folding = true;
       animateHeight(list, from, 0).onfinish = () => {

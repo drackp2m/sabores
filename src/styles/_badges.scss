@@ -67,6 +67,19 @@
   }
 }
 
+// Registered to be able to animate them, as the viewer does (viewer.ts).
+@property --icon-stroke {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 2;
+}
+
+@property --pill-edge {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 1px;
+}
+
 // A tapa's stars, the size of the text, on a translucent gray pill with an edge of light at the top
 // and left, like glass: those of the thumbnails (tapa-photo.ts) and those of the viewer (stars.ts),
 // which grow from them on enlarging the photo. No backdrop-filter: with two per venue, it stutters on
@@ -78,7 +91,7 @@
   padding: 0.2em 0.35em;
   border-radius: 999px;
   background: rgb(38 38 38 / 0.4);
-  box-shadow: inset 1px 1px 0 rgb(255 255 255 / 0.3);
+  box-shadow: inset var(--pill-edge) var(--pill-edge) 0 rgb(255 255 255 / 0.3);
   color: rgb(255 255 255 / 0.7);
   line-height: 1;
 }

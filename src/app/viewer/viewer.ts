@@ -10,7 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 
-import { SETTLE } from '../animate-height';
+import { GLIDE } from '../animate-height';
 import { reducedMotion } from '../media';
 import { PHRASES, Stars } from '../stars/stars';
 import { Store } from '../store';
@@ -47,15 +47,18 @@ export class Viewer {
   }
 }
 
-const DURATION = 380;
+const DURATION = 420;
 /** Corner radius of the large photo. */
 const RADIUS = 12;
+/** Line of the stars: that of the thumbnails (tapa-photo.ts) and, thinner, that of the large ones. */
+const STROKE = 1.5;
+const LARGE_STROKE = 1.1;
 
 /**
  * Enlarged photo: it grows from its thumbnail to the center of the space under the header (which
  * stays in view) while the backdrop appears, blurred and colorless, and on closing (by clicking
  * anywhere or with Escape) it makes the same journey in reverse. Its stars go with it, large, to stay
- * below and rate it (also with the keys 0 to 5), with what the rating says.
+ * below and rate it (also with the keys 0 to 5), and what the rating says comes out from under them.
  */
 @Component({
   selector: 'app-photo-viewer',
@@ -81,7 +84,7 @@ const RADIUS = 12;
             [src]="photo.src"
             [alt]="photo.alt"
             [style.background-image]="'url(' + photo.thumbnail + ')'"
-            decoding="async"
+            decoding="sync"
             width="690"
             height="439"
           />
@@ -110,20 +113,24 @@ const RADIUS = 12;
   styles: `
     @use 'media';
 
-    // Under the header (its height, the safe area and its border), which isn't covered; above
-    // everything else, floating buttons included. A size container, to measure the photo with the
-    // space left.
+    // Over what's in view, but in the page and not fixed on the screen: a phone's scroll can stop
+    // between two CSS pixels and the code is told a rounded position, so a fixed photo wouldn't land
+    // exactly on its thumbnail. This way the scroll moves them both the same. Above everything but the
+    // header, floating buttons included.
     .viewer {
-      position: fixed;
-      inset: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1px) 0 0;
+      --top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1px);
+      position: absolute;
+      left: 0;
       z-index: 1090;
-      container-type: size;
+      width: 100%;
+      height: 100dvh;
       outline: none;
     }
 
+    // Under the header (its height, the safe area and its border), which isn't covered.
     .backdrop {
-      position: absolute;
-      inset: 0;
+      position: fixed;
+      inset: var(--top) 0 0;
       background: rgb(42 33 27 / 0.35);
       backdrop-filter: blur(10px) grayscale(0.5);
       -webkit-backdrop-filter: blur(10px) grayscale(0.5);
@@ -131,10 +138,12 @@ const RADIUS = 12;
       will-change: opacity;
     }
 
-    // The photo, with the stars and the phrase below it, in the center of the space left.
+    // The photo, with the stars and the phrase below it, in the center of the space left. A size
+    // container, to measure the photo with that space.
     .center {
       position: absolute;
-      inset: 0;
+      inset: var(--top) 0 0;
+      container-type: size;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -145,6 +154,7 @@ const RADIUS = 12;
     // the real size of the photos (690×439).
     img {
       --width: min(92cqw, (88cqh - 6.5rem) * 690 / 439, 860px);
+      position: relative; // Moved in snap().
       flex: none;
       width: var(--width);
       height: calc(var(--width) * 439 / 690);
@@ -156,17 +166,20 @@ const RADIUS = 12;
       will-change: transform;
     }
 
-    // The thumbnail's, large (they're the size of the text).
+    // The thumbnail's, large (they're the size of the text). Above the phrase, which comes out from
+    // under them.
     app-stars {
+      position: relative; // Moved in snap().
+      z-index: 1;
       margin-top: 1rem;
       font-size: 2.1rem;
       transform-origin: 0 0;
       will-change: transform;
     }
 
-    // Thinner than on the thumbnails (1.5): large, the usual line looks heavy.
+    // Thinner than on the thumbnails: large, the usual line looks heavy.
     app-stars {
-      --icon-stroke: 1.1;
+      --icon-stroke: ${LARGE_STROKE};
     }
 
     // One line in view, fading out at the sides. --steps (the phrases going by) is set by the ribbon:
@@ -179,6 +192,7 @@ const RADIUS = 12;
       height: 1.5em;
       margin: 0.5rem 0 0;
       overflow: hidden;
+      transform-origin: 0 0;
       color: #fff;
       font-size: 1.1rem;
       font-weight: 700;
@@ -240,12 +254,18 @@ export class PhotoViewer {
     this.viewer.close = () => void this.close();
 
     // The keys, only with the photo open: otherwise, every key pressed anywhere would check the view
-    // again.
+    // again. The same for the scroll, which the keyboard or the scrollbar can still move: in capture,
+    // since app-root's doesn't bubble.
     effect((onCleanup) => {
       if (!this.viewer.photo()) return;
       const onKeydown = (event: KeyboardEvent) => this.pressKey(event);
+      const onScroll = () => this.place();
       document.addEventListener('keydown', onKeydown);
-      onCleanup(() => document.removeEventListener('keydown', onKeydown));
+      document.addEventListener('scroll', onScroll, { capture: true, passive: true });
+      onCleanup(() => {
+        document.removeEventListener('keydown', onKeydown);
+        document.removeEventListener('scroll', onScroll, { capture: true });
+      });
     });
 
     // As soon as the large photo is on the page (before it gets painted), the enlarging starts.
@@ -256,6 +276,7 @@ export class PhotoViewer {
       photo.origin.style.visibility = 'hidden';
       // The focus, on the dialog: Escape closes it, and on closing it returns to the thumbnail.
       this.dialog()!.nativeElement.focus({ preventScroll: true });
+      this.place();
       this.animate(photo, true);
     });
 
@@ -284,6 +305,14 @@ export class PhotoViewer {
     });
   }
 
+  /** Takes the viewer to the part of the page in view (see .viewer). */
+  private place(): void {
+    const dialog = this.dialog()?.nativeElement;
+    if (!dialog) return;
+    dialog.style.top = '0';
+    dialog.style.top = `${-dialog.getBoundingClientRect().top}px`;
+  }
+
   protected rate(photo: EnlargedPhoto, stars: number): void {
     this.store.rate(photo.venue, photo.tapa, stars);
   }
@@ -310,7 +339,7 @@ export class PhotoViewer {
   /**
    * From the thumbnail to the large photo (open) or the other way round. The keyframes get reversed
    * and not the animation (direction: 'reverse'), which would reverse the curve too: this way it
-   * always starts fast and slows down on arrival.
+   * always starts gently and slows down on arrival.
    */
   private animate(photo: EnlargedPhoto, open: boolean): Promise<unknown> {
     const image = this.image()!.nativeElement;
@@ -323,61 +352,123 @@ export class PhotoViewer {
         fill: 'both',
       }).finished;
     }
-    const from = photo.origin.getBoundingClientRect();
-    const to = image.getBoundingClientRect();
+    // The photo and not its frame: on hover it moves closer (tapa-photo.ts), and it has to set off
+    // exactly as it's seen, with the frame cutting off what sticks out. Moved closer it's scaled, and
+    // that isn't painted on whole pixels.
+    const thumbnail = photo.origin.querySelector('img')!.getBoundingClientRect();
+    const frame = painted(photo.origin.getBoundingClientRect());
+    const from = thumbnail.width > frame.width ? thumbnail : painted(thumbnail);
+    const to = snap(image);
     const scaleX = from.width / to.width;
     const scaleY = from.height / to.height;
+    const crop = [
+      (frame.top - from.top) / scaleY,
+      (from.right - frame.right) / scaleX,
+      (from.bottom - frame.bottom) / scaleY,
+      (frame.left - from.left) / scaleX,
+    ];
+    // The frame's border around the photo, measured (it depends on the screen). On hover there's none
+    // to carry: the photo covers it.
+    const border = Math.max(0, from.left - frame.left);
+    const originStyle = getComputedStyle(photo.origin);
     // The radius gets scaled too: it's compensated so that on screen it's the thumbnail's (and doesn't
     // change suddenly on arrival), on each axis separately because the scale isn't the same.
-    const radius = parseFloat(getComputedStyle(photo.origin).borderTopLeftRadius) || 0;
+    const radius = parseFloat(originStyle.borderTopLeftRadius) || 0;
+    const corners = (size: number) => `${size / scaleX}px / ${size / scaleY}px`;
     // The current theme's, already resolved (animations don't always resolve CSS variables).
     const shadow = getComputedStyle(image).boxShadow;
     const options: KeyframeAnimationOptions = {
       duration: reduced ? 0 : DURATION,
-      easing: SETTLE,
+      easing: GLIDE,
       fill: 'both',
     };
     const direction = (keyframes: Keyframe[]) => (open ? keyframes : keyframes.reverse());
+    const stars = this.stars()!.nativeElement;
+    const phrase = this.phrase()!.nativeElement;
+    // Only the corner goes to whole pixels: the stars aren't stretched to fit them, as the photo is.
+    const pill = photo.origin.querySelector('.stars-pill')!.getBoundingClientRect();
+    const fromStars = new DOMRect(pixel(pill.left), pixel(pill.top), pill.width, pill.height);
+    const toStars = snap(stars);
+    const starsScale = fromStars.height / toStars.height;
+    // Each transform on its own, away from what has to be repainted, so that it can run on the
+    // compositor: a slow frame on the main thread doesn't hold it up.
     const animations = [
+      image.animate(direction([{ transform: over(from, to) }, { transform: 'none' }]), options),
       image.animate(
         direction([
           {
-            transform: over(from, to),
-            borderRadius: `${radius / scaleX}px / ${radius / scaleY}px`,
-            // The shadow appears on takeoff and goes on returning, without vanishing suddenly at the end.
-            boxShadow: 'none',
+            borderRadius: corners(radius - border),
+            clipPath: `inset(${crop.map((side) => `${side}px`).join(' ')} round ${corners(radius)})`,
+            // The photo carries the thumbnail's border, so that on landing they measure the same: it's
+            // the shadow's first layer, the one that fades out on the way. The rest of the shadow
+            // appears on takeoff and goes on returning, without vanishing suddenly at the end.
+            boxShadow: `0 0 0 ${border / scaleX}px ${originStyle.borderTopColor}`,
           },
-          { transform: 'none', boxShadow: shadow, borderRadius: `${RADIUS}px` },
+          {
+            borderRadius: `${RADIUS}px`,
+            // Beyond the shadow, which it would cut off.
+            clipPath: `inset(-200px round ${RADIUS}px)`,
+            boxShadow: `0 0 0 0 transparent, ${shadow}`,
+          },
         ]),
         options,
       ),
       // Just the opacity: animating the blur itself stutters on phones.
       this.backdrop()!.nativeElement.animate(direction([{ opacity: 0 }, {}]), options),
-      // The phrase appears when the stars have almost arrived, and on closing it leaves right away.
-      this.phrase()!.nativeElement.animate([{ opacity: 0, transform: 'translateY(-0.5rem)' }, {}], {
-        duration: reduced ? 0 : open ? 260 : 120,
-        delay: open && !reduced ? DURATION * 0.55 : 0,
-        easing: open ? 'ease-out' : 'ease-in',
-        direction: open ? 'normal' : 'reverse',
-        fill: 'both',
-      }),
+      stars.animate(
+        direction([{ transform: over(fromStars, toStars) }, { transform: 'none' }]),
+        options,
+      ),
+      // They're not the thumbnail's stars but a larger copy: the lines get scaled too, so they're
+      // compensated for it to look the same on takeoff and on landing.
+      stars.animate(
+        direction([
+          { '--icon-stroke': STROKE, '--pill-edge': `${1 / starsScale}px` },
+          { '--icon-stroke': LARGE_STROKE, '--pill-edge': '1px' },
+        ]),
+        options,
+      ),
+      phrase.animate(
+        direction([
+          {
+            opacity: 0,
+            transform: centered(fromStars, phrase.getBoundingClientRect(), starsScale),
+          },
+          { transform: 'none' },
+        ]),
+        options,
+      ),
     ];
-    const stars = this.stars()!.nativeElement;
-    const originStars = photo.origin.querySelector('.stars-pill');
-    if (originStars) {
-      const fromStars = originStars.getBoundingClientRect();
-      animations.push(
-        stars.animate(
-          direction([
-            { transform: over(fromStars, stars.getBoundingClientRect()) },
-            { transform: 'none' },
-          ]),
-          options,
-        ),
-      );
-    }
     return Promise.all(animations.map((animation) => animation.finished));
   }
+}
+
+/**
+ * Leaves an element on whole pixels and returns where it is. While it animates, the browser rounds
+ * its position on its own, and a transform calculated from the real one would land up to half a pixel
+ * away from the thumbnail.
+ */
+function snap(element: HTMLElement): DOMRect {
+  element.style.left = element.style.top = '';
+  const { left, top } = element.getBoundingClientRect();
+  element.style.left = `${Math.round(left) - left}px`;
+  element.style.top = `${Math.round(top) - top}px`;
+  return element.getBoundingClientRect();
+}
+
+/** The screen pixel closest to a position: where the browser paints an edge at rest. */
+function pixel(position: number): number {
+  return Math.round(position * devicePixelRatio) / devicePixelRatio;
+}
+
+/** A box as it's painted at rest, with its edges on screen pixels. */
+function painted({ left, top, right, bottom }: DOMRect): DOMRect {
+  return new DOMRect(
+    pixel(left),
+    pixel(top),
+    pixel(right) - pixel(left),
+    pixel(bottom) - pixel(top),
+  );
 }
 
 /** Moves and scales (from the corner) what is at "to" so that it sits exactly over "from". */
@@ -385,4 +476,11 @@ function over(from: DOMRect, to: DOMRect): string {
   const scaleX = from.width / to.width;
   const scaleY = from.height / to.height;
   return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${scaleX}, ${scaleY})`;
+}
+
+/** Scales (from the corner) what is at "to" and moves it so that it's centered on "on". */
+function centered(on: DOMRect, to: DOMRect, scale: number): string {
+  const x = on.left + on.width / 2 - (to.left + (to.width * scale) / 2);
+  const y = on.top + on.height / 2 - (to.top + (to.height * scale) / 2);
+  return `translate(${x}px, ${y}px) scale(${scale})`;
 }

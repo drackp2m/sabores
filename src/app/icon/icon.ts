@@ -87,6 +87,9 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
+/** The star's stroke, to draw several in a single <svg> (tapa-photo.ts). */
+export const STAR_PATH = ICONS.star[0];
+
 const SVG = 'http://www.w3.org/2000/svg';
 
 /** Those of each icon's <svg>, as in Icon's template: the strokes of its <symbol> inherit them. */

@@ -93,8 +93,8 @@ Con `--cpu 4 --network` (mediana de 3 pasadas):
       abierto y el buscador.
 - [x] Medición base en Chrome: la columna «Base» de la tabla. Lighthouse no está en el contenedor;
       el script mide el LCP y el tiempo de bloqueo (lo mismo que el TBT de Lighthouse).
-- [ ] **Te toca**: Safari en el Mac con trackpad, scroll rápido arriba y abajo (rebote), para
-      comparar con la etapa 2.
+- [x] Safari en el Mac con trackpad, scroll rápido arriba y abajo (rebote): probado por ti, junto
+      con la etapa 2.
 
 ## Etapa 1 · Mapa estable ✅
 
@@ -140,7 +140,7 @@ con el `map.ts` de antes) y un test en [app.spec.ts](src/app/app.spec.ts): marca
 valorar no encuadra el mapa; buscar, sí, medio segundo después. En `pnpm measure`, el popup sigue
 abierto al marcar el corazón.
 
-## Etapa 2 · Scroll y cabecera ✅ (falta que lo pruebes en Safari)
+## Etapa 2 · Scroll y cabecera ✅
 
 **Qué pasa.**
 
@@ -171,12 +171,11 @@ abierto al marcar el corazón.
       pantalla táctil emulada: el aviso de «dos dedos» sale al arrastrar de lado y no en vertical.
 - [x] Escuchar los clics y las teclas del documento solo con el menú o la foto abiertos (test nuevo:
       pinchar fuera cierra el menú y dentro no).
-- [ ] **Te toca**: Safari en el Mac con el trackpad (rebote arriba y abajo) y con «Mostrar barras de
-      desplazamiento: siempre», filtrando hasta que la lista quepa en la pantalla. La cabecera y el
-      mapa no deberían moverse. Si siguen saltando, el culpable es otro y hay que buscarlo con
-      Safari delante.
+- [x] Probado por ti en Safari en el Mac, con el trackpad (rebote arriba y abajo) y con «Mostrar
+      barras de desplazamiento: siempre», filtrando hasta que la lista quepa en la pantalla: la
+      cabecera y el mapa no se mueven.
 
-## Etapa 3 · Un DOM más ligero ✅ (falta que lo veas en Safari)
+## Etapa 3 · Un DOM más ligero ✅
 
 De 8.288 a 3.508 elementos y de 14.873 a 5.576 nodos, con las 60 fichas en «Detalles».
 
@@ -199,9 +198,9 @@ De 8.288 a 3.508 elementos y de 14.873 a 5.576 nodos, con las 60 fichas en «Det
       `--icon-stroke` siguen funcionando.
 - [x] **«Ver más»**: un solo `ResizeObserver` para todos los textos
       ([collapsible.ts](src/app/collapsible/collapsible.ts)).
-- [ ] **Te toca**: las máscaras y los `<use>` no se han probado en Safari. Hay que mirar en el Mac y
-      en el iPhone que se ven los iconos y las estrellas (sin valorar y valoradas), y que al ampliar
-      una foto las estrellas crecen desde la miniatura.
+- [x] Las máscaras y los `<use>`, probados por ti en Safari, en el Mac y en el iPhone: se ven los
+      iconos y las estrellas (sin valorar y valoradas), y al ampliar una foto las estrellas crecen
+      desde la miniatura.
 
 **Comprobado.** 51 tests (dos nuevos: el horario diferido y las chispas; se adapta el de los iconos).
 En Chromium, con el ratón de verdad y comparando con `main`:
@@ -216,7 +215,7 @@ En Chromium, con el ratón de verdad y comparando con `main`:
   pasar por encima.
 - En la galería, la foto se amplía y el nombre abre el local. Ningún error en la consola.
 
-## Etapa 4 · Arranque ✅ (falta volver a mirarlo en Safari)
+## Etapa 4 · Arranque ✅
 
 **Qué pasaba.** Todo iba en fila: se descargaba el JS (125 kB), se abría IndexedDB (con hasta 2 s de
 espera, [app.config.ts](src/app/app.config.ts)), se creaba `App` y solo entonces se pedía
@@ -235,7 +234,7 @@ espera, [app.config.ts](src/app/app.config.ts)), se creaba `App` y solo entonces
       hace en cuanto está; y si no se puede descargar, el mapa lo dice y el resto de la app funciona.
 - [x] `resource` en vez de `toSignal(http.get().pipe(catchError))`, sin tener que distinguir entre
       `undefined` y `null`. Iba a ser `httpResource`, pero no puede usar la petición de index.html.
-- [ ] **Te toca**: en Safari, en la pestaña Red, que `venues.json` ya sale una sola vez.
+- [x] Probado por ti en Safari: en la pestaña Red, `venues.json` sale una sola vez.
 
 **Comprobado.** En Chromium, con la app compilada:
 
@@ -247,7 +246,7 @@ espera, [app.config.ts](src/app/app.config.ts)), se creaba `App` y solo entonces
 Ojo: en los tests Leaflet no llega igual que en el build de producción (ver `loadLeaflet`), así que
 un fallo ahí no lo detectan los tests. Lo detectó `pnpm measure`, que usa la app compilada.
 
-## Etapa 5 · Fotos ✅ (falta que lo veas en Safari)
+## Etapa 5 · Fotos ✅
 
 **Qué pasaba.** Recorrer la lista entera descargaba 11,7 MB, normalmente con datos móviles y en mitad
 de la ruta, siempre con la foto de 690 px.
@@ -269,8 +268,8 @@ de la ruta, siempre con la foto de 690 px.
       todos los casos y basta un solo fichero para las miniaturas.
 - [x] Los JPG se quedan en git como original, pero no se publican (`ignore` en
       [angular.json](angular.json)).
-- [ ] **Te toca**: en Safari, que se ven bien las fotos y que, al ampliar con mala conexión, la foto
-      aparece enseguida y luego gana nitidez.
+- [x] Probado por ti en Safari: las fotos se ven bien y, al ampliar con mala conexión, la foto aparece
+      enseguida y luego gana nitidez.
 
 **Comprobado.** En Chromium, las 120 fotos cargan y no se pide ningún JPG; la de 690 px solo se pide al
 ampliar. Con esa descarga retrasada 2 s, el visor enseña la miniatura desde el primer momento. En

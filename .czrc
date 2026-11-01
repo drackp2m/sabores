@@ -1,0 +1,79 @@
+{
+  "path": "cz-emoji",
+  "config": {
+    "cz-emoji": {
+      "format": "{emoji} {type}: {subject}",
+      "skipQuestions": ["scope", "body", "issues"],
+      "subjectMaxLength": 75,
+      "symbol": false,
+      "types": [
+        {
+          "name": "feat",
+          "description": "Introducing new features.",
+          "emoji": "✨",
+          "code": "✨"
+        },
+        {
+          "name": "style",
+          "description": "Changes to the look of the app that don't affect its behaviour.",
+          "emoji": "🎨",
+          "code": "🎨"
+        },
+        {
+          "name": "test",
+          "description": "Add missing tests or correcting existing failing test.",
+          "emoji": "🧪",
+          "code": "🧪"
+        },
+        {
+          "name": "refactor",
+          "description": "A code change that neither fixes a bug nor adds a feature.",
+          "emoji": "♻️ ",
+          "code": "♻️ "
+        },
+        {
+          "name": "fix",
+          "description": "A bug fix.",
+          "emoji": "🐛",
+          "code": "🐛"
+        },
+        {
+          "name": "docs",
+          "description": "Add or update documentation.",
+          "emoji": "📚",
+          "code": "📚"
+        },
+        {
+          "name": "perf",
+          "description": "A code change that improves performance.",
+          "emoji": "🚀",
+          "code": "🚀"
+        },
+        {
+          "name": "build",
+          "description": "Changes that affect the build system or external dependencies.",
+          "emoji": "🏗️ ",
+          "code": "🏗️ "
+        },
+        {
+          "name": "ci",
+          "description": "Changes to our CI configuration files and scripts.",
+          "emoji": "💻",
+          "code": "💻"
+        },
+        {
+          "name": "chore",
+          "description": "Other changes that don't modify src or test files.",
+          "emoji": "🎒",
+          "code": "🎒"
+        },
+        {
+          "name": "revert",
+          "description": "Reverts a previous commit.",
+          "emoji": "⏪",
+          "code": "⏪"
+        }
+      ]
+    }
+  }
+}

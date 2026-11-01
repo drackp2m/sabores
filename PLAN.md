@@ -323,6 +323,10 @@ es quedarse con una versión vieja: habría que avisar cuando haya una nueva.
       [ubicacion.spec.ts](src/app/ubicacion.spec.ts)). Probado en Chromium con los servicios reales:
       «Herrero 49» cae en el cruce con Picó.
 
+- [x] **Commits con commitizen.** `commitizen`, `cz-emoji`, `commitlint` y `husky`, con la misma
+      configuración que en chess-pecker ([.czrc](.czrc), [.commitlintrc.mjs](.commitlintrc.mjs) y
+      [.husky/](.husky/)): `git commit` sin mensaje, o con uno que no vale, abre el asistente.
+
 ---
 
 ## Decisiones que te tocan

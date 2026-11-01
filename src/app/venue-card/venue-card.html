@@ -66,29 +66,24 @@
         <!-- Grid: day · morning (right-aligned) · dot · afternoon (left-aligned) · filler up to the end. -->
         @for (d of week(); track d.id) {
           @let isToday = d.id === today();
-          <dt
-            [class.active]="d.id === day()"
-            [class.today]="isToday"
-            [class.first]="$first"
-            [attr.aria-current]="isToday ? 'date' : null"
-          >
-            {{ d.name }}
-          </dt>
-          @if (d.morning || d.afternoon) {
-            <dd class="morning" [class.today]="isToday" [class.first]="$first">{{ d.morning }}</dd>
-            <!-- The dot, with its padding, only with two slots: if no day has one, the column takes up nothing. -->
-            <dd class="separator" [class.today]="isToday" [class.first]="$first" aria-hidden="true">
-              @if (d.morning && d.afternoon) {
-                <span>·</span>
-              }
-            </dd>
-            <dd class="afternoon" [class.today]="isToday" [class.first]="$first">
-              {{ d.afternoon }}
-            </dd>
-          } @else {
-            <dd class="no-tapas" [class.today]="isToday" [class.first]="$first">Sin tapas</dd>
-          }
-          <dd class="filler" [class.today]="isToday" [class.first]="$first" aria-hidden="true"></dd>
+          <div class="day" [class.today]="isToday">
+            <dt [class.active]="d.id === day()" [attr.aria-current]="isToday ? 'date' : null">
+              {{ d.name }}
+            </dt>
+            @if (d.morning || d.afternoon) {
+              <dd class="morning">{{ d.morning }}</dd>
+              <!-- The dot, with its padding, only with two slots: if no day has one, the column takes up nothing. -->
+              <dd class="separator" aria-hidden="true">
+                @if (d.morning && d.afternoon) {
+                  <span>·</span>
+                }
+              </dd>
+              <dd class="afternoon">{{ d.afternoon }}</dd>
+            } @else {
+              <dd class="no-tapas">Sin tapas</dd>
+            }
+            <dd class="filler" aria-hidden="true"></dd>
+          </div>
         }
       </dl>
     }

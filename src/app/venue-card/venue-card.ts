@@ -9,7 +9,7 @@ import {
   signal,
 } from '@angular/core';
 
-import { animateHeight, unfold } from '../animate-height';
+import { Unfolding } from '../animate-height';
 import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Collapsible } from '../collapsible/collapsible';
@@ -52,6 +52,7 @@ export class VenueCard {
   protected readonly scheduleCreated = signal(false);
   protected readonly glutenSeal = glutenSeal;
   private readonly injector = inject(Injector);
+  private readonly unfolding = new Unfolding();
   private folding = false;
 
   protected readonly daySchedule = computed(() => {
@@ -68,8 +69,8 @@ export class VenueCard {
   protected readonly arrival = computed(() => this.tapasRoute.arrivals().get(this.venue().number));
 
   /**
-   * Opens the schedule making room little by little, with the days appearing behind it from top to
-   * bottom; on closing, the room just folds away.
+   * Opens the schedule making room day by day, with each one appearing as soon as it fits; on closing,
+   * the same backwards.
    */
   protected toggleSchedule(event: Event, details: HTMLDetailsElement): void {
     const open = !details.open || this.folding;
@@ -77,6 +78,8 @@ export class VenueCard {
     this.scheduleCreated.set(true);
     if (reducedMotion()) return;
     event.preventDefault();
+    this.folding = !open;
+    if (this.unfolding.turnBack()) return;
     const list = details.querySelector('dl');
     if (list) this.animateSchedule(details, list, open);
     else {
@@ -88,20 +91,10 @@ export class VenueCard {
   }
 
   private animateSchedule(details: HTMLDetailsElement, list: HTMLElement, open: boolean): void {
-    // If pressed halfway through, it continues from the height it has at that moment.
-    const from = details.open ? list.getBoundingClientRect().height : 0;
-    for (const animation of list.getAnimations()) animation.cancel();
-
-    if (open) {
+    details.open = true;
+    this.unfolding.play(list, 0, list.getBoundingClientRect().height, open, () => {
+      details.open = !this.folding;
       this.folding = false;
-      details.open = true;
-      unfold(list, from, list.getBoundingClientRect().height);
-    } else {
-      this.folding = true;
-      animateHeight(list, from, 0).onfinish = () => {
-        details.open = false;
-        this.folding = false;
-      };
-    }
+    });
   }
 }

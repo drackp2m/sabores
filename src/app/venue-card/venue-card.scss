@@ -1,5 +1,8 @@
+// While a card changes height, those below move on every frame: contained, the browser moves them
+// without painting them again. It would otherwise take most of each frame.
 :host {
   display: block;
+  contain: layout style;
 }
 
 :host(.highlighted) article {
@@ -171,16 +174,23 @@ dl {
   font-variant-numeric: tabular-nums;
 }
 
+// Each day shares the columns of the list, in an element of its own so that it can fade as a whole.
+.day {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+
+  // The gap under the summary goes on the first row and not as padding on the list: a box can't be
+  // shorter than its padding, so the animated height would stop there and jump when it finishes closing.
+  &:first-child {
+    margin-top: 0.5rem;
+  }
+}
+
 dt,
 dd {
   margin: 0;
   padding: 0.1rem 0;
-}
-
-// The gap under the summary goes on the first row and not as padding on the list: a box can't be
-// shorter than its padding, so the animated height would stop there and jump when it finishes closing.
-.first {
-  margin-top: 0.5rem;
 }
 
 dt {
@@ -219,18 +229,14 @@ dt {
 
 // Today: the whole row on the soft accent color, with the day in the accent color.
 .today {
+  border-radius: 0.375rem;
   background: var(--accent-soft);
   font-weight: 600;
-}
 
-dt.today {
-  border-radius: 0.375rem 0 0 0.375rem;
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.filler.today {
-  border-radius: 0 0.375rem 0.375rem 0;
+  dt {
+    color: var(--accent);
+    font-weight: 700;
+  }
 }
 
 footer {

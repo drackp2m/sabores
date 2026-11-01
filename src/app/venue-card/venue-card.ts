@@ -9,28 +9,22 @@ import {
   signal,
 } from '@angular/core';
 
+import { animateHeight } from '../animate-height';
+import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Collapsible } from '../collapsible/collapsible';
 import { Favorite } from '../favorite/favorite';
 import { Icon } from '../icon/icon';
+import { reducedMotion } from '../media';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
 import { TapasRoute } from '../tapas-route';
-import {
-  Venue,
-  WEEKDAYS,
-  Weekday,
-  formatDistance,
-  formatDuration,
-  formatSlots,
-  splitSlots,
-  weekdayOf,
-} from '../venues';
+import { Venue, WEEKDAYS, Weekday, formatSlots, splitSlots, weekdayOf } from '../venues';
 
 @Component({
   selector: 'app-venue-card',
-  imports: [Collapsible, Favorite, Icon, ScheduleStatus, Seal, TapaPhoto],
+  imports: [ArrivalTime, Collapsible, Favorite, Icon, ScheduleStatus, Seal, TapaPhoto],
   templateUrl: './venue-card.html',
   styleUrl: './venue-card.scss',
 })
@@ -71,16 +65,7 @@ export class VenueCard {
       .join(' · '),
   );
 
-  protected readonly arrivalText = computed(() => {
-    const arrival = this.tapasRoute.arrivals().get(this.venue().number);
-    if (!arrival) return undefined;
-    const onFoot = arrival.mode === 'walking';
-    return {
-      text: formatDuration(arrival.minutes),
-      mode: arrival.mode,
-      detail: `≈ ${formatDistance(arrival.meters)} en línea recta, ${onFoot ? 'a pie' : 'en coche'}`,
-    };
-  });
+  protected readonly arrival = computed(() => this.tapasRoute.arrivals().get(this.venue().number));
 
   /**
    * Opens the schedule making room little by little, while each day appears a bit after the one
@@ -90,7 +75,7 @@ export class VenueCard {
     const open = !details.open || this.folding;
     this.scheduleOpen.set(open);
     this.scheduleCreated.set(true);
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reducedMotion()) return;
     event.preventDefault();
     const list = details.querySelector('dl');
     if (list) this.animateSchedule(details, list, open);
@@ -110,11 +95,7 @@ export class VenueCard {
     if (open) {
       this.folding = false;
       details.open = true;
-      const to = list.getBoundingClientRect().height;
-      list.animate([{ height: `${from}px` }, { height: `${to}px` }], {
-        duration: 400,
-        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-      });
+      animateHeight(list, from, list.getBoundingClientRect().height);
       // All the cells in a row (data-row) come in at once.
       [...list.children].forEach((cell) =>
         cell.animate([{ opacity: 0 }, {}], {
@@ -126,10 +107,7 @@ export class VenueCard {
       );
     } else {
       this.folding = true;
-      list.animate([{ height: `${from}px` }, { height: '0px' }], {
-        duration: 300,
-        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-      }).onfinish = () => {
+      animateHeight(list, from, 0).onfinish = () => {
         details.open = false;
         this.folding = false;
       };

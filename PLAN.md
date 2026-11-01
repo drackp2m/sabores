@@ -330,34 +330,42 @@ tests fallan. En Chromium, con teclado y ratón de verdad:
 Un cambio pequeño: el mapa ya no espera medio segundo si se vacía la búsqueda a mano; antes, solo con
 «Limpiar».
 
-## Etapa 7 · Reutilización y estilos
+## Etapa 7 · Reutilización y estilos ✅
 
-- [ ] El número del local (`.number`), con los mismos estilos en
-      [venue-card.scss](src/app/venue-card/venue-card.scss) y
-      [gallery.ts](src/app/gallery/gallery.ts) → un componente o una clase global
-      con un tamaño pequeño.
-- [ ] El tiempo de llegada (icono, duración y distancia) se monta en tres sitios: `arrivalText` de la
-      ficha ([venue-card.ts](src/app/venue-card/venue-card.ts)), la galería y el popup del
-      mapa → un componente `Arrival` (y su versión DOM para el popup, junto a `createIcon`).
-- [ ] `store.stars(venue, tapa)` en vez de `ratings().get(tapaKey(…)) ?? 0`, que se repite
-      en la ficha, la galería y el visor.
-- [ ] Animación de altura (abrir y cerrar, siguiendo desde donde iba si se pulsa a medias): el mismo
-      patrón en [collapsible.ts](src/app/collapsible/collapsible.ts) y
-      [venue-card.ts](src/app/venue-card/venue-card.ts) → una función `animateHeight()`.
-- [ ] `reducedMotion()` en vez de `matchMedia('(prefers-reduced-motion: reduce)')`, que aparece
-      en siete sitios.
-- [ ] Las media queries, en un solo sitio. Escritorio (960 px) está en
-      [app.ts](src/app/app.ts), [app.scss](src/app/app.scss) y
-      [map.ts](src/app/map/map.ts); táctil, en
-      [app.ts](src/app/app.ts), [map.ts](src/app/map/map.ts),
-      [styles.scss](src/styles.scss) y [app.scss](src/app/app.scss) → `media.ts` y
-      un parcial `_media.scss` con mixins (`stylePreprocessorOptions.includePaths` en
-      `angular.json`).
-- [ ] [styles.scss](src/styles.scss) (548 líneas) repartido en parciales: tema, base, controles,
-      Leaflet y popups.
-- [ ] Tests: hay dos versiones distintas de `venue()` en [app.spec.ts](src/app/app.spec.ts) y
-      [venues.spec.ts](src/app/venues.spec.ts) → un fixture común. Los polyfills de jsdom, a un
-      fichero de `setupFiles` del builder de tests.
+Sin cambios de comportamiento: lo que había repetido pasa a un solo sitio.
+
+- [x] El número del local: la clase global `.venue-number`, y `.small` en la galería
+      ([\_badges.scss](src/styles/_badges.scss)), como `.stars-pill`. Sin componente, para no añadir
+      nada a las 60 fichas por una pastilla sin lógica.
+- [x] El tiempo de llegada: el componente `ArrivalTime` y `createArrivalTime()` para los popups
+      ([arrival-time.ts](src/app/arrival-time/arrival-time.ts)), el mismo patrón que `Icon` y
+      `createIcon`. Cambio sobre el plan: no se llama `Arrival` porque ese nombre ya es el del tipo de
+      datos. Con `distance`, la distancia va al lado (galería); sin él, en el tooltip (ficha). El
+      `@if` sigue fuera, en quien lo usa: un host vacío contaría para el `gap` de la fila.
+- [x] `store.stars(venue, tapa)`. Quedaba en dos sitios, no en tres: `TapaPhoto` ya había juntado los
+      de la ficha y la galería. De paso, fuera un `tapaKey` que el visor no usaba.
+- [x] `animateHeight()` ([animate-height.ts](src/app/animate-height.ts)), con los keyframes, las
+      duraciones (400 ms al abrir, 300 ms al plegar) y la curva `SETTLE`, que también usan el visor y el
+      corazón. Cambio sobre el plan: medir la altura de partida y cancelar lo que estuviera en marcha
+      se queda en cada sitio, porque ocurre antes de cambiar el estado y el horario parte de 0 con el
+      `<details>` cerrado.
+- [x] `reducedMotion()`, `isDesktop()` e `isTouch()` en [media.ts](src/app/media.ts).
+- [x] [\_media.scss](src/styles/_media.scss) con los mixins `desktop`, `below-desktop`, `touch`,
+      `reduced-motion` e `if-dark`, y `includePaths` en [angular.json](angular.json): un componente
+      solo escribe `@use 'media'`. Solo tiene mixins, así que no añade CSS a quien lo usa; por eso
+      `if-dark` vive aquí y no con el tema. Las media queries que solo aparecen una vez (menos de 375
+      px y `hover: hover`) se quedan donde están.
+- [x] [styles.scss](src/styles.scss) repartido en [src/styles/](src/styles/): `_theme`, `_base`,
+      `_controls`, `_badges`, `_leaflet` y `_popups`, en el mismo orden que antes. `_badges`, que no
+      estaba en el plan, es para las piezas pequeñas que comparten varios componentes.
+- [x] Tests: un fixture común, [testing/venue.ts](src/testing/venue.ts) (`testVenue`, `testTapa` y
+      `week`; había tres versiones de `venue()`, no dos), y los polyfills de jsdom en
+      [testing/setup.ts](src/testing/setup.ts), con `setupFiles` en `angular.json`.
+
+**Comprobado.** 99 tests (4 nuevos, de `ArrivalTime`) y build en verde. El CSS global compilado antes y
+después solo cambia en lo esperado: `.venue-number` y `.arrival-time` son nuevas y `.popup-arrival`
+pasa a `.popup-status .arrival-time`, con los mismos valores. No se ha repetido `pnpm measure` ni se
+ha probado en un navegador: no toca lo que mide la tabla.
 
 ## Etapa 8 · Herramientas y limpieza
 

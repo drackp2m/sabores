@@ -1,0 +1,70 @@
+:root {
+  // The brand color, the same in both themes and always with white text on top: the header (like the
+  // status bar, theme-color), the buttons and the venue numbers. --accent is for text (links,
+  // «Ver más»…), and in dark mode it gets lighter to read well.
+  --brand: #b4441b;
+  --brand-dark: #973815;
+  --background: #faf6f0;
+  --surface: #fff;
+  --text: #2a211b;
+  --muted: #6f6259;
+  --border: #e8dfd3;
+  --control-border: #d9ccbc;
+  --accent: #b4441b;
+  --accent-soft: #fbe9df;
+  --green: #2f7d4a;
+  --green-soft: #e3f2e8;
+  --warning: #8a5a00;
+  --warning-soft: #fff3d6;
+  --red: #a61e24;
+  --red-soft: #fde4e2;
+  --amber: #d97706;
+  --heart: #e11d48;
+  --star: #ffc531;
+  --radius: 0.75rem;
+  --control-height: 2.5rem;
+  --header-height: 3.5rem;
+  // Side margins that respect the safe areas (notch in landscape, with viewport-fit=cover).
+  --gutter-left: max(1rem, env(safe-area-inset-left, 0px));
+  --gutter-right: max(1rem, env(safe-area-inset-right, 0px));
+  // What floats over the page (the menu) and the enlarged photo.
+  --shadow-raised: 0 18px 48px rgb(42 33 27 / 0.32), 0 4px 12px rgb(42 33 27 / 0.18);
+  --shadow-photo: 0 28px 72px rgb(0 0 0 / 0.5), 0 8px 20px rgb(0 0 0 / 0.3);
+  color-scheme: light;
+}
+
+// The accent, the brand's with a bit of white to read better on a dark background. The shadows, much
+// stronger (and with a light edge) to show on black.
+@mixin dark-palette {
+  --accent: color-mix(in srgb, var(--brand) 88%, #fff);
+  --background: #17120f;
+  --surface: #221b17;
+  --text: #f0e7df;
+  --muted: #ab9d92;
+  --border: #362c26;
+  --control-border: #4a3d35;
+  --accent-soft: #3a2219;
+  --green: #7fcf97;
+  --green-soft: #1b3324;
+  --warning: #f0c060;
+  --warning-soft: #3a2e14;
+  --red: #ff9a8f;
+  --red-soft: #3f1d1b;
+  --amber: #f5a524;
+  --heart: #fb5a7a;
+  --shadow-raised:
+    0 0 0 1px rgb(255 255 255 / 0.06), 0 22px 56px rgb(0 0 0 / 0.85), 0 6px 16px rgb(0 0 0 / 0.6);
+  --shadow-photo:
+    0 0 0 1px rgb(255 255 255 / 0.08), 0 32px 90px rgb(0 0 0 / 0.95), 0 10px 28px rgb(0 0 0 / 0.75);
+  color-scheme: dark;
+}
+
+:root[data-theme='dark'] {
+  @include dark-palette;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-palette;
+  }
+}

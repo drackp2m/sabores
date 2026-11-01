@@ -1,0 +1,42 @@
+// Media queries for the styles; the ones for the code, the same, are in app/media.ts. It only has
+// mixins (it adds no CSS), so a component can use it with `@use 'media'`.
+$desktop: 960px;
+
+// List on the left and map on the right.
+@mixin desktop {
+  @media (min-width: $desktop) {
+    @content;
+  }
+}
+
+@mixin below-desktop {
+  @media (max-width: ($desktop - 0.02px)) {
+    @content;
+  }
+}
+
+// No mouse: app-root scrolls instead of the document (see _base.scss).
+@mixin touch {
+  @media (hover: none) and (pointer: coarse) {
+    @content;
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// Dark theme: with data-theme="dark" on <html>, or the system's if light wasn't chosen (theme.ts).
+@mixin if-dark {
+  :root[data-theme='dark'] & {
+    @content;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) & {
+      @content;
+    }
+  }
+}

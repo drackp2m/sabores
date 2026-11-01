@@ -9,7 +9,7 @@ const THEME_KEY = 'tapas-route:theme';
 
 /**
  * The app's theme: light, dark or the system's. It is applied with data-theme on <html> (the colors
- * of each are in styles.scss) and remembered for the next visit.
+ * of each are in styles/_theme.scss) and remembered for the next visit.
  */
 @Injectable({ providedIn: 'root' })
 export class Themes {

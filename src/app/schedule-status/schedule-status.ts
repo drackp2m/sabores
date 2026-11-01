@@ -4,7 +4,10 @@ import { Clock } from '../clock';
 import { TapasRoute } from '../tapas-route';
 import { statusBadge } from '../venues';
 
-/** "cierra en…" / "abre en…", in red if it closes before you can get there (styles in styles.scss). */
+/**
+ * "cierra en…" / "abre en…", in red if it closes before you can get there (styles in
+ * styles/_badges.scss).
+ */
 @Component({
   selector: 'app-schedule-status',
   template: '{{ badge().text }}',

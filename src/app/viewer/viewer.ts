@@ -10,9 +10,11 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { SETTLE } from '../animate-height';
+import { reducedMotion } from '../media';
 import { PHRASES, Stars } from '../stars/stars';
 import { Store } from '../store';
-import { Tapa, photoUrl, tapaKey } from '../venues';
+import { Tapa, photoUrl } from '../venues';
 
 export interface EnlargedPhoto {
   src: string;
@@ -106,6 +108,8 @@ const RADIUS = 12;
     '(document:keydown.escape)': 'close()',
   },
   styles: `
+    @use 'media';
+
     // Under the header (its height, the safe area and its border), which isn't covered; above
     // everything else, floating buttons included. A size container, to measure the photo with the
     // space left.
@@ -147,7 +151,7 @@ const RADIUS = 12;
       border-radius: ${RADIUS}px;
       background-size: cover;
       object-fit: cover;
-      box-shadow: var(--shadow-photo); // Stronger in dark mode (styles.scss).
+      box-shadow: var(--shadow-photo); // Stronger in dark mode (styles/_theme.scss).
       transform-origin: 0 0;
       will-change: transform;
     }
@@ -203,7 +207,7 @@ const RADIUS = 12;
       }
     }
 
-    @media (prefers-reduced-motion: reduce) {
+    @include media.reduced-motion {
       .ribbon,
       .ribbon span {
         transition: none;
@@ -214,12 +218,11 @@ const RADIUS = 12;
 export class PhotoViewer {
   protected readonly viewer = inject(Viewer);
   protected readonly store = inject(Store);
-  protected readonly tapaKey = tapaKey;
   protected readonly phrases = PHRASES;
   /** The stars of the photo being viewed. */
   protected readonly rating = computed(() => {
     const photo = this.viewer.photo();
-    return (photo && this.store.ratings().get(tapaKey(photo.venue, photo.tapa))) || 0;
+    return photo ? this.store.stars(photo.venue, photo.tapa) : 0;
   });
   /** The star under the mouse, to see its phrase before marking it. */
   protected readonly preview = signal(0);
@@ -311,7 +314,7 @@ export class PhotoViewer {
    */
   private animate(photo: EnlargedPhoto, open: boolean): Promise<unknown> {
     const image = this.image()!.nativeElement;
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = reducedMotion();
     // The thumbnail is gone (on rating a venue's last tapa with the «Alguna sin probar» filter, say):
     // with nowhere to return to, it fades out.
     if (!photo.origin.isConnected) {
@@ -331,7 +334,7 @@ export class PhotoViewer {
     const shadow = getComputedStyle(image).boxShadow;
     const options: KeyframeAnimationOptions = {
       duration: reduced ? 0 : DURATION,
-      easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      easing: SETTLE,
       fill: 'both',
     };
     const direction = (keyframes: Keyframe[]) => (open ? keyframes : keyframes.reverse());

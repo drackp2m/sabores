@@ -138,12 +138,15 @@ src/app/
   theme.ts           light, dark or system theme
   user-location.ts   starting point: geolocation or an address searched for
   routing.ts         route along the streets and link to the maps app
+  media.ts           media queries for the code (the styles' are in src/styles/_media.scss)
+  animate-height.ts  height animation, for the schedule and «Ver más»
   venue-card/        a venue's card with its tapas, notices and schedule
   gallery/           the «Fotos» view
   map/               Leaflet map with the filtered venues
   filters/           the filters' form
   origin/            panel to choose the starting point
   schedule-status/   «cierra en… / abre en…» (in red if you can't get there in time)
+  arrival-time/      how long it takes to get to a venue
   seal/              gluten-free and Ruta de Sabor icons
   stars/             stars to rate a tapa
   favorite/          favorite heart
@@ -151,6 +154,8 @@ src/app/
   collapsible/       clamped text with «Ver más»
   viewer/            enlarged photo
   icon/              SVG icons
+src/styles/          global styles, in partials (src/styles.scss loads them in order)
+src/testing/         what the specs share: jsdom polyfills and the venue fixture
 ```
 
 It can be installed as an app (*Add to Home Screen* on iPhone, *Install app* on Android):

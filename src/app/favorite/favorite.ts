@@ -9,7 +9,9 @@ import {
   signal,
 } from '@angular/core';
 
+import { SETTLE } from '../animate-height';
 import { Icon } from '../icon/icon';
+import { reducedMotion } from '../media';
 import { Store } from '../store';
 import { Venue } from '../venues';
 
@@ -47,7 +49,8 @@ const SPARKS = [0, 45, 90, 135, 180, 225, 270, 315];
       flex: none;
     }
 
-    // Just the heart, without the look of the other buttons (styles.scss), with room for the finger.
+    // Just the heart, without the look of the other buttons (styles/_controls.scss), with room for
+    // the finger.
     // Relative, to stay above whatever covers the card (the gallery's heading).
     button,
     button:hover:not(:disabled) {
@@ -123,7 +126,7 @@ export class Favorite {
 
   protected toggle(): void {
     this.store.toggleFavorite(this.venue().number);
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reducedMotion()) return;
     // If pressed again mid-beat, it starts over.
     for (const animation of this.host.getAnimations({ subtree: true })) animation.cancel();
     const heart = this.host.querySelector('app-icon')!;
@@ -169,7 +172,7 @@ export class Favorite {
             { opacity: 1, transform: `${turn} translateY(-0.45em) scale(1)` },
             { opacity: 0, transform: `${turn} translateY(-1.15em) scale(0.2)` },
           ],
-          { duration: 520, delay: 120, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+          { duration: 520, delay: 120, easing: SETTLE },
         );
       }),
     ];

@@ -1,0 +1,80 @@
+@use 'media';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+  // Everything is in rem: on narrow screens (under 375px, like the 360 of many Android phones),
+  // everything a bit smaller; iPhones (375–430) stay as they are. In %, to respect the font size each
+  // person has chosen in the browser or the system.
+  @media (max-width: 374.98px) {
+    font-size: 87.5%;
+  }
+
+  // When bringing something into view (card, map), it stays below the sticky header, which also takes
+  // up the top safe area (status bar). The same in app-root, if that's what scrolls.
+  scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1rem);
+  // No page zoom (pinch or double tap); the map and its gestures go separately.
+  touch-action: pan-x pan-y;
+  // With scrollbars that take up space (Windows, Linux, macOS with «show always»), the gap stays even
+  // if the page fits on the screen: on filtering, the page doesn't move sideways.
+  scrollbar-gutter: stable;
+  // No bounce at the top or bottom (Safari and Chrome on Mac): it would drag the header and the map,
+  // which are sticky.
+  overscroll-behavior-y: none;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.45;
+  background: var(--background);
+  color: var(--text);
+}
+
+// On touch screens the document doesn't scroll (app-root does, see app.scss) and its background is
+// the header's color: this way Safari on iOS has no content to blur under the status bar and paints
+// it in the header's color. If it peeks through any gap (under Safari's bars), it's the header's at
+// the top and the page's at the bottom. Everywhere else, the document scrolls as usual: Safari on Mac
+// misplaces sticky elements (header, map) on fast scrolling inside a container.
+@include media.touch {
+  html {
+    overflow: hidden;
+    overscroll-behavior: none;
+    scrollbar-gutter: auto;
+    background: linear-gradient(var(--brand) 50%, var(--background) 50%) var(--brand);
+  }
+
+  body {
+    height: 100dvh;
+    overflow: hidden;
+    background: inherit;
+  }
+}
+
+// While the app starts: the header's band already in place and the rest with the background
+// (otherwise the document's background would show, half a screen of the header's color on a phone).
+app-root:empty {
+  display: block;
+  height: 100dvh;
+  background: linear-gradient(
+    var(--brand) calc(var(--header-height) + env(safe-area-inset-top, 0px)),
+    var(--background) 0
+  );
+}
+
+// If a name takes up several lines, they should be of similar length.
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+  text-wrap: balance;
+}

@@ -1,6 +1,6 @@
 <article>
   <header>
-    <span class="number">{{ venue().number }}</span>
+    <span class="venue-number">{{ venue().number }}</span>
     <div class="title">
       <h2>{{ venue().name }}</h2>
       @if (venue().subtitle) {
@@ -8,11 +8,8 @@
       }
       <p class="address">
         <span>{{ venue().address }}</span>
-        @if (arrivalText(); as arrival) {
-          <span class="arrival" [title]="arrival.detail">
-            <app-icon [name]="arrival.mode" />
-            {{ arrival.text }}
-          </span>
+        @if (arrival(); as arrival) {
+          <app-arrival-time [arrival]="arrival" />
         }
       </p>
     </div>

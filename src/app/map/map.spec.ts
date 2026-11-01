@@ -2,39 +2,17 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import * as L from 'leaflet';
 
+import { testVenue } from '../../testing/venue';
 import { TapasRoute } from '../tapas-route';
 import { Arrival, Status, Venue } from '../venues';
 import { VenueMap } from './map';
 
-// jsdom has no ResizeObserver or scrollIntoView (focus).
-globalThis.ResizeObserver ??= class {
-  observe() {}
-  disconnect() {}
-} as unknown as typeof ResizeObserver;
-Element.prototype.scrollIntoView ??= () => {};
-
 function venue(number: number): Venue {
-  return {
+  return testVenue({
     number,
     name: `VENUE ${number}`,
-    subtitle: null,
-    address: 'C/ MAYOR, 1',
-    phone: null,
-    instagram: null,
-    drinks: [],
-    notes: [],
-    schedule: {
-      monday: [],
-      tuesday: [],
-      wednesday: [],
-      thursday: [],
-      friday: [],
-      saturday: [],
-      sunday: [],
-    },
-    tapas: [],
     location: { lat: 39.98 + number / 1000, lng: -0.04 },
-  };
+  });
 }
 
 const [ONE, TWO, THREE] = [1, 2, 3].map(venue);

@@ -55,6 +55,11 @@ export class Store {
     this.write('settings', (table) => table.put(value, key));
   }
 
+  /** A tapa's stars; 0 if it hasn't been tried. */
+  stars(venue: number, tapa: number): number {
+    return this.ratings().get(tapaKey(venue, tapa)) ?? 0;
+  }
+
   /** From 1 to 5 stars; 0 leaves it unrated (not tried). */
   rate(venue: number, tapa: number, stars: number): void {
     const key = tapaKey(venue, tapa);

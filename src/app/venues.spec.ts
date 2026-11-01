@@ -1,3 +1,4 @@
+import { testTapa, testVenue, week } from '../testing/venue';
 import {
   Filters,
   NO_FILTERS,
@@ -31,39 +32,13 @@ function venue(
   schedule: Partial<Record<Weekday, TimeSlot[]>> = {},
   extra: Partial<Venue> = {},
 ): Venue {
-  return {
-    number: 1,
+  return testVenue({
     name,
-    subtitle: null,
-    address: 'C/ MAYOR, 1',
-    phone: null,
-    instagram: null,
     drinks: [{ name: 'Caña', type: 'Cerveza' }],
-    notes: [],
-    schedule: {
-      monday: [],
-      tuesday: [],
-      wednesday: [],
-      thursday: [],
-      friday: [],
-      saturday: [],
-      sunday: [],
-      ...schedule,
-    },
-    tapas: [
-      {
-        number: 1,
-        name: 'TAPA',
-        description: '',
-        photo: '',
-        glutenFree: 'no',
-        flavorRoute: false,
-        ...tapa,
-      },
-    ],
-    location: null,
+    schedule: { ...week(), ...schedule },
+    tapas: [testTapa(tapa)],
     ...extra,
-  };
+  });
 }
 
 describe('photoUrl', () => {

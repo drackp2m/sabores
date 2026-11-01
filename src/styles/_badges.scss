@@ -1,0 +1,84 @@
+// A venue's number: it comes out of the left edge of its card (covering the border), rounded only on
+// the right. Small in the gallery, whose cards have less padding.
+.venue-number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 2.4rem;
+  height: 2rem;
+  margin-left: calc(-1rem - 1px);
+  padding: 0 0.5rem 0 0.4rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+
+  &.small {
+    min-width: 2.1rem;
+    height: 1.75rem;
+    margin-left: calc(-0.6rem - 1px);
+    padding: 0 0.45rem 0 0.35rem;
+    font-size: 0.85rem;
+  }
+}
+
+// How long it takes to get there (arrival-time.ts), in the cards, the gallery and the map's popups.
+.arrival-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--text);
+  font-weight: 600;
+
+  &[title] {
+    cursor: help;
+  }
+}
+
+// "cierra en…" / "abre en…", in the cards, the gallery and the map's popups.
+.schedule-status {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &.open {
+    background: var(--green-soft);
+    color: var(--green);
+  }
+
+  &.soon {
+    background: var(--warning-soft);
+    color: var(--warning);
+  }
+
+  // It closes before you can get there.
+  &.late {
+    background: var(--red-soft);
+    color: var(--red);
+    cursor: help;
+  }
+
+  &.closed {
+    background: var(--background);
+    color: var(--muted);
+  }
+}
+
+// A tapa's stars, the size of the text, on a translucent gray pill with an edge of light at the top
+// and left, like glass: those of the thumbnails (tapa-photo.ts) and those of the viewer (stars.ts),
+// which grow from them on enlarging the photo. No backdrop-filter: with two per venue, it stutters on
+// scrolling (even on an iPhone 15 Pro Max).
+.stars-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+  padding: 0.2em 0.35em;
+  border-radius: 999px;
+  background: rgb(38 38 38 / 0.4);
+  box-shadow: inset 1px 1px 0 rgb(255 255 255 / 0.3);
+  color: rgb(255 255 255 / 0.7);
+  line-height: 1;
+}

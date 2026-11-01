@@ -4,58 +4,24 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import * as L from 'leaflet';
 
+import { testTapa, testVenue, week } from '../testing/venue';
 import { App } from './app';
 import { Clock } from './clock';
 import { Store } from './store';
 import { NO_FILTERS, RouteData, TimeSlot, Venue } from './venues';
 
-// jsdom has no ResizeObserver (collapsible text in the cards, map), IntersectionObserver (scroll-to-top
-// button), animate or getAnimations (photo viewer, stars, heart) or matchMedia. No IndexedDB either:
-// the store stays in memory.
-globalThis.ResizeObserver ??= class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-} as unknown as typeof ResizeObserver;
-globalThis.IntersectionObserver ??= class {
-  observe() {}
-  disconnect() {}
-} as unknown as typeof IntersectionObserver;
-Element.prototype.animate ??= () => ({ finished: Promise.resolve() }) as unknown as Animation;
-Element.prototype.getAnimations ??= () => [];
-window.matchMedia ??= () => ({ matches: false }) as MediaQueryList;
-
 function venue(number: number, name: string, drinks: [string, string][]): Venue {
-  const slots = [{ open: '00:00', close: null }];
-  return {
+  return testVenue({
     number,
     name,
-    subtitle: null,
-    address: 'C/ MAYOR, 1',
     phone: '600000000',
     instagram: '@venue',
     drinks: drinks.map(([name, type]) => ({ name, type })),
-    notes: [],
-    schedule: {
-      monday: slots,
-      tuesday: slots,
-      wednesday: slots,
-      thursday: slots,
-      friday: slots,
-      saturday: slots,
-      sunday: slots,
-    },
-    tapas: [1, 2].map((t) => ({
-      number: t,
-      name: `TAPA ${number}.${t}`,
-      description: '',
-      photo: `photos/0${number}-${t}.jpg`,
-      glutenFree: 'no' as const,
-      flavorRoute: false,
-    })),
-    // No coordinates: the map doesn't have to frame anything (jsdom has no sizes).
-    location: null,
-  };
+    schedule: week([{ open: '00:00', close: null }]),
+    tapas: [1, 2].map((t) =>
+      testTapa({ number: t, name: `TAPA ${number}.${t}`, photo: `photos/0${number}-${t}.jpg` }),
+    ),
+  });
 }
 
 const DATA: RouteData = {
@@ -155,7 +121,6 @@ describe('App', () => {
   });
 
   it('in the «Fotos» view opens a venue and returns to the gallery', async () => {
-    Element.prototype.scrollTo = () => {}; // jsdom doesn't implement it
     const { el, press } = await start();
     await press('.menu-button');
     await press('.menu button', 'Fotos');
@@ -460,7 +425,6 @@ describe('App', () => {
   });
 
   it('the filters are still there on coming back from a venue', async () => {
-    Element.prototype.scrollTo = () => {}; // jsdom doesn't implement it
     const { fixture, el, press } = await start();
     await press('.menu-button');
     await press('.menu button', 'Fotos');

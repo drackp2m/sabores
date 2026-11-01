@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 
 import { Icon } from '../icon/icon';
+import { reducedMotion } from '../media';
 
 /** What each rating says: unrated and from 1 to 5 stars. */
 export const PHRASES = [
@@ -63,7 +64,8 @@ export const PHRASES = [
       color: var(--star);
     }
 
-    // Just the star, without the look of the other buttons (styles.scss), with room for the finger.
+    // Just the star, without the look of the other buttons (styles/_controls.scss), with room for
+    // the finger.
     button,
     button:hover:not(:disabled) {
       height: auto;
@@ -102,7 +104,7 @@ export class Stars {
 
   /** The marked stars give a little hop one after another; on removing it, they all shrink. */
   private celebrate(value: number): void {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (reducedMotion()) return;
     const icons = [...this.host.querySelectorAll('app-icon')];
     if (!value) {
       for (const icon of icons) {

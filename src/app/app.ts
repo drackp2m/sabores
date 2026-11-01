@@ -17,6 +17,7 @@ import { Gallery } from './gallery/gallery';
 import { Icon, IconName } from './icon/icon';
 import { legacyView } from './legacy-storage';
 import { VenueMap, loadLeaflet } from './map/map';
+import { isDesktop, isTouch, reducedMotion } from './media';
 import { OriginPanel } from './origin/origin';
 import { Seal } from './seal/seal';
 import { Store } from './store';
@@ -39,10 +40,6 @@ import { PhotoViewer, Viewer } from './viewer/viewer';
 type View = 'details' | 'photos';
 type Sort = 'number' | 'nearest' | 'closing';
 
-/** Same as in app.scss: list on the left and map on the right. */
-const DESKTOP = '(min-width: 960px)';
-/** Same as in styles.scss: app-root scrolls on touch screens; the document does everywhere else. */
-const TOUCH = '(hover: none) and (pointer: coarse)';
 /** How long the map waits for typing in the search box to stop before it rearranges itself. */
 const MAP_DELAY = 500;
 
@@ -195,15 +192,14 @@ export class App {
     );
   }
 
-  /** What scrolls: app-root on touch screens, the document elsewhere (see styles.scss). */
+  /** What scrolls: app-root on touch screens, the document elsewhere (see styles/_base.scss). */
   private get scroller(): Element {
-    if (globalThis.matchMedia?.(TOUCH).matches) return this.host;
+    if (isTouch()) return this.host;
     return document.scrollingElement ?? document.documentElement;
   }
 
   protected scrollToTop(): void {
-    const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.scroller.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    this.scroller.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
   }
 
   /** Opening the menu closes any enlarged photo (the header stays above it). */
@@ -237,7 +233,7 @@ export class App {
 
   /** On desktop, clicking a marker takes the list to its card. */
   protected showInList(number: number): void {
-    if (!matchMedia(DESKTOP).matches) return;
+    if (!isDesktop()) return;
     document
       .getElementById(`venue-${number}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });

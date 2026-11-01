@@ -15,19 +15,13 @@ import {
 } from '@angular/core';
 import type * as L from 'leaflet';
 
+import { createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
+import { isTouch } from '../media';
 import { directionsLink, findRoute } from '../routing';
 import { TapasRoute } from '../tapas-route';
-import {
-  Coordinates,
-  StatusKind,
-  Venue,
-  formatDuration,
-  photoUrl,
-  statusBadge,
-  statusKind,
-} from '../venues';
+import { Coordinates, StatusKind, Venue, photoUrl, statusBadge, statusKind } from '../venues';
 
 const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 
@@ -45,7 +39,7 @@ export async function loadLeaflet(): Promise<typeof L> {
  * Touch screen (no mouse): one finger scrolls the page and the map moves with two, on pinching
  * (Leaflet moves the map with the midpoint between the fingers while it zooms).
  */
-const TOUCH = globalThis.matchMedia?.('(hover: none) and (pointer: coarse)').matches ?? false;
+const TOUCH = isTouch();
 
 const STATUS_KINDS: StatusKind[] = ['open', 'soon', 'late', 'closed'];
 
@@ -59,8 +53,8 @@ const DRAG_THRESHOLD = 10;
 let knowsHowToMoveIt = false;
 
 /**
- * A venue's marker: a small dot (styles.scss) in the middle of a 1.875rem area to click on. In rem,
- * like everything else; Leaflet wants it in pixels, so it's calculated on painting.
+ * A venue's marker: a small dot (styles/_leaflet.scss) in the middle of a 1.875rem area to click on.
+ * In rem, like everything else; Leaflet wants it in pixels, so it's calculated on painting.
  */
 function venueIcon(leaflet: typeof L, rem: number): L.DivIcon {
   const side = Math.round(1.875 * rem);
@@ -86,7 +80,7 @@ function sameKinds(
   return a.size === b.size && [...a].every(([number, kind]) => b.get(number) === kind);
 }
 
-/** Pixels in 1rem (fewer on narrow screens, see styles.scss). */
+/** Pixels in 1rem (fewer on narrow screens, see styles/_base.scss). */
 function remInPx(): number {
   return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 }
@@ -135,6 +129,8 @@ function remInPx(): number {
   `,
   host: { '(document:keydown.escape)': 'large.set(false)' },
   styles: `
+    @use 'media';
+
     :host {
       display: block;
     }
@@ -146,7 +142,7 @@ function remInPx(): number {
 
       // Only on phones: on desktop the map is already large, and being sticky (see app.scss) it would
       // stay under the header and the rest of the page.
-      @media (max-width: 959.98px) {
+      @include media.below-desktop {
         &.large {
           position: fixed;
           inset: 0;
@@ -163,7 +159,7 @@ function remInPx(): number {
       }
     }
 
-    @media (min-width: 960px) {
+    @include media.desktop {
       .expand {
         display: none;
       }
@@ -464,7 +460,7 @@ export class VenueMap {
       dragging: !TOUCH,
       zoomControl: false,
     });
-    // The zoom buttons, with our icons (like those on the right, see styles.scss).
+    // The zoom buttons, with our icons (like those on the right, see styles/_leaflet.scss).
     new leaflet.Control.Zoom({
       zoomInText: createIcon('plus').outerHTML,
       zoomInTitle: 'Acercar',
@@ -563,7 +559,7 @@ export class VenueMap {
   }
 
   /**
-   * Name, address, arrival time, schedule status and tapa photos (styles in styles.scss: Leaflet
+   * Name, address, arrival time, schedule status and tapa photos (styles in styles/_popups.scss: Leaflet
    * paints it outside the component).
    */
   private popup(venue: Venue): HTMLElement {
@@ -577,12 +573,7 @@ export class VenueMap {
     const row = document.createElement('div');
     row.className = 'popup-status';
     const arrival = this.tapasRoute.arrivals().get(venue.number);
-    if (arrival) {
-      const time = document.createElement('span');
-      time.className = 'popup-arrival';
-      time.append(createIcon(arrival.mode), formatDuration(arrival.minutes));
-      row.append(time);
-    }
+    if (arrival) row.append(createArrivalTime(arrival));
     const status = this.tapasRoute.statuses().get(venue.number);
     if (status) {
       const { text, kind, warning } = statusBadge(status, this.clock.now(), arrival);

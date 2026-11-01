@@ -1,7 +1,7 @@
 import { Component, ElementRef, computed, inject, input } from '@angular/core';
 
 import { Store } from '../store';
-import { Tapa, photoUrl, tapaKey } from '../venues';
+import { Tapa, photoUrl } from '../venues';
 import { Viewer } from '../viewer/viewer';
 
 /**
@@ -27,6 +27,8 @@ import { Viewer } from '../viewer/viewer';
     '(click)': 'enlarge()',
   },
   styles: `
+    @use 'media';
+
     // Full width: a button fits what it has inside, and until the photo loads (lazily) it wouldn't
     // measure anything, nor would it load in some browsers. Relative, to stay above whatever covers
     // the card (the gallery's heading).
@@ -59,7 +61,7 @@ import { Viewer } from '../viewer/viewer';
         transform: scale(1.06);
       }
 
-      @media (prefers-reduced-motion: reduce) {
+      @include media.reduced-motion {
         transition: none;
       }
     }
@@ -117,9 +119,7 @@ export class TapaPhoto {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
 
   protected readonly photo = computed(() => photoUrl(this.tapa(), 500));
-  protected readonly rating = computed(
-    () => this.store.ratings().get(tapaKey(this.venue(), this.tapa().number)) ?? 0,
-  );
+  protected readonly rating = computed(() => this.store.stars(this.venue(), this.tapa().number));
   protected readonly label = computed(() => {
     const rating = this.rating();
     const stars = rating ? `${rating} de 5 estrellas` : 'sin valorar';

@@ -1,0 +1,151 @@
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+// All form controls share height, border, radius and background. `.control` gives the same look to
+// what isn't an input (the checkbox with its text, for example).
+input:not([type='checkbox'], [type='radio']),
+select,
+.control {
+  height: var(--control-height);
+  min-width: 0;
+  padding: 0 0.75rem;
+  border: 1px solid var(--control-border);
+  border-radius: 0.5rem;
+  background-color: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    border-color: var(--muted);
+  }
+
+  // Sunk into the bar: with only the opacity it was still a white box on white.
+  &:disabled {
+    background-color: var(--border);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+select {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236f6259' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1rem;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:has(:checked) {
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
+  }
+}
+
+input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: var(--control-height);
+  padding: 0 0.9rem;
+  border: 1px solid var(--brand);
+  border-radius: 0.5rem;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+
+  &:hover:not(:disabled) {
+    background: var(--brand-dark);
+    border-color: var(--brand-dark);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &.secondary {
+    background: var(--surface);
+    color: var(--brand);
+
+    &:hover:not(:disabled) {
+      background: var(--accent-soft);
+      border-color: var(--brand);
+    }
+  }
+
+  // Just an icon: square.
+  &.icon {
+    width: var(--control-height);
+    padding: 0;
+    font-size: 1.1rem;
+  }
+}
+
+// Segmented selector (view and theme, in the menu): the active option, like a tab on a rail.
+.segments {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 0.625rem;
+  background: var(--background);
+
+  button {
+    flex: 1;
+    height: 2.25rem;
+    padding: 0 0.75rem;
+    border-color: transparent;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--muted);
+
+    &:hover:not(:disabled) {
+      border-color: transparent;
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    &.active,
+    &.active:hover:not(:disabled) {
+      background: var(--surface);
+      color: var(--brand);
+      box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
+    }
+  }
+}
+
+// A time field's focus is on a segment inside it, so with the mouse it may not count as :focus-visible.
+:focus-visible,
+input[type='time']:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

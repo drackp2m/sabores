@@ -9,6 +9,9 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { SETTLE, animateHeight } from '../animate-height';
+import { reducedMotion } from '../media';
+
 /**
  * Text clamped to three lines, with «Ver más / Ver menos» if it doesn't fit. Like the cards' schedule:
  * on opening, the height grows and the new lines appear behind it; on closing, it just folds.
@@ -106,7 +109,7 @@ export class Collapsible {
     const open = !this.open();
     this.open.set(open);
     for (const animation of paragraph.getAnimations()) animation.cancel();
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (reducedMotion()) {
       this.clamped.set(!open);
       return;
     }
@@ -116,14 +119,10 @@ export class Collapsible {
     const clamped = paragraph.getBoundingClientRect().height;
     paragraph.classList.remove('clamped');
     const full = paragraph.getBoundingClientRect().height;
-    const curve = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 
     if (open) {
       this.clamped.set(false);
-      paragraph.animate([{ height: `${from}px` }, { height: `${full}px` }], {
-        duration: 400,
-        easing: curve,
-      });
+      animateHeight(paragraph, from, full);
       // A mask ending in a gradient moves down a bit behind the height: each new line appears little
       // by little, after room has been made for it.
       const mask = (height: number): Keyframe => ({
@@ -134,15 +133,12 @@ export class Collapsible {
       paragraph.animate([mask(from), mask(full)], {
         duration: 550,
         delay: 100,
-        easing: curve,
+        easing: SETTLE,
         fill: 'backwards',
       });
     } else {
       // It gets clamped at the end: otherwise, the ellipsis would show up too early.
-      paragraph.animate([{ height: `${from}px` }, { height: `${clamped}px` }], {
-        duration: 300,
-        easing: curve,
-      }).onfinish = () => this.clamped.set(true);
+      animateHeight(paragraph, from, clamped).onfinish = () => this.clamped.set(true);
     }
   }
 }

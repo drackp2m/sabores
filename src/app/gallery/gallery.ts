@@ -1,12 +1,12 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 
+import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Favorite } from '../favorite/favorite';
-import { Icon } from '../icon/icon';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
 import { TapasRoute } from '../tapas-route';
-import { Venue, formatDistance, formatDuration } from '../venues';
+import { Venue } from '../venues';
 
 /**
  * The «Fotos» view: each venue's name with its seals and favorite heart, how long it takes to get
@@ -15,7 +15,7 @@ import { Venue, formatDistance, formatDuration } from '../venues';
  */
 @Component({
   selector: 'app-gallery',
-  imports: [Favorite, Icon, ScheduleStatus, Seal, TapaPhoto],
+  imports: [ArrivalTime, Favorite, ScheduleStatus, Seal, TapaPhoto],
   template: `
     <ul>
       @for (card of cards(); track card.venue.number) {
@@ -23,7 +23,7 @@ import { Venue, formatDistance, formatDuration } from '../venues';
         @let arrival = tapasRoute.arrivals().get(venue.number);
         <li>
           <div class="heading">
-            <span class="number">{{ venue.number }}</span>
+            <span class="venue-number small">{{ venue.number }}</span>
             <div class="title">
               <div class="name">
                 <!-- Its ::after covers the whole card: the venue opens by clicking anywhere except the photos and the heart. -->
@@ -40,11 +40,7 @@ import { Venue, formatDistance, formatDuration } from '../venues';
               </div>
               <span class="data">
                 @if (arrival) {
-                  <span class="arrival">
-                    <app-icon [name]="arrival.mode" />
-                    {{ formatDuration(arrival.minutes) }} ·
-                    {{ formatDistance(arrival.meters) }}
-                  </span>
+                  <app-arrival-time [arrival]="arrival" distance />
                 }
                 <app-schedule-status [venue]="venue.number" />
               </span>
@@ -168,28 +164,6 @@ import { Venue, formatDistance, formatDuration } from '../venues';
       font-weight: 600;
     }
 
-    .arrival {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.2rem;
-    }
-
-    // Like in the cards: it comes out of the left edge (covering it), rounded only on the right.
-    .number {
-      flex: none;
-      display: grid;
-      place-items: center;
-      min-width: 2.1rem;
-      height: 1.75rem;
-      margin-left: calc(-0.6rem - 1px);
-      padding: 0 0.45rem 0 0.35rem;
-      border-radius: 0 999px 999px 0;
-      background: var(--brand);
-      color: #fff;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
     .photos {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -216,8 +190,6 @@ export class Gallery {
   readonly open = output<number>();
 
   protected readonly tapasRoute = inject(TapasRoute);
-  protected readonly formatDuration = formatDuration;
-  protected readonly formatDistance = formatDistance;
 
   /** The venue's seals: gluten-free (or on request) and Ruta de Sabor, if any tapa has them. */
   protected readonly cards = computed(() =>

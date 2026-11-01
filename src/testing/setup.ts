@@ -1,6 +1,6 @@
 // jsdom has no ResizeObserver (collapsible text in the cards, map), IntersectionObserver (scroll-to-top
-// button), animate or getAnimations (photo viewer, stars, heart), matchMedia, scrollIntoView (map) or
-// scrollTo. No IndexedDB either: the store stays in memory.
+// button, scroll position), animate or getAnimations (photo viewer, stars, heart), matchMedia,
+// scrollIntoView (map) or scrollTo. No IndexedDB either: the store stays in memory.
 globalThis.ResizeObserver ??= class {
   observe() {}
   unobserve() {}

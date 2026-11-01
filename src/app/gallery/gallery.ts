@@ -21,7 +21,8 @@ import { Venue } from '../venues';
       @for (card of cards(); track card.venue.number) {
         @let venue = card.venue;
         @let arrival = tapasRoute.arrivals().get(venue.number);
-        <li>
+        <li [attr.id]="'venue-' + venue.number">
+          <span class="venue-mark"></span>
           <div class="heading">
             <span class="venue-number small">{{ venue.number }}</span>
             <div class="title">

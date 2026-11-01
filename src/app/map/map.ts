@@ -20,6 +20,7 @@ import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
 import { isTouch } from '../media';
 import { directionsLink, findRoute } from '../routing';
+import { ScrollPosition } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
 import { Coordinates, StatusKind, Venue, photoUrl, statusBadge, statusKind } from '../venues';
 
@@ -254,6 +255,7 @@ export class VenueMap {
 
   private readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
+  private readonly position = inject(ScrollPosition);
 
   /** Full screen. */
   protected readonly large = signal(false);
@@ -427,6 +429,7 @@ export class VenueMap {
     const marker = this.markers.get(number);
     if (!marker) return;
     this.container().nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    this.position.appScrolled();
     map.setView(marker.getLatLng(), 17);
     marker.openPopup();
   }

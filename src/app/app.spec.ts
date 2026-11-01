@@ -4,9 +4,11 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import * as L from 'leaflet';
 
+import { stubIntersections } from '../testing/intersections';
 import { testTapa, testVenue, week } from '../testing/venue';
 import { App } from './app';
 import { Clock } from './clock';
+import { ScrollPosition } from './scroll-position';
 import { Store } from './store';
 import { NO_FILTERS, RouteData, TimeSlot, Venue } from './venues';
 
@@ -440,6 +442,164 @@ describe('App', () => {
     await fixture.whenStable();
     expect(el.querySelector<HTMLInputElement>('.field.text input')!.value).toBe('cúpula');
     expect(el.querySelectorAll('app-gallery li').length).toBe(1);
+  });
+
+  describe('following the scroll', () => {
+    const venues = [1, 2, 3, 4, 5, 6, 7].map((number) => ({
+      ...venue(number, `LOCAL ${number}`, []),
+      location: { lat: 39.98 + number / 1000, lng: 0 },
+    }));
+
+    async function startFollowing() {
+      const report = stubIntersections();
+      const started = await start({ ...DATA, venues });
+      const { fixture, el, press } = started;
+      /** The venue on top: those before it in the list have gone under the header. */
+      const scrollTo = async (number: number) => {
+        const marks = [...el.querySelectorAll('.venue-mark')];
+        report((mark) => marks.indexOf(mark) >= 0 && marks.indexOf(mark) < number - 1);
+        await fixture.whenStable();
+      };
+      const switchTo = async (view: string) => {
+        await press('.menu-button');
+        await press('.menu button', view);
+        await new Promise((r) => setTimeout(r));
+        await fixture.whenStable();
+      };
+      return {
+        ...started,
+        scrollTo,
+        switchTo,
+        position: TestBed.inject(ScrollPosition),
+        locate: (number: number) => press(`#venue-${number} button[aria-label='Ver en el mapa']`),
+        /** Long enough for a scroll started by the app to be over. */
+        pageStops: () => new Promise((r) => setTimeout(r, 250)),
+        returnButton: () => el.querySelector('.return'),
+      };
+    }
+
+    /** The element each scrollIntoView was called on. */
+    const landedOn = (spy: { mock: { instances: unknown[] } }) =>
+      spy.mock.instances.map((e) => (e as Element).id);
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it('keeps the venue on switching view', async () => {
+      const { el, scrollTo, switchTo, position } = await startFollowing();
+      await scrollTo(4);
+      expect(position.current()).toBe(4);
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      await switchTo('Fotos');
+      expect(el.querySelector('app-gallery')).not.toBeNull();
+      expect(landedOn(scrollIntoView)).toEqual(['venue-4']);
+      expect(el.querySelector('#venue-4')!.tagName).toBe('LI');
+
+      await switchTo('Detalles');
+      expect(landedOn(scrollIntoView)).toEqual(['venue-4', 'venue-4']);
+      expect(el.querySelector('#venue-4')!.tagName).toBe('APP-VENUE-CARD');
+    });
+
+    it('on the first venue, switching view goes to the very top', async () => {
+      const { scrollTo, switchTo } = await startFollowing();
+      await scrollTo(1);
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      const top = vi.spyOn(Element.prototype, 'scrollTo');
+      await switchTo('Fotos');
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      expect(top).toHaveBeenCalledWith({ top: 0 });
+    });
+
+    it('from a venue opened in the gallery, «Detalles» lands on it', async () => {
+      const { fixture, press, scrollTo, switchTo, position } = await startFollowing();
+      await switchTo('Fotos');
+      await scrollTo(2);
+      await press('app-gallery li button', 'LOCAL 5');
+      expect(position.current()).toBe(2);
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      vi.spyOn(history, 'back').mockImplementation(() => {});
+      await press('.menu-button');
+      await press('.menu button', 'Detalles');
+      window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
+      await new Promise((r) => setTimeout(r));
+      await fixture.whenStable();
+      expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
+    });
+
+    it('«Volver al local» appears on going to the map and returns to the venue', async () => {
+      const { el, scrollTo, locate, press, returnButton, position } = await startFollowing();
+      await scrollTo(6);
+      expect(returnButton()).toBeNull();
+      await locate(6);
+      expect(returnButton()!.textContent).toContain('Volver al local 6');
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      await press('.return');
+      expect(landedOn(scrollIntoView)).toEqual(['venue-6']);
+      expect(el.querySelector('#venue-6.highlighted')).not.toBeNull();
+      expect(position.returnTo()).toBeNull();
+    });
+
+    it('the trip to the map doesn’t count, but three venues afterwards forget it', async () => {
+      const { scrollTo, locate, pageStops, returnButton } = await startFollowing();
+      await scrollTo(6);
+      await locate(6);
+      await scrollTo(1);
+      expect(returnButton()).not.toBeNull();
+
+      await pageStops();
+      await scrollTo(3);
+      expect(returnButton()).not.toBeNull();
+      await scrollTo(2);
+      expect(returnButton()).toBeNull();
+    });
+
+    it('«Volver al local» stays while looking at other venues on the map', async () => {
+      const { fixture, scrollTo, locate, pageStops, returnButton } = await startFollowing();
+      vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+      await scrollTo(1);
+      await locate(1);
+      await pageStops();
+
+      fixture.componentInstance['showInList'](7);
+      await scrollTo(7);
+      expect(returnButton()!.textContent).toContain('Volver al local 1');
+    });
+
+    it('«Volver al local» changes to the last venue the user went to the map from', async () => {
+      const { scrollTo, locate, returnButton } = await startFollowing();
+      await scrollTo(6);
+      await locate(6);
+      await locate(2);
+      expect(returnButton()!.textContent).toContain('local 2');
+    });
+
+    it('«Volver al local» goes away on switching view', async () => {
+      const { scrollTo, switchTo, locate, returnButton } = await startFollowing();
+      await scrollTo(6);
+      await locate(6);
+      expect(returnButton()).not.toBeNull();
+
+      await switchTo('Fotos');
+      expect(returnButton()).toBeNull();
+      await switchTo('Detalles');
+      expect(returnButton()).toBeNull();
+    });
+
+    it('«Volver al local» waits while its venue is filtered out', async () => {
+      const { fixture, el, scrollTo, locate, press, returnButton } = await startFollowing();
+      await scrollTo(6);
+      await locate(6);
+      const search = el.querySelector<HTMLInputElement>('.field.text input')!;
+      search.value = 'local 2';
+      search.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      expect(returnButton()).toBeNull();
+
+      await press('.actions button', 'Limpiar');
+      expect(returnButton()).not.toBeNull();
+    });
   });
 
   it('keeps the sort order chosen', async () => {

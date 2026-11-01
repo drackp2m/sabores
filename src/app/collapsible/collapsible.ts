@@ -128,13 +128,16 @@ export class Collapsible {
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
       const paragraph = this.paragraph().nativeElement;
-      // Measured again when the width changes; open it shows in full, so only clamped is measured.
-      const stopObserving = observeSize(paragraph, () => {
+      // Open it shows in full, so only clamped is measured.
+      const measure = () => {
         if (this.clamped()) {
           this.overflows.set(paragraph.scrollHeight > paragraph.clientHeight + 1);
         }
-      });
-      destroyRef.onDestroy(stopObserving);
+      };
+      // Right now, for the card to have its final height before it gets painted (app.ts counts on
+      // it to land on a venue), and again when the width changes.
+      measure();
+      destroyRef.onDestroy(observeSize(paragraph, measure));
     });
   }
 

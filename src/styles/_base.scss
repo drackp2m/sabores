@@ -70,6 +70,15 @@ app-root:empty {
   );
 }
 
+// Where a venue's margin starts, in the cards and the gallery: when it goes under the header, the
+// scroll has left that venue behind (scroll-position.ts). A few pixels short: a card brought into
+// view by scroll-padding-top, which doesn't count the header's border and gets rounded, hasn't.
+.venue-mark {
+  position: absolute;
+  top: calc(3px - 1rem);
+  width: 1px;
+}
+
 // If a name takes up several lines, they should be of similar length.
 h1,
 h2,

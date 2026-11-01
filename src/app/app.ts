@@ -19,6 +19,7 @@ import { legacyView } from './legacy-storage';
 import { VenueMap, loadLeaflet } from './map/map';
 import { isDesktop, isTouch, reducedMotion } from './media';
 import { OriginPanel } from './origin/origin';
+import { ScrollPosition } from './scroll-position';
 import { Seal } from './seal/seal';
 import { Store } from './store';
 import { TapasRoute } from './tapas-route';
@@ -69,6 +70,7 @@ export class App {
   private readonly viewer = inject(Viewer);
   /** Already loaded at startup (app.config.ts): filters, sort order and view start as they were left. */
   private readonly store = inject(Store);
+  private readonly position = inject(ScrollPosition);
   protected readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
   protected readonly themes = THEMES;
@@ -130,6 +132,12 @@ export class App {
     return venue ? [venue] : [];
   });
 
+  /** The venue to go back to, as long as the filters leave it in the list. */
+  protected readonly returnVenue = computed(() => {
+    const origin = this.position.returnTo();
+    return this.visible().some((v) => v.number === origin) ? origin : null;
+  });
+
   /** Gallery scroll when opening a venue, to leave it the same on the way back. */
   private galleryScroll = 0;
 
@@ -157,14 +165,22 @@ export class App {
       const mark = this.scrollTopMark()?.nativeElement;
       this.showScrollTop.set(false);
       if (!mark) return;
-      const header = this.host.querySelector<HTMLElement>('.header')!.offsetHeight;
       const observer = new IntersectionObserver(
         ([{ boundingClientRect, rootBounds }]) =>
           this.showScrollTop.set(boundingClientRect.bottom <= (rootBounds?.top ?? 0)),
-        { rootMargin: `-${header}px 0px 0px` },
+        { rootMargin: `-${this.headerHeight}px 0px 0px` },
       );
       observer.observe(mark);
       onCleanup(() => observer.disconnect());
+    });
+
+    // Which venue the scroll is on. The same mark says whether there's a list to follow.
+    afterRenderEffect((onCleanup) => {
+      const venues = this.visible();
+      if (!this.scrollTopMark()) return;
+      const marks = [...this.host.querySelectorAll('.venue-mark')];
+      const root = isTouch() ? this.host : null;
+      onCleanup(this.position.follow(venues, marks, this.headerHeight, root));
     });
 
     // Clicking outside the menu closes it; it only listens while open: otherwise, every click
@@ -198,6 +214,15 @@ export class App {
     return document.scrollingElement ?? document.documentElement;
   }
 
+  private get headerHeight(): number {
+    return this.host.querySelector<HTMLElement>('.header')!.offsetHeight;
+  }
+
+  /** A venue's card or, in the photo view, its place in the gallery. */
+  private card(number: number | null): HTMLElement | null {
+    return document.getElementById(`venue-${number}`);
+  }
+
   protected scrollToTop(): void {
     this.scroller.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
   }
@@ -226,17 +251,52 @@ export class App {
   protected changeView(view: View): void {
     this.menuOpen.set(false);
     if (this.detail() !== null) history.back();
-    else if (view !== this.view()) this.scroller.scrollTo({ top: 0 });
+    else if (view !== this.view()) {
+      this.position.returnTo.set(null);
+      this.landOn(this.position.current());
+    }
     this.view.set(view);
     this.store.saveSetting('view', view);
   }
 
+  /**
+   * In the new list, leaves the page on that venue. On the first one, at the very top: there is
+   * nothing above it worth hiding. In the second round: the first one adds the «Ver más» that move
+   * the cards (collapsible.ts), and Safari wouldn't make up for it.
+   */
+  private landOn(number: number | null): void {
+    const land = () => {
+      const card = number === this.visible()[0]?.number ? null : this.card(number);
+      if (card) card.scrollIntoView({ block: 'start' });
+      else this.scroller.scrollTo({ top: 0 });
+    };
+    afterNextRender(() => afterNextRender(land, { injector: this.injector }), {
+      injector: this.injector,
+    });
+  }
+
+  /** Shows a venue of the list on the map, remembering it to be able to return. */
+  protected locate(map: VenueMap, number: number): void {
+    this.position.leaveFrom(number);
+    map.focus(number);
+  }
+
+  protected returnToVenue(number: number): void {
+    this.position.returnTo.set(null);
+    this.goToCard(number);
+  }
+
   /** On desktop, clicking a marker takes the list to its card. */
   protected showInList(number: number): void {
-    if (!isDesktop()) return;
-    document
-      .getElementById(`venue-${number}`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (isDesktop()) this.goToCard(number);
+  }
+
+  private goToCard(number: number): void {
+    this.card(number)?.scrollIntoView({
+      behavior: reducedMotion() ? 'auto' : 'smooth',
+      block: 'start',
+    });
+    this.position.appScrolled();
     this.highlighted.set(number);
     setTimeout(() => this.highlighted.update((n) => (n === number ? null : n)), 1600);
   }
@@ -255,8 +315,14 @@ export class App {
 
   protected onNavigate(event: PopStateEvent): void {
     const number = (event.state as { venue?: number } | null)?.venue ?? null;
+    const opened = this.detail();
     this.detail.set(number);
-    const top = number === null && this.view() === 'photos' ? this.galleryScroll : 0;
+    // From a venue to «Detalles», the list opens on that same venue.
+    if (number === null && this.view() === 'details') {
+      this.landOn(opened);
+      return;
+    }
+    const top = number === null ? this.galleryScroll : 0;
     afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
   }
 }

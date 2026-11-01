@@ -124,7 +124,7 @@
                 [class.highlighted]="highlighted() === venue.number"
                 [venue]="venue"
                 [day]="filters().day"
-                (showOnMap)="map.focus(venue.number)"
+                (showOnMap)="locate(map, venue.number)"
               />
             } @empty {
               <p class="message">Ningún local cumple los filtros.</p>
@@ -153,6 +153,18 @@
   </p>
   <p>Castellón de la Plana 2026</p>
 </footer>
+
+@if (returnVenue(); as number) {
+  <button
+    type="button"
+    class="return"
+    animate.enter="entering"
+    animate.leave="leaving"
+    (click)="returnToVenue(number)"
+  >
+    <app-icon name="back" />Volver al local {{ number }}
+  </button>
+}
 
 @if (showScrollTop()) {
   <button

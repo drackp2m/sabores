@@ -123,7 +123,9 @@ If it closes before you can get there, the status shows in red.
 The header switches between the «Detalles» view and the «Fotos» view: each venue's name with its seals,
 the arrival time, the status and the photos, with the same filters. Clicking one opens its card with its
 map, and the floating «Volver» button (or the browser's back button) returns to the gallery where it was
-left.
+left. Switching view keeps the scroll on the same venue. After going from a venue in the list to the map,
+«Volver al local N» takes you back to it, however many other venues you look at on the map; scrolling past
+three venues, up and down added together, forgets it.
 
 Code, comments, file names and commands are in English; only the text the app shows is in Spanish.
 
@@ -134,6 +136,7 @@ src/app/
   tapas-route.ts     the route's data, each venue's schedule status and arrival time
   clock.ts           the current time, which changes as each minute starts
   store.ts           what's saved on the device: ratings, favorites and settings, in IndexedDB
+  scroll-position.ts which venue the scroll is on, and the one to return to from the map
   legacy-storage.ts  brings over what older versions saved (under Spanish names)
   theme.ts           light, dark or system theme
   user-location.ts   starting point: geolocation or an address searched for

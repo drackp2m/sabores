@@ -9,7 +9,7 @@
   display: block;
   background: var(--background);
   // The height of the map, in the list and in the venue view; also that of the «Subir» mark.
-  --map-height: 20rem;
+  --map-height: 22.3rem;
 }
 
 // On touch screens the app scrolls instead of the document (see styles/_base.scss).
@@ -133,9 +133,11 @@
   }
 }
 
-// Floating buttons: «Volver» from the venue back to the gallery, bottom left, and «Subir», at the
-// same height on the right once the map is out of sight (the footer leaves room for them).
+// Floating buttons: bottom left, «Volver» from the venue back to the gallery and, in the list,
+// «Volver al local» after having gone to the map; at the same height on the right, «Subir» once the
+// map is out of sight (the footer leaves room for them).
 .back,
+.return,
 .scroll-top {
   position: fixed;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -144,7 +146,8 @@
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);
 }
 
-.back {
+.back,
+.return {
   left: var(--gutter-left);
   padding: 0 1.2rem 0 1rem;
   border-radius: 999px;
@@ -156,6 +159,10 @@
   padding: 0;
   border-radius: 50%;
   font-size: 1.3rem;
+}
+
+.return,
+.scroll-top {
   // It deforms resting on the floor, as if it fell upwards and bounced.
   transform-origin: 50% 100%;
   // How far down it goes to be off-screen: its height, the margin and the safe area.
@@ -326,6 +333,7 @@ main {
 
 @include media.reduced-motion {
   .menu,
+  .return,
   .scroll-top {
     animation: none !important;
   }

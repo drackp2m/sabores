@@ -1,84 +1,84 @@
-// Tema oscuro: con data-tema="oscuro" en <html>, o el del sistema si no se ha elegido claro (tema.ts).
-@mixin si-oscuro {
-  :root[data-tema='oscuro'] & {
+// Dark theme: with data-theme="dark" on <html>, or the system's if light wasn't chosen (theme.ts).
+@mixin if-dark {
+  :root[data-theme='dark'] & {
     @content;
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-tema='claro']) & {
+    :root:not([data-theme='light']) & {
       @content;
     }
   }
 }
 
 :root {
-  // El color de la marca, igual en los dos temas y siempre con texto blanco encima: la cabecera (como
-  // la barra de estado, theme-color), los botones y los números de los locales. --acento es para
-  // texto (enlaces, «Ver más»…), y en oscuro se aclara para leerse bien.
-  --marca: #b4441b;
-  --marca-oscuro: #973815;
-  --fondo: #faf6f0;
-  --superficie: #fff;
-  --texto: #2a211b;
-  --suave: #6f6259;
-  --borde: #e8dfd3;
-  --borde-control: #d9ccbc;
-  --acento: #b4441b;
-  --acento-suave: #fbe9df;
-  --verde: #2f7d4a;
-  --verde-suave: #e3f2e8;
-  --aviso: #8a5a00;
-  --aviso-suave: #fff3d6;
-  --rojo: #a61e24;
-  --rojo-suave: #fde4e2;
-  --ambar: #d97706;
-  --corazon: #e11d48;
-  --estrella: #ffc531;
-  --radio: 0.75rem;
-  --alto-control: 2.5rem;
-  --alto-cabecera: 3.5rem;
-  // Márgenes laterales que respetan las zonas seguras (notch en horizontal, con viewport-fit=cover).
-  --margen-izquierdo: max(1rem, env(safe-area-inset-left, 0px));
-  --margen-derecho: max(1rem, env(safe-area-inset-right, 0px));
-  // Lo que flota sobre la página (el menú) y la foto ampliada.
-  --sombra-elevada: 0 18px 48px rgb(42 33 27 / 0.32), 0 4px 12px rgb(42 33 27 / 0.18);
-  --sombra-foto: 0 28px 72px rgb(0 0 0 / 0.5), 0 8px 20px rgb(0 0 0 / 0.3);
+  // The brand color, the same in both themes and always with white text on top: the header (like the
+  // status bar, theme-color), the buttons and the venue numbers. --accent is for text (links,
+  // «Ver más»…), and in dark mode it gets lighter to read well.
+  --brand: #b4441b;
+  --brand-dark: #973815;
+  --background: #faf6f0;
+  --surface: #fff;
+  --text: #2a211b;
+  --muted: #6f6259;
+  --border: #e8dfd3;
+  --control-border: #d9ccbc;
+  --accent: #b4441b;
+  --accent-soft: #fbe9df;
+  --green: #2f7d4a;
+  --green-soft: #e3f2e8;
+  --warning: #8a5a00;
+  --warning-soft: #fff3d6;
+  --red: #a61e24;
+  --red-soft: #fde4e2;
+  --amber: #d97706;
+  --heart: #e11d48;
+  --star: #ffc531;
+  --radius: 0.75rem;
+  --control-height: 2.5rem;
+  --header-height: 3.5rem;
+  // Side margins that respect the safe areas (notch in landscape, with viewport-fit=cover).
+  --gutter-left: max(1rem, env(safe-area-inset-left, 0px));
+  --gutter-right: max(1rem, env(safe-area-inset-right, 0px));
+  // What floats over the page (the menu) and the enlarged photo.
+  --shadow-raised: 0 18px 48px rgb(42 33 27 / 0.32), 0 4px 12px rgb(42 33 27 / 0.18);
+  --shadow-photo: 0 28px 72px rgb(0 0 0 / 0.5), 0 8px 20px rgb(0 0 0 / 0.3);
   color-scheme: light;
 }
 
-// El acento, el de la marca con un poco de blanco para que se lea mejor sobre fondo oscuro. Las
-// sombras, mucho más marcadas (y con un filo claro) para verse sobre negro.
-@mixin paleta-oscura {
-  --acento: color-mix(in srgb, var(--marca) 88%, #fff);
-  --fondo: #17120f;
-  --superficie: #221b17;
-  --texto: #f0e7df;
-  --suave: #ab9d92;
-  --borde: #362c26;
-  --borde-control: #4a3d35;
-  --acento-suave: #3a2219;
-  --verde: #7fcf97;
-  --verde-suave: #1b3324;
-  --aviso: #f0c060;
-  --aviso-suave: #3a2e14;
-  --rojo: #ff9a8f;
-  --rojo-suave: #3f1d1b;
-  --ambar: #f5a524;
-  --corazon: #fb5a7a;
-  --sombra-elevada:
+// The accent, the brand's with a bit of white to read better on a dark background. The shadows, much
+// stronger (and with a light edge) to show on black.
+@mixin dark-palette {
+  --accent: color-mix(in srgb, var(--brand) 88%, #fff);
+  --background: #17120f;
+  --surface: #221b17;
+  --text: #f0e7df;
+  --muted: #ab9d92;
+  --border: #362c26;
+  --control-border: #4a3d35;
+  --accent-soft: #3a2219;
+  --green: #7fcf97;
+  --green-soft: #1b3324;
+  --warning: #f0c060;
+  --warning-soft: #3a2e14;
+  --red: #ff9a8f;
+  --red-soft: #3f1d1b;
+  --amber: #f5a524;
+  --heart: #fb5a7a;
+  --shadow-raised:
     0 0 0 1px rgb(255 255 255 / 0.06), 0 22px 56px rgb(0 0 0 / 0.85), 0 6px 16px rgb(0 0 0 / 0.6);
-  --sombra-foto:
+  --shadow-photo:
     0 0 0 1px rgb(255 255 255 / 0.08), 0 32px 90px rgb(0 0 0 / 0.95), 0 10px 28px rgb(0 0 0 / 0.75);
   color-scheme: dark;
 }
 
-:root[data-tema='oscuro'] {
-  @include paleta-oscura;
+:root[data-theme='dark'] {
+  @include dark-palette;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-tema='claro']) {
-    @include paleta-oscura;
+  :root:not([data-theme='light']) {
+    @include dark-palette;
   }
 }
 
@@ -87,24 +87,24 @@
 }
 
 html {
-  background: var(--fondo);
-  // Todo va en rem: en pantallas estrechas (menos de 375px, como los 360 de muchos Android), todo un
-  // poco más pequeño; los iPhone (375–430) se quedan como están. En %, para respetar el tamaño de
-  // letra que cada uno haya elegido en el navegador o el sistema.
+  background: var(--background);
+  // Everything is in rem: on narrow screens (under 375px, like the 360 of many Android phones),
+  // everything a bit smaller; iPhones (375–430) stay as they are. In %, to respect the font size each
+  // person has chosen in the browser or the system.
   @media (max-width: 374.98px) {
     font-size: 87.5%;
   }
 
-  // Al llevar algo a la vista (ficha, mapa), que quede por debajo de la cabecera fija, que también
-  // ocupa la zona segura de arriba (barra de estado). Lo mismo en app-root, si es el que hace scroll.
-  scroll-padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
-  // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
+  // When bringing something into view (card, map), it stays below the sticky header, which also takes
+  // up the top safe area (status bar). The same in app-root, if that's what scrolls.
+  scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1rem);
+  // No page zoom (pinch or double tap); the map and its gestures go separately.
   touch-action: pan-x pan-y;
-  // Con barras de scroll de las que ocupan sitio (Windows, Linux, macOS con «mostrar siempre»), el
-  // hueco se queda aunque la página quepa en la pantalla: al filtrar, la página no se mueve de lado.
+  // With scrollbars that take up space (Windows, Linux, macOS with «show always»), the gap stays even
+  // if the page fits on the screen: on filtering, the page doesn't move sideways.
   scrollbar-gutter: stable;
-  // Sin rebote al llegar arriba o abajo (Safari y Chrome en el Mac): arrastraría la cabecera y el
-  // mapa, que son sticky.
+  // No bounce at the top or bottom (Safari and Chrome on Mac): it would drag the header and the map,
+  // which are sticky.
   overscroll-behavior-y: none;
 }
 
@@ -117,22 +117,21 @@ body {
     Roboto,
     sans-serif;
   line-height: 1.45;
-  background: var(--fondo);
-  color: var(--texto);
+  background: var(--background);
+  color: var(--text);
 }
 
-// En pantallas táctiles el documento no hace scroll (lo hace app-root, ver app.scss) y su color de
-// fondo es el de la cabecera: así Safari en iOS no tiene contenido que difuminar bajo la barra de
-// estado y la pinta del color de la cabecera. Si asoma por algún hueco (bajo las barras de Safari),
-// arriba es el de la cabecera y abajo el de la página. En el resto, el documento hace scroll como
-// siempre: Safari en el Mac descoloca los elementos sticky (cabecera, mapa) al hacer scroll rápido
-// dentro de un contenedor.
+// On touch screens the document doesn't scroll (app-root does, see app.scss) and its background is
+// the header's color: this way Safari on iOS has no content to blur under the status bar and paints
+// it in the header's color. If it peeks through any gap (under Safari's bars), it's the header's at
+// the top and the page's at the bottom. Everywhere else, the document scrolls as usual: Safari on Mac
+// misplaces sticky elements (header, map) on fast scrolling inside a container.
 @media (hover: none) and (pointer: coarse) {
   html {
     overflow: hidden;
     overscroll-behavior: none;
     scrollbar-gutter: auto;
-    background: linear-gradient(var(--marca) 50%, var(--fondo) 50%) var(--marca);
+    background: linear-gradient(var(--brand) 50%, var(--background) 50%) var(--brand);
   }
 
   body {
@@ -142,18 +141,18 @@ body {
   }
 }
 
-// Mientras arranca la app: la franja de la cabecera ya en su sitio y el resto con el fondo (si no,
-// se vería el fondo del documento, media pantalla del color de la cabecera en el móvil).
+// While the app starts: the header's band already in place and the rest with the background
+// (otherwise the document's background would show, half a screen of the header's color on a phone).
 app-root:empty {
   display: block;
   height: 100dvh;
   background: linear-gradient(
-    var(--marca) calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px)),
-    var(--fondo) 0
+    var(--brand) calc(var(--header-height) + env(safe-area-inset-top, 0px)),
+    var(--background) 0
   );
 }
 
-// Si un nombre ocupa varias líneas, que sean de un largo parecido.
+// If a name takes up several lines, they should be of similar length.
 h1,
 h2,
 h3 {
@@ -169,23 +168,23 @@ select {
   color: inherit;
 }
 
-// Todos los controles de formulario comparten alto, borde, radio y fondo. `.control` da el mismo
-// aspecto a lo que no es un input (p. ej. la casilla con su texto).
+// All form controls share height, border, radius and background. `.control` gives the same look to
+// what isn't an input (the checkbox with its text, for example).
 input:not([type='checkbox'], [type='radio']),
 select,
 .control {
-  height: var(--alto-control);
+  height: var(--control-height);
   min-width: 0;
   padding: 0 0.75rem;
-  border: 1px solid var(--borde-control);
+  border: 1px solid var(--control-border);
   border-radius: 0.5rem;
-  background-color: var(--superficie);
-  color: var(--texto);
+  background-color: var(--surface);
+  color: var(--text);
   font-size: 0.95rem;
   transition: border-color 0.15s;
 
   &:hover:not(:disabled) {
-    border-color: var(--suave);
+    border-color: var(--muted);
   }
 
   &:disabled {
@@ -212,8 +211,8 @@ select {
   cursor: pointer;
 
   &:has(:checked) {
-    border-color: var(--acento);
-    background-color: var(--acento-suave);
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
   }
 }
 
@@ -221,7 +220,7 @@ input[type='checkbox'] {
   width: 1.1rem;
   height: 1.1rem;
   margin: 0;
-  accent-color: var(--acento);
+  accent-color: var(--accent);
   cursor: pointer;
 }
 
@@ -230,11 +229,11 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  height: var(--alto-control);
+  height: var(--control-height);
   padding: 0 0.9rem;
-  border: 1px solid var(--marca);
+  border: 1px solid var(--brand);
   border-radius: 0.5rem;
-  background: var(--marca);
+  background: var(--brand);
   color: #fff;
   font-weight: 600;
   white-space: nowrap;
@@ -244,8 +243,8 @@ button {
     border-color 0.15s;
 
   &:hover:not(:disabled) {
-    background: var(--marca-oscuro);
-    border-color: var(--marca-oscuro);
+    background: var(--brand-dark);
+    border-color: var(--brand-dark);
   }
 
   &:disabled {
@@ -253,32 +252,32 @@ button {
     cursor: default;
   }
 
-  &.secundario {
-    background: var(--superficie);
-    color: var(--marca);
+  &.secondary {
+    background: var(--surface);
+    color: var(--brand);
 
     &:hover:not(:disabled) {
-      background: var(--acento-suave);
-      border-color: var(--marca);
+      background: var(--accent-soft);
+      border-color: var(--brand);
     }
   }
 
-  // Solo un icono: cuadrado.
-  &.icono {
-    width: var(--alto-control);
+  // Just an icon: square.
+  &.icon {
+    width: var(--control-height);
     padding: 0;
     font-size: 1.1rem;
   }
 }
 
-// Selector segmentado (vista y tema, en el menú): la opción activa, como una pestaña sobre un carril.
-.segmentos {
+// Segmented selector (view and theme, in the menu): the active option, like a tab on a rail.
+.segments {
   display: flex;
   gap: 0.25rem;
   padding: 0.2rem;
-  border: 1px solid var(--borde);
+  border: 1px solid var(--border);
   border-radius: 0.625rem;
-  background: var(--fondo);
+  background: var(--background);
 
   button {
     flex: 1;
@@ -287,30 +286,30 @@ button {
     border-color: transparent;
     border-radius: 0.5rem;
     background: transparent;
-    color: var(--suave);
+    color: var(--muted);
 
     &:hover:not(:disabled) {
       border-color: transparent;
-      background: var(--acento-suave);
-      color: var(--texto);
+      background: var(--accent-soft);
+      color: var(--text);
     }
 
-    &.activa,
-    &.activa:hover:not(:disabled) {
-      background: var(--superficie);
-      color: var(--marca);
+    &.active,
+    &.active:hover:not(:disabled) {
+      background: var(--surface);
+      color: var(--brand);
       box-shadow: 0 1px 4px rgb(0 0 0 / 0.15);
     }
   }
 }
 
 :focus-visible {
-  outline: 2px solid var(--acento);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-// "cierra en…" / "abre en…", en las fichas, la galería y los popups del mapa.
-.estado-horario {
+// "cierra en…" / "abre en…", in the cards, the gallery and the map's popups.
+.schedule-status {
   display: inline-block;
   padding: 0.05rem 0.5rem;
   border-radius: 999px;
@@ -318,34 +317,34 @@ button {
   font-weight: 600;
   white-space: nowrap;
 
-  &.abierto {
-    background: var(--verde-suave);
-    color: var(--verde);
+  &.open {
+    background: var(--green-soft);
+    color: var(--green);
   }
 
-  &.pronto {
-    background: var(--aviso-suave);
-    color: var(--aviso);
+  &.soon {
+    background: var(--warning-soft);
+    color: var(--warning);
   }
 
-  // Cierra antes de que dé tiempo a llegar.
-  &.tarde {
-    background: var(--rojo-suave);
-    color: var(--rojo);
+  // It closes before you can get there.
+  &.late {
+    background: var(--red-soft);
+    color: var(--red);
     cursor: help;
   }
 
-  &.cerrado {
-    background: var(--fondo);
-    color: var(--suave);
+  &.closed {
+    background: var(--background);
+    color: var(--muted);
   }
 }
 
-// Las estrellas de una tapa, del tamaño de la letra, sobre una pastilla gris translúcida con un filo
-// de luz arriba y a la izquierda, como un cristal: las de las miniaturas (foto-tapa.ts) y las del
-// visor (estrellas.ts), que crecen desde ellas al ampliar la foto. Sin backdrop-filter: con dos por
-// local, al hacer scroll da tirones (hasta en un iPhone 15 Pro Max).
-.pastilla-estrellas {
+// A tapa's stars, the size of the text, on a translucent gray pill with an edge of light at the top
+// and left, like glass: those of the thumbnails (tapa-photo.ts) and those of the viewer (stars.ts),
+// which grow from them on enlarging the photo. No backdrop-filter: with two per venue, it stutters on
+// scrolling (even on an iPhone 15 Pro Max).
+.stars-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.1em;
@@ -357,21 +356,21 @@ button {
   line-height: 1;
 }
 
-// Leaflet con los colores del tema (sus estilos van antes, en angular.json).
+// Leaflet in the theme's colors (its styles go first, in angular.json).
 .leaflet-container {
-  background: var(--fondo);
+  background: var(--background);
 }
 
-// En oscuro, el mapa invertido y con los tonos devueltos a su sitio (el agua azul, los parques verdes).
+// In dark mode, the map inverted and with the hues put back in place (blue water, green parks).
 .leaflet-tile-pane {
-  @include si-oscuro {
+  @include if-dark {
     filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6);
   }
 }
 
-// Los botones de zoom, como los de la derecha del mapa (botones secundarios con icono, en mapa.ts):
-// sueltos y no unidos en una barra. Con .leaflet-container delante para ganar a los de Leaflet en
-// pantallas táctiles (.leaflet-touch .leaflet-bar a:last-child…).
+// The zoom buttons, like those on the right of the map (secondary icon buttons, in map.ts): separate
+// and not joined in a bar. With .leaflet-container in front to beat Leaflet's on touch screens
+// (.leaflet-touch .leaflet-bar a:last-child…).
 .leaflet-container .leaflet-control-zoom.leaflet-bar {
   display: flex;
   flex-direction: column;
@@ -386,19 +385,19 @@ button {
     justify-content: center;
     width: 2.25rem;
     height: 2.25rem;
-    border: 1px solid var(--marca);
+    border: 1px solid var(--brand);
     border-radius: 0.5rem;
-    background: var(--superficie);
+    background: var(--surface);
     box-shadow: 0 1px 5px rgb(0 0 0 / 0.25);
-    color: var(--marca);
+    color: var(--brand);
     font-size: 1.1rem;
     transition: background-color 0.15s;
 
     &:hover:not(.leaflet-disabled) {
-      background: var(--acento-suave);
+      background: var(--accent-soft);
     }
 
-    // En el zoom máximo o mínimo.
+    // At maximum or minimum zoom.
     &.leaflet-disabled {
       opacity: 0.5;
     }
@@ -411,48 +410,48 @@ button {
 }
 
 .leaflet-container .leaflet-control-attribution {
-  background: color-mix(in srgb, var(--superficie) 80%, transparent);
-  color: var(--suave);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  color: var(--muted);
 
   a {
-    color: var(--acento);
+    color: var(--accent);
   }
 }
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip,
 .leaflet-tooltip {
-  background: var(--superficie);
-  color: var(--texto);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .leaflet-tooltip {
-  border-color: var(--borde);
+  border-color: var(--border);
 }
 
 .leaflet-tooltip-top::before {
-  border-top-color: var(--superficie);
+  border-top-color: var(--surface);
 }
 
 .leaflet-tooltip-bottom::before {
-  border-bottom-color: var(--superficie);
+  border-bottom-color: var(--surface);
 }
 
 .leaflet-tooltip-left::before {
-  border-left-color: var(--superficie);
+  border-left-color: var(--surface);
 }
 
 .leaflet-tooltip-right::before {
-  border-right-color: var(--superficie);
+  border-right-color: var(--surface);
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  color: var(--suave);
+  color: var(--muted);
 }
 
-// Marcadores de los locales (mapa.ts): el punto, en el centro de su zona para pincharlo; el
-// seleccionado, dorado como las estrellas.
-.marcador-local {
+// Venue markers (map.ts): the dot, in the middle of its area to click on; the selected one, golden
+// like the stars.
+.venue-marker {
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -463,7 +462,7 @@ button {
     height: 0.75rem;
     border: 2px solid #fff;
     border-radius: 50%;
-    background: var(--color-marcador, var(--marca));
+    background: var(--marker-color, var(--brand));
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
     transition:
       background-color 0.15s,
@@ -474,36 +473,36 @@ button {
     transform: scale(1.15);
   }
 
-  // Del color del texto de su pastilla de horario (.estado-horario).
-  &.abierto {
-    --color-marcador: var(--verde);
+  // In the text color of its schedule badge (.schedule-status).
+  &.open {
+    --marker-color: var(--green);
   }
 
-  &.pronto {
-    --color-marcador: var(--aviso);
+  &.soon {
+    --marker-color: var(--warning);
   }
 
-  &.tarde {
-    --color-marcador: var(--rojo);
+  &.late {
+    --marker-color: var(--red);
   }
 
-  &.cerrado {
-    --color-marcador: var(--suave);
+  &.closed {
+    --marker-color: var(--muted);
   }
 
-  &.activo::after {
-    background: var(--estrella);
+  &.active::after {
+    background: var(--star);
     transform: scale(1.25);
   }
 }
 
-// Popups del mapa (Leaflet los crea fuera de los componentes).
+// Map popups (Leaflet creates them outside the components).
 .leaflet-popup-content {
   font: inherit;
   font-size: 0.9rem;
 }
 
-.popup-local {
+.venue-popup {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -514,19 +513,19 @@ button {
   }
 
   > span {
-    color: var(--suave);
+    color: var(--muted);
     font-size: 0.8rem;
   }
 }
 
-.popup-estado {
+.popup-status {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
-.popup-llegada {
+.popup-arrival {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
@@ -555,9 +554,9 @@ button {
     height: auto;
     aspect-ratio: 690 / 439;
     object-fit: cover;
-    border: 0.5px solid var(--borde);
+    border: 0.5px solid var(--border);
     border-radius: 0.375rem;
-    background: var(--borde);
+    background: var(--border);
   }
 
   figcaption {
@@ -565,7 +564,7 @@ button {
     text-align: center;
     font-size: 0.68rem;
     line-height: 1.2;
-    color: var(--suave);
+    color: var(--muted);
     text-wrap: balance;
   }
 }

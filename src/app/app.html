@@ -1,60 +1,60 @@
-<header class="cabecera">
-  <div class="contenido">
-    <h1>Sabores <span class="edicion">17ª edición</span></h1>
+<header class="header">
+  <div class="content">
+    <h1>Sabores <span class="edition">17ª edición</span></h1>
     <button
       type="button"
-      class="boton-menu"
+      class="menu-button"
       aria-controls="menu"
-      [attr.aria-label]="menuAbierto() ? 'Cerrar el menú' : 'Abrir el menú'"
-      [attr.aria-expanded]="menuAbierto()"
-      (click)="alternarMenu()"
+      [attr.aria-label]="menuOpen() ? 'Cerrar el menú' : 'Abrir el menú'"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="toggleMenu()"
     >
-      <app-icono [nombre]="menuAbierto() ? 'cerrar' : 'menu'" />
+      <app-icon [name]="menuOpen() ? 'close' : 'menu'" />
     </button>
 
-    @if (menuAbierto()) {
+    @if (menuOpen()) {
       <nav
         id="menu"
         class="menu"
         aria-label="Menú"
-        animate.enter="entrando"
-        animate.leave="saliendo"
+        animate.enter="entering"
+        animate.leave="leaving"
       >
-        <div class="grupo">
-          <span id="etiqueta-vista">Vista</span>
-          <div class="segmentos" role="group" aria-labelledby="etiqueta-vista">
+        <div class="group">
+          <span id="view-label">Vista</span>
+          <div class="segments" role="group" aria-labelledby="view-label">
             <button
               type="button"
               title="Lista con todos los detalles y el mapa"
-              [class.activa]="vista() === 'detalles'"
-              [attr.aria-pressed]="vista() === 'detalles'"
-              (click)="cambiarVista('detalles')"
+              [class.active]="view() === 'details'"
+              [attr.aria-pressed]="view() === 'details'"
+              (click)="changeView('details')"
             >
-              <app-icono nombre="lista" />Detalles
+              <app-icon name="list" />Detalles
             </button>
             <button
               type="button"
               title="Solo el nombre y las fotos de las tapas"
-              [class.activa]="vista() === 'fotos'"
-              [attr.aria-pressed]="vista() === 'fotos'"
-              (click)="cambiarVista('fotos')"
+              [class.active]="view() === 'photos'"
+              [attr.aria-pressed]="view() === 'photos'"
+              (click)="changeView('photos')"
             >
-              <app-icono nombre="fotos" />Fotos
+              <app-icon name="photos" />Fotos
             </button>
           </div>
         </div>
 
-        <div class="grupo">
-          <span id="etiqueta-tema">Tema</span>
-          <div class="segmentos" role="group" aria-labelledby="etiqueta-tema">
-            @for (opcion of temas; track opcion.tema) {
+        <div class="group">
+          <span id="theme-label">Tema</span>
+          <div class="segments" role="group" aria-labelledby="theme-label">
+            @for (option of themes; track option.theme) {
               <button
                 type="button"
-                [class.activa]="tema.tema() === opcion.tema"
-                [attr.aria-pressed]="tema.tema() === opcion.tema"
-                (click)="tema.tema.set(opcion.tema)"
+                [class.active]="theme.theme() === option.theme"
+                [attr.aria-pressed]="theme.theme() === option.theme"
+                (click)="theme.theme.set(option.theme)"
               >
-                <app-icono [nombre]="opcion.icono" />{{ opcion.nombre }}
+                <app-icon [name]="option.icon" />{{ option.name }}
               </button>
             }
           </div>
@@ -64,190 +64,188 @@
   </div>
 </header>
 
-@if (localDetalle(); as local) {
-  <main class="detalle contenido">
-    <app-local-card
-      [local]="local"
-      [dia]="dia()"
-      [estado]="estados().get(local.number)"
-      [ahora]="ahora()"
-      [llegada]="llegadas().get(local.number) ?? null"
-      (verEnMapa)="mapaDetalle.enfocar(local.number)"
+@if (detailVenue(); as venue) {
+  <main class="detail content">
+    <app-venue-card
+      [venue]="venue"
+      [day]="day()"
+      [status]="statuses().get(venue.number)"
+      [now]="now()"
+      [arrival]="arrivals().get(venue.number) ?? null"
+      (showOnMap)="detailMap.focus(venue.number)"
     />
-    <app-mapa
-      #mapaDetalle
-      class="mapa"
-      [locales]="soloDetalle()"
-      [rutaHacia]="local.number"
-      [origen]="ubicacion.origen()"
-      [estados]="estados()"
-      [llegadas]="llegadas()"
-      [ahora]="ahora()"
+    <app-map
+      #detailMap
+      class="map"
+      [venues]="detailOnly()"
+      [routeTo]="venue.number"
+      [origin]="location.origin()"
+      [statuses]="statuses()"
+      [arrivals]="arrivals()"
+      [now]="now()"
     />
-    <button type="button" class="volver" (click)="volver()">
-      <app-icono nombre="atras" />Volver
-    </button>
+    <button type="button" class="back" (click)="goBack()"><app-icon name="back" />Volver</button>
   </main>
 } @else {
-  <section class="filtros" aria-label="Filtros">
-    <div class="contenido">
-      <label class="campo texto">
+  <section class="filters" aria-label="Filtros">
+    <div class="content">
+      <label class="field text">
         <span>Buscar</span>
         <input
           type="search"
           placeholder="Nº, local, tapa, ingrediente, calle…"
-          [(ngModel)]="texto"
+          [(ngModel)]="text"
         />
       </label>
 
-      <label class="campo">
+      <label class="field">
         <span>Día</span>
-        <select [(ngModel)]="dia">
+        <select [(ngModel)]="day">
           <option value="">Cualquiera</option>
-          @for (d of dias; track d.id) {
-            <option [value]="d.id">{{ d.nombre }}</option>
+          @for (d of weekdays; track d.id) {
+            <option [value]="d.id">{{ d.name }}</option>
           }
         </select>
       </label>
 
-      <div class="campo hora" role="group" aria-labelledby="etiqueta-hora">
-        <span id="etiqueta-hora">Hora</span>
-        <div class="rango">
-          <input type="time" aria-label="Desde" [(ngModel)]="desde" [disabled]="!dia()" />
+      <div class="field time" role="group" aria-labelledby="time-label">
+        <span id="time-label">Hora</span>
+        <div class="range">
+          <input type="time" aria-label="Desde" [(ngModel)]="from" [disabled]="!day()" />
           <span aria-hidden="true">–</span>
-          <input type="time" aria-label="Hasta" [(ngModel)]="hasta" [disabled]="!dia()" />
+          <input type="time" aria-label="Hasta" [(ngModel)]="to" [disabled]="!day()" />
         </div>
       </div>
 
-      <label class="campo">
+      <label class="field">
         <span>Sin gluten</span>
-        <select [(ngModel)]="sinGluten">
+        <select [(ngModel)]="glutenFree">
           <option value="">Indiferente</option>
           <option value="yes">Sin gluten</option>
           <option value="optional">Bajo petición</option>
         </select>
       </label>
 
-      <label class="campo">
+      <label class="field">
         <span>Bebida</span>
-        <select [(ngModel)]="bebida">
+        <select [(ngModel)]="drink">
           <option value="">Cualquiera</option>
-          @for (b of bebidas(); track b.tipo) {
-            <option [value]="b.tipo">{{ b.tipo }} ({{ b.locales }})</option>
+          @for (d of drinks(); track d.type) {
+            <option [value]="d.type">{{ d.type }} ({{ d.venues }})</option>
           }
         </select>
       </label>
 
-      <label class="campo">
+      <label class="field">
         <span>Probadas</span>
-        <select title="Las tapas con estrellas cuentan como probadas" [(ngModel)]="probadas">
+        <select title="Las tapas con estrellas cuentan como probadas" [(ngModel)]="tried">
           <option value="">Indiferente</option>
-          <option value="ninguna">Ninguna probada</option>
-          <option value="alguna">Alguna probada</option>
-          <option value="pendientes">Alguna sin probar</option>
-          <option value="todas">Todas probadas</option>
+          <option value="none">Ninguna probada</option>
+          <option value="some">Alguna probada</option>
+          <option value="pending">Alguna sin probar</option>
+          <option value="all">Todas probadas</option>
         </select>
       </label>
 
-      <div class="campo solo" role="group" aria-labelledby="etiqueta-solo">
-        <span id="etiqueta-solo">Mostrar solo</span>
-        <div class="casillas">
+      <div class="field only" role="group" aria-labelledby="only-label">
+        <span id="only-label">Mostrar solo</span>
+        <div class="checkboxes">
           <label class="control">
-            <input type="checkbox" [(ngModel)]="favoritos" />
-            <app-icono class="corazon" nombre="corazon" />
+            <input type="checkbox" [(ngModel)]="favorites" />
+            <app-icon class="heart" name="heart" />
             Favoritos
           </label>
           <label class="control" title="Castelló Ruta de Sabor">
-            <input type="checkbox" [(ngModel)]="rutaDeSabor" />
-            <app-sello tipo="ruta" aria-hidden="true" />
+            <input type="checkbox" [(ngModel)]="flavorRoute" />
+            <app-seal kind="flavor-route" aria-hidden="true" />
             Ruta de Sabor
           </label>
         </div>
       </div>
 
-      <div class="acciones">
-        <button type="button" (click)="abiertoAhora()">Abierto ahora</button>
-        <button type="button" class="secundario" (click)="limpiar()">Limpiar</button>
+      <div class="actions">
+        <button type="button" (click)="openNow()">Abierto ahora</button>
+        <button type="button" class="secondary" (click)="clearFilters()">Limpiar</button>
       </div>
     </div>
   </section>
 
-  @if (datos(); as ruta) {
-    <main class="contenido">
-      <div class="resumen">
-        <p class="leyenda">
-          <span><app-sello tipo="sin-gluten" aria-hidden="true" />Sin gluten</span>
-          <span><app-sello tipo="bajo-peticion" aria-hidden="true" />Bajo petición</span>
-          <span><app-sello tipo="ruta" aria-hidden="true" />Ruta de Sabor</span>
+  @if (data(); as route) {
+    <main class="content">
+      <div class="summary">
+        <p class="legend">
+          <span><app-seal kind="gluten-free" aria-hidden="true" />Sin gluten</span>
+          <span><app-seal kind="on-request" aria-hidden="true" />Bajo petición</span>
+          <span><app-seal kind="flavor-route" aria-hidden="true" />Ruta de Sabor</span>
         </p>
-        <p>{{ visibles().length }} de {{ ruta.locales.length }} locales</p>
+        <p>{{ visible().length }} de {{ route.venues.length }} locales</p>
       </div>
 
-      <label class="orden">
+      <label class="sort">
         <span>Ordenar por</span>
-        <select [ngModel]="orden()" (ngModelChange)="ordenar($event)">
-          <option value="numero">Número</option>
-          <option value="cercania">Cercanía</option>
-          <option value="cierre">Cierre más próximo</option>
+        <select [ngModel]="sort()" (ngModelChange)="changeSort($event)">
+          <option value="number">Número</option>
+          <option value="nearest">Cercanía</option>
+          <option value="closing">Cierre más próximo</option>
         </select>
       </label>
-      @if (orden() === 'cercania' || ubicacion.origen()) {
-        <app-origen />
+      @if (sort() === 'nearest' || location.origin()) {
+        <app-origin />
       }
 
-      @if (vista() === 'detalles') {
-        <div class="resultados">
-          <div #marcaSubir class="marca-subir"></div>
-          <app-mapa
-            #mapa
-            class="mapa"
-            [locales]="enMapa()"
-            [origen]="ubicacion.origen()"
-            [estados]="estados()"
-            [llegadas]="llegadas()"
-            [ahora]="ahora()"
-            (seleccionar)="mostrarEnLista($event)"
+      @if (view() === 'details') {
+        <div class="results">
+          <div #scrollTopMark class="scroll-top-mark"></div>
+          <app-map
+            #map
+            class="map"
+            [venues]="onMap()"
+            [origin]="location.origin()"
+            [statuses]="statuses()"
+            [arrivals]="arrivals()"
+            [now]="now()"
+            (venueSelect)="showInList($event)"
           />
 
-          <section class="lista" aria-label="Locales">
-            @for (local of visibles(); track local.number) {
-              <app-local-card
-                [attr.id]="'local-' + local.number"
-                [class.destacado]="destacado() === local.number"
-                [local]="local"
-                [dia]="dia()"
-                [estado]="estados().get(local.number)"
-                [ahora]="ahora()"
-                [llegada]="llegadas().get(local.number) ?? null"
-                (verEnMapa)="mapa.enfocar(local.number)"
+          <section class="list" aria-label="Locales">
+            @for (venue of visible(); track venue.number) {
+              <app-venue-card
+                [attr.id]="'venue-' + venue.number"
+                [class.highlighted]="highlighted() === venue.number"
+                [venue]="venue"
+                [day]="day()"
+                [status]="statuses().get(venue.number)"
+                [now]="now()"
+                [arrival]="arrivals().get(venue.number) ?? null"
+                (showOnMap)="map.focus(venue.number)"
               />
             } @empty {
-              <p class="estado">Ningún local cumple los filtros.</p>
+              <p class="message">Ningún local cumple los filtros.</p>
             }
           </section>
         </div>
       } @else {
-        <div #marcaSubir class="marca-subir"></div>
-        <app-galeria
-          [locales]="visibles()"
-          [estados]="estados()"
-          [llegadas]="llegadas()"
-          [ahora]="ahora()"
-          (abrir)="abrir($event)"
+        <div #scrollTopMark class="scroll-top-mark"></div>
+        <app-gallery
+          [venues]="visible()"
+          [statuses]="statuses()"
+          [arrivals]="arrivals()"
+          [now]="now()"
+          (open)="openVenue($event)"
         />
-        @if (!visibles().length) {
-          <p class="estado">Ningún local cumple los filtros.</p>
+        @if (!visible().length) {
+          <p class="message">Ningún local cumple los filtros.</p>
         }
       }
     </main>
-  } @else if (datos() === null) {
-    <p class="estado error">No se han podido cargar los datos (<code>data/locales.json</code>).</p>
+  } @else if (load.error()) {
+    <p class="message error">No se han podido cargar los datos (<code>data/venues.json</code>).</p>
   } @else {
-    <p class="estado">Cargando locales…</p>
+    <p class="message">Cargando locales…</p>
   }
 }
 
-<footer class="pie">
+<footer class="footer">
   <p>
     Desarrollado con mucho cariño por
     <a href="https://github.com/drackp2m" target="_blank" rel="noopener">@drackp2m</a>
@@ -255,18 +253,18 @@
   <p>Castellón de la Plana 2026</p>
 </footer>
 
-@if (verSubir()) {
+@if (showScrollTop()) {
   <button
     type="button"
-    class="subir"
+    class="scroll-top"
     title="Subir arriba"
     aria-label="Subir arriba"
-    animate.enter="entrando"
-    animate.leave="saliendo"
-    (click)="subir()"
+    animate.enter="entering"
+    animate.leave="leaving"
+    (click)="scrollToTop()"
   >
-    <app-icono nombre="arriba" />
+    <app-icon name="up" />
   </button>
 }
 
-<app-visor-fotos />
+<app-photo-viewer />

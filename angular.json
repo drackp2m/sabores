@@ -6,7 +6,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "ruta-tapas": {
+    "tapas-route": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -33,7 +33,8 @@
                 "input": "data",
                 "output": "data",
                 "ignore": [
-                  "geocode-*.json"
+                  "geocode-*.json",
+                  "photos/*.jpg"
                 ]
               }
             ],
@@ -76,10 +77,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "ruta-tapas:build:production"
+              "buildTarget": "tapas-route:build:production"
             },
             "development": {
-              "buildTarget": "ruta-tapas:build:development"
+              "buildTarget": "tapas-route:build:development"
             }
           },
           "defaultConfiguration": "development"

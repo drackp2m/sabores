@@ -1,5 +1,5 @@
 {
-  "name": "ruta-tapas",
+  "name": "tapas-route",
   "build": { "dockerfile": "Dockerfile" },
   "remoteUser": "node",
   "containerEnv": {
@@ -13,7 +13,7 @@
   "forwardPorts": [4200],
   "portsAttributes": {
     "4200": { "label": "ng serve", "onAutoForward": "openBrowser", "requireLocalPort": true },
-    "4201": { "label": "ng serve tras el proxy HTTPS", "onAutoForward": "ignore" }
+    "4201": { "label": "ng serve behind the HTTPS proxy", "onAutoForward": "ignore" }
   },
   "customizations": {
     "vscode": {

@@ -1,0 +1,117 @@
+<article>
+  <header>
+    <span class="number">{{ venue().number }}</span>
+    <div class="title">
+      <h2>{{ venue().name }}</h2>
+      @if (venue().subtitle) {
+        <p class="subtitle">{{ venue().subtitle }}</p>
+      }
+      <p class="address">
+        <span>{{ venue().address }}</span>
+        @if (arrivalText(); as arrival) {
+          <span class="arrival" [title]="arrival.detail">
+            <app-icon [name]="arrival.mode" />
+            {{ arrival.text }}
+          </span>
+        }
+      </p>
+    </div>
+    @if (venue().location) {
+      <button
+        type="button"
+        class="secondary icon"
+        title="Ver en el mapa"
+        aria-label="Ver en el mapa"
+        (click)="showOnMap.emit()"
+      >
+        <app-icon name="pin" />
+      </button>
+    }
+  </header>
+
+  @for (note of venue().notes; track note) {
+    <p class="note">{{ note }}</p>
+  }
+
+  <ul class="tapas">
+    @for (tapa of venue().tapas; track tapa.number) {
+      <li>
+        <button appTapaPhoto class="photo" [venue]="venue().number" [tapa]="tapa"></button>
+        <div class="heading">
+          <h3>{{ tapa.name }}</h3>
+          @if (glutenSeal([tapa]); as seal) {
+            <app-seal [kind]="seal" />
+          }
+          @if (tapa.flavorRoute) {
+            <app-seal kind="flavor-route" />
+          }
+        </div>
+        <app-collapsible [text]="tapa.description" />
+      </li>
+    }
+  </ul>
+
+  <p class="info"><strong>Bebidas:</strong> {{ drinks() }}</p>
+
+  @if (daySchedule(); as schedule) {
+    <p class="info">
+      <strong>{{ schedule.name }}:</strong> {{ schedule.slots }}
+    </p>
+  }
+
+  <details #scheduleDetails>
+    <summary [class.open]="scheduleOpen()" (click)="toggleSchedule($event, scheduleDetails)">
+      <span>Horario de tapas</span>
+      @if (status(); as status) {
+        <app-schedule-status [status]="status" [now]="now()" [arrival]="arrival()" />
+      }
+    </summary>
+    @if (scheduleCreated()) {
+      <dl>
+        <!-- Grid: day · morning (right-aligned) · dot · afternoon (left-aligned) · filler up to the end. -->
+        @for (d of week(); track d.id; let row = $index) {
+          @let isToday = d.id === today();
+          <dt
+            [class.active]="d.id === day()"
+            [class.today]="isToday"
+            [attr.aria-current]="isToday ? 'date' : null"
+            [attr.data-row]="row"
+          >
+            {{ d.name }}
+          </dt>
+          @if (d.morning || d.afternoon) {
+            <dd class="morning" [class.today]="isToday" [attr.data-row]="row">{{ d.morning }}</dd>
+            <!-- The dot, with its padding, only with two slots: if no day has one, the column takes up nothing. -->
+            <dd class="separator" [class.today]="isToday" [attr.data-row]="row" aria-hidden="true">
+              @if (d.morning && d.afternoon) {
+                <span>·</span>
+              }
+            </dd>
+            <dd class="afternoon" [class.today]="isToday" [attr.data-row]="row">
+              {{ d.afternoon }}
+            </dd>
+          } @else {
+            <dd class="no-tapas" [class.today]="isToday" [attr.data-row]="row">Sin tapas</dd>
+          }
+          <dd class="filler" [class.today]="isToday" [attr.data-row]="row" aria-hidden="true"></dd>
+        }
+      </dl>
+    }
+  </details>
+
+  <!-- Bottom right, the favorite heart. -->
+  <footer>
+    @if (venue().phone; as phone) {
+      <a [href]="'tel:' + phone"><app-icon name="phone" />{{ phone }}</a>
+    }
+    @if (venue().instagram; as instagram) {
+      <a
+        [href]="'https://www.instagram.com/' + instagram.replace('@', '')"
+        target="_blank"
+        rel="noopener"
+        ><app-icon name="instagram" />{{ instagram }}</a
+      >
+    }
+    <app-favorite [venue]="venue()" />
+  </footer>
+</article>

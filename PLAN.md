@@ -37,24 +37,25 @@ estilos o de layout los recorre todos.
 
 ## Mediciones
 
-`pnpm medir` ([scripts/medir.mjs](scripts/medir.mjs)) compila la app y la abre en Chromium sin
-ventana (1280×900), con los datos reales; `pnpm medir --cpu 4` hace lo mismo con la CPU cuatro veces
-más lenta, más o menos como un móvil normal. Las teselas del mapa no se piden a OpenStreetMap. Los
+`pnpm measure` ([scripts/measure.mjs](scripts/measure.mjs)) compila la app y la abre en Chromium sin
+ventana (1280×900), con los datos reales; `pnpm measure --cpu 4` hace lo mismo con la CPU cuatro veces
+más lenta, más o menos como un móvil normal, y `--network`, con la red de un móvil regular (la de
+Lighthouse: 1,6 Mbps y 150 ms). Las teselas del mapa no se piden a OpenStreetMap. Los
 tiempos varían alrededor de un 20 % de una vez a otra, y los fotogramas lentos, más aún (de 6 a 13
 en tres pasadas iguales); los recuentos de elementos y de cambios, no.
 
 Con `--cpu 4`:
 
-|                                                                   | Base (cfd87cc)     | Etapa 1            | Etapa 2            | Etapa 3            |
-| ----------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
-| Primera ficha · LCP · bloqueo (≈ TBT)                             | 664 · 752 · 331 ms | 611 · 728 · 322 ms | 473 · 536 · 235 ms | 465 · 528 · 189 ms |
-| Elementos en la página                                            | 8.287              | 8.287              | 8.288              | **3.508**          |
-| Scroll de 52.000 px por la lista: trabajo (layouts)               | 2.162 ms (×112)    | 1.794 ms (×113)    | 1.711 ms (×112)    | 1.643 ms (×111)    |
-| …de ello, JavaScript                                              | 63 ms              | 46 ms              | **24 ms**          | 26 ms              |
-| …fotogramas de más de 25 ms                                       | 29                 | 14                 | 8                  | 6–13               |
-| Favorito con un popup abierto: ¿sigue abierto? ¿se mueve el mapa? | no · sí            | **sí · no**        | sí · no            | sí · no            |
-| …veces que se rehacen los marcadores                              | 1                  | **0**              | 0                  | 0                  |
-| Escribir «queso»: cambios en los marcadores                       | 5                  | **1**              | 1                  | 1                  |
+|                                                                   | Base (cfd87cc)     | Etapa 1            | Etapa 2            | Etapa 3            | Etapa 4             | Etapa 5             |
+| ----------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------- | ------------------- |
+| Primera ficha · LCP · bloqueo (≈ TBT)                             | 664 · 752 · 331 ms | 611 · 728 · 322 ms | 473 · 536 · 235 ms | 465 · 528 · 189 ms | 433 · 532 · 153 ms  | 402 · 492 · 137 ms  |
+| Elementos en la página                                            | 8.287              | 8.287              | 8.288              | **3.508**          | 3.510               | 3.510               |
+| Scroll de 52.000 px por la lista: trabajo (layouts)               | 2.162 ms (×112)    | 1.794 ms (×113)    | 1.711 ms (×112)    | 1.643 ms (×111)    | 1.809 ms (×107–116) | **1.624 ms** (×112) |
+| …de ello, JavaScript                                              | 63 ms              | 46 ms              | **24 ms**          | 26 ms              | 29 ms               | 24 ms               |
+| …fotogramas de más de 25 ms                                       | 29                 | 14                 | 8                  | 6–13               | 14                  | **8**               |
+| Favorito con un popup abierto: ¿sigue abierto? ¿se mueve el mapa? | no · sí            | **sí · no**        | sí · no            | sí · no            | sí · no             | sí · no             |
+| …veces que se rehacen los marcadores                              | 1                  | **0**              | 0                  | 0                  | 0                   | 0                   |
+| Escribir «queso»: cambios en los marcadores                       | 5                  | **1**              | 1                  | 1                  | 1                   | 1                   |
 
 Los layouts que quedan en el scroll no son de la app, sino de las fotos diferidas al cargarse:
 sin fotos, o en una segunda pasada con ellas ya cargadas, se quedan en 1–4. Cuestan medio
@@ -64,13 +65,30 @@ La etapa 3 quita casi el 60 % de la página y baja el bloqueo del arranque, pero
 dentro del ruido: de esos 1.643 ms, solo 104 son JavaScript, estilos y layout. El resto es pintar,
 que en este Chromium va por software, así que en un dispositivo real puede ser muy distinto.
 
+Desde la etapa 4, el script sirve los ficheros comprimidos, como GitHub Pages, y espera a que el mapa
+acabe de pintarse antes de medir el scroll, así que esa fila no se compara con las columnas
+anteriores. En las mismas condiciones, las etapas 3 y 4 salen iguales (mediana de 6 pasadas: 1.805 y
+1.809 ms, 13 y 14 fotogramas lentos). Con las fotos de la etapa 5 el scroll sí baja (mediana de 5
+pasadas), seguramente porque hay muchos menos píxeles que decodificar.
+
+Con `--cpu 4 --network` (mediana de 3 pasadas):
+
+|                                 | Etapa 3                   | Etapas 4 y 5                     |
+| ------------------------------- | ------------------------- | -------------------------------- |
+| JS inicial (transferido)        | 125,7 kB                  | **91,6 kB** + 37,6 kB de Leaflet |
+| `venues.json` empieza a bajar a | 1.172 ms, al acabar el JS | **177 ms**, a la vez que el JS   |
+| Primera ficha                   | 1.618 ms                  | **1.311 ms**                     |
+| LCP                             | 1.708 ms                  | **1.360 ms**                     |
+| Marcadores del mapa             | 1.618 ms                  | 1.488 ms                         |
+| Bloqueo                         | 172 ms                    | **122 ms**                       |
+
 ---
 
 ## Etapa 0 · Red de seguridad y medición base ✅
 
 - [x] `strict`, `strictTemplates` y `typeCheckHostBindings` en [tsconfig.json](tsconfig.json):
       comprobado que ya compilan sin errores, así que con esto basta para que siga siendo así.
-- [x] El recuento del DOM, como script: al final, en vez de un spec en jsdom, es `pnpm medir` en
+- [x] El recuento del DOM, como script: al final, en vez de un spec en jsdom, es `pnpm measure` en
       Chromium (ver «Mediciones»), que además mide el arranque, el scroll, el favorito con un popup
       abierto y el buscador.
 - [x] Medición base en Chrome: la columna «Base» de la tabla. Lighthouse no está en el contenedor;
@@ -80,15 +98,15 @@ que en este Chromium va por software, así que en un dispositivo real puede ser 
 
 ## Etapa 1 · Mapa estable ✅
 
-**Qué pasa.** El efecto de [mapa.ts:357-361](src/app/mapa/mapa.ts#L357-L361) llama a `pintar()`,
-que hace `clearLayers()` y `fitBounds()` ([mapa.ts:425-452](src/app/mapa/mapa.ts#L425-L452)), cada
+**Qué pasa.** El efecto de [map.ts](src/app/map/map.ts) llama a `paint()`,
+que hace `clearLayers()` y `fitBounds()` ([map.ts](src/app/map/map.ts)), cada
 vez que `locales` es un array nuevo. `visibles` cambia de referencia mucho más a menudo que de
 contenido:
 
 - `filtrados` lee siempre `almacen.favoritos()` y `almacen.valoraciones()`
-  ([app.ts:137-142](src/app/app.ts#L137-L142)), aunque no se esté filtrando por ellos.
+  ([app.ts](src/app/app.ts)), aunque no se esté filtrando por ellos.
 - Con el orden por cierre depende de `estados`, que depende del reloj
-  ([app.ts:173-176](src/app/app.ts#L173-L176)).
+  ([app.ts](src/app/app.ts)).
 - Cada letra del buscador filtra al momento.
 
 **Cambios.**
@@ -104,7 +122,7 @@ contenido:
       Lo de IndexedDB se sigue cargando entero en memoria al arrancar, como antes; esto solo evita
       que marcar un favorito o valorar vuelva a filtrar la lista.
 - [x] Buscador, como pediste: la lista filtra al momento y el mapa espera a que se deje de escribir
-      500 ms (`RETARDO_MAPA`, con un `textoMapa` aparte); «Limpiar» lo cambia al momento. Escribir
+      500 ms (`MAP_DELAY`, con un `mapText` aparte); «Limpiar» lo cambia al momento. Escribir
       una letra cuesta unos 30 ms (60 ms con la CPU ×4), así que el retardo no hacía falta para la
       lista: lo que se notaba era el mapa encuadrando con cada letra. Lo de guardar en IndexedDB con
       cada tecla se queda así (es una escritura pequeña y asíncrona).
@@ -113,36 +131,36 @@ contenido:
 - [x] Un `ResizeObserver` en el contenedor que llama a `invalidateSize()` (sustituye al de
       ampliar o reducir).
 - [x] El modo oscuro: el `filter` de cinco funciones sobre las teselas
-      ([styles.scss:366-370](src/styles.scss#L366-L370)) no pesa. Medido por ti en el Mac (DevTools,
+      ([styles.scss](src/styles.scss)) no pesa. Medido por ti en el Mac (DevTools,
       ⌘⇧P → «Show Rendering» → «Frame Rendering Stats»), arrastrando el mapa: de 57 a 59 fps tanto
       en claro como en oscuro. Se mantiene.
 
-**Comprobado.** [mapa.spec.ts](src/app/mapa/mapa.spec.ts) (nuevo; tres de sus cuatro tests fallaban
-con el `mapa.ts` de antes) y un test en [app.spec.ts](src/app/app.spec.ts): marcar un favorito o
-valorar no encuadra el mapa; buscar, sí, medio segundo después. En `pnpm medir`, el popup sigue
+**Comprobado.** [map.spec.ts](src/app/map/map.spec.ts) (nuevo; tres de sus cuatro tests fallaban
+con el `map.ts` de antes) y un test en [app.spec.ts](src/app/app.spec.ts): marcar un favorito o
+valorar no encuadra el mapa; buscar, sí, medio segundo después. En `pnpm measure`, el popup sigue
 abierto al marcar el corazón.
 
 ## Etapa 2 · Scroll y cabecera ✅ (falta que lo pruebes en Safari)
 
 **Qué pasa.**
 
-- En cada evento de scroll, [app.ts:198-225](src/app/app.ts#L198-L225) hace tres `querySelector`,
+- En cada evento de scroll, [app.ts](src/app/app.ts) hace tres `querySelector`,
   dos `getBoundingClientRect` y un `offsetHeight`, en el documento y en `app-root`.
 - Escritorio: sin `scrollbar-gutter`, al quedarse la lista más corta que la pantalla desaparece la
   barra de scroll (con barras clásicas: Windows, Linux o macOS con «mostrar siempre») y la cabecera y
   la página saltan de lado.
 - Escritorio: sin `overscroll-behavior`, el rebote al llegar arriba o abajo desplaza la cabecera y el
-  mapa sticky. En pantallas táctiles ya está en `none` ([styles.scss:124-136](src/styles.scss#L124-L136)).
-- Móvil: el `(touchstart)` y el `(touchmove)` del mapa ([mapa.ts:81-83](src/app/mapa/mapa.ts#L81-L83))
+  mapa sticky. En pantallas táctiles ya está en `none` ([styles.scss](src/styles.scss)).
+- Móvil: el `(touchstart)` y el `(touchmove)` del mapa ([map.ts](src/app/map/map.ts))
   se registran como no pasivos (Angular no pone `passive`), así que, si el dedo empieza encima del
   mapa, el scroll puede tener que esperar al hilo principal. No llaman a `preventDefault`.
-- El `(document:click)` del menú ([app.ts:71](src/app/app.ts#L71)) y el `(document:keydown)` del
-  visor ([visor.ts:89-90](src/app/visor/visor.ts#L89-L90)) lanzan una detección de cambios con cada
+- El `(document:click)` del menú ([app.ts](src/app/app.ts)) y el `(document:keydown)` del
+  visor ([viewer.ts](src/app/viewer/viewer.ts)) lanzan una detección de cambios con cada
   clic y cada tecla, en cualquier parte de la página.
 
 **Cambios.**
 
-- [x] El botón «Subir» con un `IntersectionObserver` sobre un elemento centinela (`.marca-subir`,
+- [x] El botón «Subir» con un `IntersectionObserver` sobre un elemento centinela (`.scroll-top-mark`,
       con el alto del mapa, que pasa a ser la variable `--alto-mapa`) y el alto de la cabecera como
       margen, en vez del listener de scroll: ningún JS mientras se hace scroll. Comprobado en
       Chromium que aparece en el mismo punto que antes (±20 px) en escritorio, en el móvil y en la
@@ -163,24 +181,24 @@ abierto al marcar el corazón.
 De 8.288 a 3.508 elementos y de 14.873 a 5.576 nodos, con las 60 fichas en «Detalles».
 
 - [x] **Horario**: el `<dl>` con los siete días se crea la primera vez que se abre y ya se queda
-      ([local-card.html](src/app/local-card/local-card.html)): esos 1.991 elementos solo existen en
+      ([venue-card.html](src/app/venue-card/venue-card.html)): esos 1.991 elementos solo existen en
       las fichas en las que se mira el horario. La animación es la de siempre, también la primera vez.
 - [x] **Estrellas de las miniaturas**: un solo elemento con dos máscaras SVG, el relleno de las
       valoradas debajo del contorno de las cinco, en vez de 15 nodos y un componente por foto.
-      [Estrellas](src/app/estrellas/estrellas.ts) se queda solo para valorar en el visor. La pastilla,
-      compartida en [styles.scss](src/styles.scss) (`.pastilla-estrellas`): tienen que coincidir
+      [Stars](src/app/stars/stars.ts) se queda solo para valorar en el visor. La pastilla,
+      compartida en [styles.scss](src/styles.scss) (`.stars-pill`): tienen que coincidir
       para que las del visor crezcan desde las de la miniatura.
-- [x] **Componente `FotoTapa`** ([foto-tapa.ts](src/app/foto-tapa/foto-tapa.ts)): el botón, la foto,
+- [x] **Componente `TapaPhoto`** ([tapa-photo.ts](src/app/tapa-photo/tapa-photo.ts)): el botón, la foto,
       las estrellas, el `aria-label` y `ampliar()`, que estaban repetidos en las fichas y la galería,
-      con sus estilos. Es el propio `<button appFotoTapa>`, sin un elemento más alrededor, y la foto
+      con sus estilos. Es el propio `<button appTapaPhoto>`, sin un elemento más alrededor, y la foto
       lleva `decoding="async"`.
 - [x] **Corazón**: la onda y las 8 chispas solo existen mientras late
-      ([favorito.ts](src/app/favorito/favorito.ts)).
+      ([favorite.ts](src/app/favorite/favorite.ts)).
 - [x] **Iconos**: un sprite SVG con un `<symbol>` por icono, una sola vez en la página, y en cada
-      `app-icono` un `<use>` ([icono.ts](src/app/icono/icono.ts)). `--relleno-icono` y
-      `--trazo-icono` siguen funcionando.
+      `app-icon` un `<use>` ([icon.ts](src/app/icon/icon.ts)). `--icon-fill` y
+      `--icon-stroke` siguen funcionando.
 - [x] **«Ver más»**: un solo `ResizeObserver` para todos los textos
-      ([plegable.ts](src/app/plegable/plegable.ts)).
+      ([collapsible.ts](src/app/collapsible/collapsible.ts)).
 - [ ] **Te toca**: las máscaras y los `<use>` no se han probado en Safari. Hay que mirar en el Mac y
       en el iPhone que se ven los iconos y las estrellas (sin valorar y valoradas), y que al ampliar
       una foto las estrellas crecen desde la miniatura.
@@ -198,87 +216,112 @@ En Chromium, con el ratón de verdad y comparando con `main`:
   pasar por encima.
 - En la galería, la foto se amplía y el nombre abre el local. Ningún error en la consola.
 
-## Etapa 4 · Arranque
+## Etapa 4 · Arranque ✅ (falta volver a mirarlo en Safari)
 
-**Qué pasa.** Ahora todo va en fila: se descarga el JS (125 kB), se abre IndexedDB (con hasta 2 s de
-espera, [app.config.ts:16](src/app/app.config.ts#L16)), se crea `App` y solo entonces se pide
-`locales.json` (132 kB).
+**Qué pasaba.** Todo iba en fila: se descargaba el JS (125 kB), se abría IndexedDB (con hasta 2 s de
+espera, [app.config.ts](src/app/app.config.ts)), se creaba `App` y solo entonces se pedía
+`venues.json`.
 
-- [ ] `<link rel="preload" href="data/locales.json" as="fetch" crossorigin>` en
-      [index.html](src/index.html): los datos bajan a la vez que el JS. `HttpClient` usa `fetch` por
-      defecto en Angular 22, así que debería aprovechar la precarga; hay que comprobar en Network
-      que no se pide dos veces.
-- [ ] Leaflet bajo demanda: `import('leaflet')` dentro de `Mapa`, con `import type` para los tipos.
-      Saca 146,5 kB del bundle inicial, y en la vista «Fotos» no se descarga hasta abrir un local.
-      Lo que hoy se crea en los campos de la clase (`FeatureGroup`, `CircleMarker`,
-      [mapa.ts:266-276](src/app/mapa/mapa.ts#L266-L276)) pasa a crearse después de cargarlo. No uso
-      `@defer` porque las fichas llaman a `mapa.enfocar()` a través de la referencia `#mapa`, que
-      desde fuera del bloque diferido no se ve.
-- [ ] `httpResource` (estable en Angular 22) en vez de `toSignal(http.get().pipe(catchError))`
-      ([app.ts:97-104](src/app/app.ts#L97-L104)): `value()`, `error()` e `isLoading()`, sin tener que
-      distinguir entre `undefined` y `null`.
+- [x] Los datos bajan a la vez que el JS: un `fetch` en [index.html](src/index.html) y `loadRouteData()`
+      en [app.ts](src/app/app.ts) usa esa respuesta. Primero fue un `<link rel="preload">`, pero
+      Safari no lo aprovecha: lo comprobaste en la pestaña Red, donde salía dos veces.
+- [x] Leaflet bajo demanda: `loadLeaflet()` en [map.ts](src/app/map/map.ts), y lo que se creaba
+      en los campos de la clase pasa a `createMap()`. Saca 150 kB del bundle inicial (de 480 a 340
+      kB). En «Detalles» empieza a bajar al arrancar la app, sin esperar a los datos; en «Fotos», al
+      abrir un local. `leaflet.css` se queda en los estilos globales. No uso `@defer` porque las
+      fichas llaman a `mapa.enfocar()` a través de la referencia `#mapa`, que desde fuera del bloque
+      diferido no se ve.
+- [x] Dos casos nuevos por tener Leaflet aparte: si se pulsa «Ver en el mapa» antes de que llegue, lo
+      hace en cuanto está; y si no se puede descargar, el mapa lo dice y el resto de la app funciona.
+- [x] `resource` en vez de `toSignal(http.get().pipe(catchError))`, sin tener que distinguir entre
+      `undefined` y `null`. Iba a ser `httpResource`, pero no puede usar la petición de index.html.
+- [ ] **Te toca**: en Safari, en la pestaña Red, que `venues.json` ya sale una sola vez.
 
-**Cómo comprobarlo.** Lighthouse móvil antes y después; en Network, `locales.json` empieza a la vez
-que `main.js`.
+**Comprobado.** En Chromium, con la app compilada:
 
-## Etapa 5 · Fotos
+- `venues.json` se pide una vez.
+- En «Fotos», Leaflet no se descarga hasta abrir un local.
+- Con la descarga de Leaflet bloqueada salen las 60 fichas y el aviso en el mapa; con 2,5 s de retraso,
+  «Ver en el mapa» abre el popup cuando llega.
 
-**Qué pasa.** Recorrer la lista entera descarga 11,2 MB, normalmente con datos móviles y en mitad de
-la ruta. En las fichas las fotos ocupan entre 9 y 11 rem de ancho (144–176 px CSS, unos 350 px
-reales en una pantalla 2×), pero siempre se descarga la de 690 px.
+Ojo: en los tests Leaflet no llega igual que en el build de producción (ver `loadLeaflet`), así que
+un fallo ahí no lo detectan los tests. Lo detectó `pnpm measure`, que usa la app compilada.
 
-- [ ] Script que genere, por cada foto, versiones en AVIF o WebP a 360 y 690 px de ancho.
-- [ ] `srcset` y `sizes` en `FotoTapa` y en los popups; la versión de 690 px para el visor.
-- [ ] Medir el ahorro real al generarlas y anotarlo aquí.
+## Etapa 5 · Fotos ✅ (falta que lo veas en Safari)
 
-La herramienta y el formato son decisión tuya (al final).
+**Qué pasaba.** Recorrer la lista entera descargaba 11,7 MB, normalmente con datos móviles y en mitad
+de la ruta, siempre con la foto de 690 px.
+
+|                              | JPG     | WebP       |
+| ---------------------------- | ------- | ---------- |
+| Una miniatura (500 px)       | 98 kB   | **16 kB**  |
+| Una foto ampliada (690 px)   | 98 kB   | **29 kB**  |
+| Recorrer toda la lista       | 11,7 MB | **1,9 MB** |
+| Lo que se publica de `data/` | 11,8 MB | 5,8 MB     |
+
+- [x] [scripts/photos.mjs](scripts/photos.mjs) (`pnpm photos`), con `sharp`: se ejecuta a mano al cambiar
+      las fotos y las versiones se suben a git. WebP a 500 px (calidad 75) y a 690 px (calidad 80).
+- [x] `photoUrl()` en [venues.ts](src/app/venues.ts): las miniaturas y los popups usan la de 500 y
+      el visor, la de 690. Antes el visor reutilizaba el fichero ya descargado; ahora tiene detrás
+      la de 500 mientras llega la grande, para que no se vea un hueco al ampliar.
+- [x] Cambio sobre el plan: 500 px en vez de 360, y sin `srcset`. Un iPhone tiene 3 píxeles por cada
+      uno de CSS: pide unos 430–500 px y con 360 acabaría bajando siempre la de 690. Con 500 valen
+      todos los casos y basta un solo fichero para las miniaturas.
+- [x] Los JPG se quedan en git como original, pero no se publican (`ignore` en
+      [angular.json](angular.json)).
+- [ ] **Te toca**: en Safari, que se ven bien las fotos y que, al ampliar con mala conexión, la foto
+      aparece enseguida y luego gana nitidez.
+
+**Comprobado.** En Chromium, las 120 fotos cargan y no se pide ningún JPG; la de 690 px solo se pide al
+ampliar. Con esa descarga retrasada 2 s, el visor enseña la miniatura desde el primer momento. En
+`pnpm measure` se puede ver lo que se descarga al recorrer la lista.
 
 ## Etapa 6 · Estado compartido y una `App` más pequeña
 
 **Qué pasa.** `App` (318 líneas) se ocupa de los filtros, el orden, la vista, el historial, el scroll
-y el reloj, y `estados`, `llegadas` y `ahora` se pasan como inputs a `LocalCard`, `Mapa`, `Galeria`
-y `EstadoHorario` en cada sitio donde se usan.
+y el reloj, y `statuses`, `arrivals` y `now` se pasan como inputs a `VenueCard`, `VenueMap`, `Gallery`
+y `ScheduleStatus` en cada sitio donde se usan.
 
-- [ ] Servicio `Reloj` con un `ahora` que cambia al empezar cada minuto. Ahora es un `setInterval` de
-      30 s ([app.ts:201](src/app/app.ts#L201)): el estado puede ir hasta 30 s tarde y se recalcula
+- [ ] Servicio `Clock` con un `now` que cambia al empezar cada minuto. Ahora es un `setInterval` de
+      30 s ([app.ts](src/app/app.ts)): el estado puede ir hasta 30 s tarde y se recalcula
       el doble de veces de lo necesario.
-- [ ] Servicio con los datos de la ruta (`datos`, `estados`, `llegadas`) que cada componente inyecta,
+- [ ] Servicio con los datos de la ruta (`data`, `statuses`, `arrivals`) que cada componente inyecta,
       en vez de recibirlos por inputs.
-- [ ] `estados`: reutilizar el objeto de un local si su estado no ha cambiado, para que no se
+- [ ] `statuses`: reutilizar el objeto de un local si su estado no ha cambiado, para que no se
       actualicen las 60 pastillas y los marcadores cada minuto.
-- [ ] Componente `Filtros` con el formulario ([app.html:92-173](src/app/app.html#L92-L173)) y un único
-      `signal<Filtros>`. Signal Forms (`form()` de `@angular/forms/signals`, estable en 22) sustituye
-      las nueve señales, el `computed` y `limpiar()`.
-- [ ] Quitar la migración de la vista desde `localStorage` ([app.ts:59](src/app/app.ts#L59),
-      [app.ts:339-346](src/app/app.ts#L339-L346)) cuando ya no haga falta.
+- [ ] Componente `Filters` con el formulario ([app.html](src/app/app.html)) y un único
+      `signal<Filters>`. Signal Forms (`form()` de `@angular/forms/signals`, estable en 22) sustituye
+      las nueve señales, el `computed` y `clearFilters()`.
+- [ ] Quitar [legacy-storage.ts](src/app/legacy-storage.ts), con sus llamadas en `store.ts`, `theme.ts`
+      y `app.ts`, cuando nadie pueda tener ya datos de una versión anterior.
 
 ## Etapa 7 · Reutilización y estilos
 
-- [ ] El número del local (`.numero`), con los mismos estilos en
-      [local-card.scss:37-50](src/app/local-card/local-card.scss#L37-L50) y
-      [galeria.ts:182-196](src/app/galeria/galeria.ts#L182-L196) → un componente o una clase global
+- [ ] El número del local (`.number`), con los mismos estilos en
+      [venue-card.scss](src/app/venue-card/venue-card.scss) y
+      [gallery.ts](src/app/gallery/gallery.ts) → un componente o una clase global
       con un tamaño pequeño.
-- [ ] El tiempo de llegada (icono, duración y distancia) se monta en tres sitios: `textoLlegada` de la
-      ficha ([local-card.ts:77](src/app/local-card/local-card.ts#L77)), la galería y el popup del
-      mapa → un componente `Llegada` (y su versión DOM para el popup, junto a `crearIcono`).
-- [ ] `almacen.estrellas(local, tapa)` en vez de `valoraciones().get(claveTapa(…)) ?? 0`, que se repite
+- [ ] El tiempo de llegada (icono, duración y distancia) se monta en tres sitios: `arrivalText` de la
+      ficha ([venue-card.ts](src/app/venue-card/venue-card.ts)), la galería y el popup del
+      mapa → un componente `Arrival` (y su versión DOM para el popup, junto a `createIcon`).
+- [ ] `store.stars(venue, tapa)` en vez de `ratings().get(tapaKey(…)) ?? 0`, que se repite
       en la ficha, la galería y el visor.
 - [ ] Animación de altura (abrir y cerrar, siguiendo desde donde iba si se pulsa a medias): el mismo
-      patrón en [plegable.ts:100](src/app/plegable/plegable.ts#L100) y
-      [local-card.ts:108](src/app/local-card/local-card.ts#L108) → una función `animarAltura()`.
-- [ ] `movimientoReducido()` en vez de `matchMedia('(prefers-reduced-motion: reduce)')`, que aparece
+      patrón en [collapsible.ts](src/app/collapsible/collapsible.ts) y
+      [venue-card.ts](src/app/venue-card/venue-card.ts) → una función `animateHeight()`.
+- [ ] `reducedMotion()` en vez de `matchMedia('(prefers-reduced-motion: reduce)')`, que aparece
       en siete sitios.
 - [ ] Las media queries, en un solo sitio. Escritorio (960 px) está en
-      [app.ts:53](src/app/app.ts#L53), [app.scss:371](src/app/app.scss#L371) y
-      [mapa.ts:126](src/app/mapa/mapa.ts#L126) / [143](src/app/mapa/mapa.ts#L143); táctil, en
-      [app.ts:55](src/app/app.ts#L55), [mapa.ts:36](src/app/mapa/mapa.ts#L36),
-      [styles.scss:130](src/styles.scss#L130) y [app.scss:14](src/app/app.scss#L14) → `medios.ts` y
-      un parcial `_medios.scss` con mixins (`stylePreprocessorOptions.includePaths` en
+      [app.ts](src/app/app.ts), [app.scss](src/app/app.scss) y
+      [map.ts](src/app/map/map.ts); táctil, en
+      [app.ts](src/app/app.ts), [map.ts](src/app/map/map.ts),
+      [styles.scss](src/styles.scss) y [app.scss](src/app/app.scss) → `media.ts` y
+      un parcial `_media.scss` con mixins (`stylePreprocessorOptions.includePaths` en
       `angular.json`).
 - [ ] [styles.scss](src/styles.scss) (548 líneas) repartido en parciales: tema, base, controles,
       Leaflet y popups.
-- [ ] Tests: hay dos versiones distintas de `local()` en [app.spec.ts](src/app/app.spec.ts) y
-      [locales.spec.ts](src/app/locales.spec.ts) → un fixture común. Los polyfills de jsdom, a un
+- [ ] Tests: hay dos versiones distintas de `venue()` en [app.spec.ts](src/app/app.spec.ts) y
+      [venues.spec.ts](src/app/venues.spec.ts) → un fixture común. Los polyfills de jsdom, a un
       fichero de `setupFiles` del builder de tests.
 
 ## Etapa 8 · Herramientas y limpieza
@@ -298,7 +341,7 @@ las tarjetas de la galería: el navegador no calcula ni pinta las que están fue
 Riesgos que hay que probar:
 
 - `scrollIntoView` hacia una ficha lejana (al pinchar un marcador,
-  [app.ts:310-317](src/app/app.ts#L310-L317)) calcula con alturas estimadas y puede quedarse corto.
+  [app.ts](src/app/app.ts)) calcula con alturas estimadas y puede quedarse corto.
 - Si el navegador no ajusta el scroll al cambiar la altura de lo que hay por encima (scroll
   anchoring; Safari no lo hacía, hay que comprobarlo en la versión actual), subir por fichas que
   nunca se han pintado puede dar saltos.
@@ -308,7 +351,7 @@ Riesgos que hay que probar:
 
 La app se puede instalar pero no tiene service worker: sin conexión no abre, y GitHub Pages sirve
 las fotos y el JSON con 10 minutos de caché (no llevan hash en el nombre), así que se vuelven a
-validar a menudo. `@angular/service-worker` guardaría la app, `locales.json` y las fotos. El riesgo
+validar a menudo. `@angular/service-worker` guardaría la app, `venues.json` y las fotos. El riesgo
 es quedarse con una versión vieja: habría que avisar cuando haya una nueva.
 
 ## Arreglos fuera del plan
@@ -319,10 +362,24 @@ es quedarse con una versión vieja: habría que avisar cuando haya una nueva.
       Fola). Ahora, si la dirección lleva número, primero se busca el portal en CartoCiudad (el
       callejero oficial, el mismo que usa `scripts/geocode.swift` para los locales). Solo vale si
       coinciden el número y la calle; si no, se sigue como antes con OpenStreetMap
-      ([ubicacion.ts](src/app/ubicacion.ts), con tests en
-      [ubicacion.spec.ts](src/app/ubicacion.spec.ts)). Probado en Chromium con los servicios reales:
+      ([user-location.ts](src/app/user-location.ts), con tests en
+      [user-location.spec.ts](src/app/user-location.spec.ts)). Probado en Chromium con los servicios reales:
       «Herrero 49» cae en el cruce con Picó.
 
+- [x] **Dirección de partida hasta unos 50 km alrededor de Castelló**, en vez de toda España
+      ([user-location.ts](src/app/user-location.ts)). Con número, el portal en Castelló, o en otro pueblo si se
+      escribe su nombre («Santo Tomás 20 Benicasim», «Trinidad 5 Almassora»). Sin número, un pueblo o
+      un barrio de los alrededores gana a lo que se llame igual en Castelló («Sagunto» ya no es la
+      calle Sagunto); si no, Castelló y luego alrededor. Si no se encuentra, lo dice, en vez de poner
+      el punto en Cuenca. CartoCiudad a veces tarda o no responde: a los 5 s se sigue con
+      OpenStreetMap.
+- [x] **Todo el código en inglés.** Identificadores, clases y variables CSS, comentarios, tests,
+      ficheros, carpetas y comandos (`pnpm measure`, `pnpm photos`, `data/venues.json`,
+      `data/photos/`); solo siguen en español los textos que muestra la app. `tapa` se queda, que
+      también es la palabra en inglés. Lo guardado en los dispositivos pasa a la versión 2 de la base
+      de datos al abrir la app, en una sola transacción
+      ([legacy-storage.ts](src/app/legacy-storage.ts)); el nombre de la base de datos, `ruta-tapas`,
+      se queda porque IndexedDB no permite cambiarlo.
 - [x] **Commits con commitizen.** `commitizen`, `cz-emoji`, `commitlint` y `husky`, con la misma
       configuración que en chess-pecker ([.czrc](.czrc), [.commitlintrc.mjs](.commitlintrc.mjs) y
       [.husky/](.husky/)): `git commit` sin mensaje, o con uno que no vale, abre el asistente.
@@ -331,13 +388,11 @@ es quedarse con una versión vieja: habría que avisar cuando haya una nueva.
 
 ## Decisiones que te tocan
 
-1. **Fotos** (etapa 5): ¿script de Node con `sharp` que se ejecuta a mano y cuyas versiones se suben a
-   git (lo que recomiendo, como el resto de `data/`), o generarlas en el CI? ¿AVIF (más pequeño) o
-   WebP (más rápido de generar y de decodificar)?
+1. ~~**Fotos** (etapa 5)~~: resuelta, script con `sharp` a mano, versiones en git y WebP.
 2. ~~**Mapa en oscuro** (etapa 1)~~: resuelta, el `filter` no pesa y se mantiene.
 3. **Zoom bloqueado**: `user-scalable=no` y el bloqueo de `gesturestart` impiden ampliar la página,
    algo que las pautas de accesibilidad (WCAG 1.4.4) piden permitir. ¿Se mantiene?
 4. **Router**: con `@angular/router`, cada local tendría su URL (`/local/12`, para compartirla) y
-   sustituiría el `pushState` a mano ([app.ts:320-337](src/app/app.ts#L320-L337)). En GitHub Pages
+   sustituiría el `pushState` a mano ([app.ts](src/app/app.ts)). En GitHub Pages
    hace falta un `404.html` que cargue la app. No mejora el rendimiento; es una funcionalidad.
 5. **Etapas 9 y 10**: ¿entran o no?

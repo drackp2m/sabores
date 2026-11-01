@@ -1,5 +1,5 @@
 {
-  "name": "ruta-tapas",
+  "name": "tapas-route",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -8,7 +8,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "medir": "ng build && node scripts/medir.mjs",
+    "measure": "ng build && node scripts/measure.mjs",
+    "photos": "node scripts/photos.mjs",
     "prepare": "node .husky/prepare.mjs"
   },
   "private": true,
@@ -35,6 +36,7 @@
     "husky": "9.1.7",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.2",
     "vitest": "^5.0.0"
   }

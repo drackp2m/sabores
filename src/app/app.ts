@@ -8,339 +8,334 @@ import {
   computed,
   effect,
   inject,
+  resource,
   signal,
   viewChild,
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { catchError, map, of } from 'rxjs';
 
-import { Almacen } from './almacen';
-import { Galeria } from './galeria/galeria';
-import { Icono, NombreIcono } from './icono/icono';
-import { LocalCard } from './local-card/local-card';
+import { Gallery } from './gallery/gallery';
+import { Icon, IconName } from './icon/icon';
+import { legacyView } from './legacy-storage';
+import { VenueMap, loadLeaflet } from './map/map';
+import { OriginPanel } from './origin/origin';
+import { Seal } from './seal/seal';
+import { Store } from './store';
+import { Theme, Themes } from './theme';
+import { UserLocation } from './user-location';
+import { VenueCard } from './venue-card/venue-card';
 import {
-  DIAS,
-  DatosRuta,
-  Dia,
-  Filtros,
-  Llegada,
-  Local,
-  Probadas,
-  SIN_FILTROS,
-  SIN_MARCAS,
-  claveCierre,
-  diaDe,
-  estadoHorario,
-  filtrarLocales,
-  llegadaDesde,
-  ordenarBebidas,
-  ordenarPor,
-  tiposDeBebida,
-} from './locales';
-import { Mapa } from './mapa/mapa';
-import { OrigenPanel } from './origen/origen';
-import { Sello } from './sello/sello';
-import { Tema, Temas } from './tema';
-import { Visor, VisorFotos } from './visor/visor';
-import { Ubicacion } from './ubicacion';
+  Arrival,
+  Filters,
+  NO_FILTERS,
+  NO_MARKS,
+  RouteData,
+  TriedFilter,
+  Venue,
+  WEEKDAYS,
+  Weekday,
+  arrivalFrom,
+  closingKey,
+  drinkTypes,
+  filterVenues,
+  scheduleStatus,
+  sortBy,
+  sortDrinks,
+  weekdayOf,
+} from './venues';
+import { PhotoViewer, Viewer } from './viewer/viewer';
 
-type Vista = 'detalles' | 'fotos';
-type Orden = 'numero' | 'cercania' | 'cierre';
+type View = 'details' | 'photos';
+type Sort = 'number' | 'nearest' | 'closing';
 
-/** Igual que en app.scss: lista a la izquierda y mapa a la derecha. */
-const ESCRITORIO = '(min-width: 960px)';
-/** Igual que en styles.scss: en pantallas táctiles hace scroll app-root; en el resto, el documento. */
-const TACTIL = '(hover: none) and (pointer: coarse)';
-/** Lo que espera el mapa a que se deje de escribir en el buscador para recolocarse. */
-const RETARDO_MAPA = 500;
-/** Donde se guardaba la vista antes de tener el almacén. */
-const CLAVE_VISTA = 'ruta-tapas:vista';
+/** Same as in app.scss: list on the left and map on the right. */
+const DESKTOP = '(min-width: 960px)';
+/** Same as in styles.scss: app-root scrolls on touch screens; the document does everywhere else. */
+const TOUCH = '(hover: none) and (pointer: coarse)';
+/** How long the map waits for typing in the search box to stop before it rearranges itself. */
+const MAP_DELAY = 500;
 
-const TEMAS: readonly { tema: Tema; nombre: string; icono: NombreIcono }[] = [
-  { tema: 'claro', nombre: 'Claro', icono: 'sol' },
-  { tema: 'oscuro', nombre: 'Oscuro', icono: 'luna' },
-  { tema: 'sistema', nombre: 'Sistema', icono: 'sistema' },
+const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
+  { theme: 'light', name: 'Claro', icon: 'sun' },
+  { theme: 'dark', name: 'Oscuro', icon: 'moon' },
+  { theme: 'system', name: 'Sistema', icon: 'system' },
 ];
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule, Galeria, Icono, LocalCard, Mapa, OrigenPanel, Sello, VisorFotos],
+  imports: [FormsModule, Gallery, Icon, OriginPanel, PhotoViewer, Seal, VenueCard, VenueMap],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
-    '(window:popstate)': 'alNavegar($event)',
-    // Safari en iOS ignora user-scalable=no: el pellizco para hacer zoom se bloquea aquí.
+    '(window:popstate)': 'onNavigate($event)',
+    // Safari on iOS ignores user-scalable=no: pinch-to-zoom gets blocked here.
     '(document:gesturestart)': '$event.preventDefault()',
-    '(document:keydown.escape)': 'menuAbierto.set(false)',
+    '(document:keydown.escape)': 'menuOpen.set(false)',
   },
 })
 export class App {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
-  protected readonly ubicacion = inject(Ubicacion);
-  protected readonly tema = inject(Temas);
-  private readonly visor = inject(Visor);
-  /** Ya cargado al arrancar (app.config.ts): los filtros, el orden y la vista empiezan como se dejaron. */
-  private readonly almacen = inject(Almacen);
-  protected readonly dias = DIAS;
-  protected readonly temas = TEMAS;
+  protected readonly location = inject(UserLocation);
+  protected readonly theme = inject(Themes);
+  private readonly viewer = inject(Viewer);
+  /** Already loaded at startup (app.config.ts): filters, sort order and view start as they were left. */
+  private readonly store = inject(Store);
+  protected readonly weekdays = WEEKDAYS;
+  protected readonly themes = THEMES;
 
-  protected readonly menuAbierto = signal(false);
-  /** El botón de subir, cuando ya no se ve el mapa (en la vista de fotos, el principio de la galería). */
-  protected readonly verSubir = signal(false);
-  private readonly marcaSubir = viewChild<ElementRef<HTMLElement>>('marcaSubir');
+  protected readonly menuOpen = signal(false);
+  /** The scroll-to-top button, once the map is out of sight (in the photo view, the gallery's top). */
+  protected readonly showScrollTop = signal(false);
+  private readonly scrollTopMark = viewChild<ElementRef<HTMLElement>>('scrollTopMark');
 
-  /** undefined mientras carga; null si no se ha podido cargar. */
-  protected readonly datos = toSignal(
-    inject(HttpClient)
-      .get<DatosRuta>('data/locales.json')
-      .pipe(
-        map((datos): DatosRuta => ({ ...datos, locales: ordenarBebidas(datos.locales) })),
-        catchError(() => of(null)),
-      ),
-  );
+  protected readonly load = resource({ loader: loadRouteData });
+  /** undefined until it arrives (and if it doesn't: see load.error()). */
+  protected readonly data = computed(() => (this.load.hasValue() ? this.load.value() : undefined));
 
-  /** Con los que falten (los que se hayan añadido después de guardarlos), vacíos. */
-  private readonly guardados: Filtros = {
-    ...SIN_FILTROS,
-    ...this.almacen.ajuste<Partial<Filtros>>('filtros'),
+  /** Any that are missing (added after they were saved) start empty. */
+  private readonly saved: Filters = {
+    ...NO_FILTERS,
+    ...this.store.setting<Partial<Filters>>('filters'),
   };
-  protected readonly texto = signal(this.guardados.texto);
-  protected readonly dia = signal<Dia | ''>(this.guardados.dia);
-  protected readonly desde = signal(this.guardados.desde);
-  protected readonly hasta = signal(this.guardados.hasta);
-  protected readonly sinGluten = signal<Filtros['sinGluten']>(this.guardados.sinGluten);
-  protected readonly bebida = signal(this.guardados.bebida);
-  protected readonly rutaDeSabor = signal(this.guardados.rutaDeSabor);
-  protected readonly favoritos = signal(this.guardados.favoritos);
-  protected readonly probadas = signal<Probadas>(this.guardados.probadas);
-  /** El texto del buscador para el mapa: el de cuando se deja de escribir (RETARDO_MAPA). */
-  private readonly textoMapa = signal(this.guardados.texto);
+  protected readonly text = signal(this.saved.text);
+  protected readonly day = signal<Weekday | ''>(this.saved.day);
+  protected readonly from = signal(this.saved.from);
+  protected readonly to = signal(this.saved.to);
+  protected readonly glutenFree = signal<Filters['glutenFree']>(this.saved.glutenFree);
+  protected readonly drink = signal(this.saved.drink);
+  protected readonly flavorRoute = signal(this.saved.flavorRoute);
+  protected readonly favorites = signal(this.saved.favorites);
+  protected readonly tried = signal<TriedFilter>(this.saved.tried);
+  /** The search text for the map: the one from when typing stops (MAP_DELAY). */
+  private readonly mapText = signal(this.saved.text);
 
-  private readonly filtros = computed<Filtros>(() => ({
-    texto: this.texto(),
-    dia: this.dia(),
-    desde: this.desde(),
-    hasta: this.hasta(),
-    sinGluten: this.sinGluten(),
-    bebida: this.bebida(),
-    rutaDeSabor: this.rutaDeSabor(),
-    favoritos: this.favoritos(),
-    probadas: this.probadas(),
+  private readonly filters = computed<Filters>(() => ({
+    text: this.text(),
+    day: this.day(),
+    from: this.from(),
+    to: this.to(),
+    glutenFree: this.glutenFree(),
+    drink: this.drink(),
+    flavorRoute: this.flavorRoute(),
+    favorites: this.favorites(),
+    tried: this.tried(),
   }));
 
-  protected readonly orden = signal<Orden>(this.almacen.ajuste<Orden>('orden') ?? 'numero');
-  protected readonly vista = signal<Vista>(this.almacen.ajuste<Vista>('vista') ?? vistaAnterior());
-  /** Local abierto desde la vista de fotos. */
-  protected readonly detalle = signal<number | null>(null);
-  /** Local cuyo marcador se acaba de pinchar, para resaltarlo en la lista. */
-  protected readonly destacado = signal<number | null>(null);
-  protected readonly ahora = signal(new Date());
+  protected readonly sort = signal<Sort>(this.store.setting<Sort>('sort') ?? 'number');
+  protected readonly view = signal<View>(this.store.setting<View>('view') ?? legacyView());
+  /** Venue opened from the photo view. */
+  protected readonly detail = signal<number | null>(null);
+  /** Venue whose marker was just clicked, to highlight it in the list. */
+  protected readonly highlighted = signal<number | null>(null);
+  protected readonly now = signal(new Date());
 
-  protected readonly bebidas = computed(() => tiposDeBebida(this.datos()?.locales ?? []));
+  protected readonly drinks = computed(() => drinkTypes(this.data()?.venues ?? []));
 
-  protected readonly filtrados = computed(() => this.filtrar(this.filtros()));
-  /** Los mismos, pero con el texto de textoMapa (el orden le da igual). */
-  protected readonly enMapa = computed(() =>
-    this.filtrar({ ...this.filtros(), texto: this.textoMapa() }),
+  protected readonly filtered = computed(() => this.filter(this.filters()));
+  /** The same ones, but with the text in mapText (the map doesn't care about the order). */
+  protected readonly onMap = computed(() =>
+    this.filter({ ...this.filters(), text: this.mapText() }),
   );
 
-  /** Estado del horario de cada local ahora mismo. */
-  protected readonly estados = computed(() => {
-    const datos = this.datos();
-    const ahora = this.ahora();
+  /** Schedule status of each venue right now. */
+  protected readonly statuses = computed(() => {
+    const data = this.data();
+    const now = this.now();
     return new Map(
-      (datos?.locales ?? []).map((l) => [l.number, estadoHorario(l.schedule, ahora, datos!.event)]),
+      (data?.venues ?? []).map((v) => [v.number, scheduleStatus(v.schedule, now, data!.event)]),
     );
   });
 
-  /** Tiempo de llegada a cada local desde el punto de partida. */
-  protected readonly llegadas = computed(() => {
-    const origen = this.ubicacion.origen();
-    const medio = this.ubicacion.medio() || undefined;
-    const llegadas = new Map<number, Llegada>();
-    for (const local of origen ? (this.datos()?.locales ?? []) : []) {
-      if (local.location) llegadas.set(local.number, llegadaDesde(origen!, local.location, medio));
+  /** Arrival time at each venue from the starting point. */
+  protected readonly arrivals = computed(() => {
+    const origin = this.location.origin();
+    const mode = this.location.travelMode() || undefined;
+    const arrivals = new Map<number, Arrival>();
+    for (const venue of origin ? (this.data()?.venues ?? []) : []) {
+      if (venue.location) arrivals.set(venue.number, arrivalFrom(origin!, venue.location, mode));
     }
-    return llegadas;
+    return arrivals;
   });
 
-  protected readonly visibles = computed(() => {
-    const locales = this.filtrados();
-    switch (this.orden()) {
-      case 'cercania': {
-        const llegadas = this.llegadas();
-        return llegadas.size
-          ? ordenarPor(locales, (l) => llegadas.get(l.number)?.metros ?? Infinity)
-          : locales;
+  protected readonly visible = computed(() => {
+    const venues = this.filtered();
+    switch (this.sort()) {
+      case 'nearest': {
+        const arrivals = this.arrivals();
+        return arrivals.size
+          ? sortBy(venues, (v) => arrivals.get(v.number)?.meters ?? Infinity)
+          : venues;
       }
-      case 'cierre': {
-        const estados = this.estados();
-        return ordenarPor(locales, (l) => claveCierre(estados.get(l.number)!));
+      case 'closing': {
+        const statuses = this.statuses();
+        return sortBy(venues, (v) => closingKey(statuses.get(v.number)!));
       }
       default:
-        return locales;
+        return venues;
     }
   });
 
-  protected readonly localDetalle = computed(() =>
-    this.datos()?.locales.find((l) => l.number === this.detalle()),
+  protected readonly detailVenue = computed(() =>
+    this.data()?.venues.find((v) => v.number === this.detail()),
   );
-  protected readonly soloDetalle = computed(() => {
-    const local = this.localDetalle();
-    return local ? [local] : [];
+  protected readonly detailOnly = computed(() => {
+    const venue = this.detailVenue();
+    return venue ? [venue] : [];
   });
 
-  /** Scroll de la galería al abrir un local, para dejarla igual al volver. */
-  private posicionGaleria = 0;
+  /** Gallery scroll when opening a venue, to leave it the same on the way back. */
+  private galleryScroll = 0;
 
   constructor() {
-    const reloj = setInterval(() => this.ahora.set(new Date()), 30_000);
-    this.destroyRef.onDestroy(() => clearInterval(reloj));
-    effect(() => this.almacen.guardarAjuste('filtros', this.filtros()));
+    // In «Detalles» it will be needed: download it along with the data, without waiting for it. If
+    // it fails, the map will say so.
+    if (this.view() === 'details') loadLeaflet().catch(() => {});
+
+    const clock = setInterval(() => this.now.set(new Date()), 30_000);
+    this.destroyRef.onDestroy(() => clearInterval(clock));
+    effect(() => this.store.saveSetting('filters', this.filters()));
     effect((onCleanup) => {
-      const texto = this.texto();
-      const espera = setTimeout(() => this.textoMapa.set(texto), RETARDO_MAPA);
-      onCleanup(() => clearTimeout(espera));
+      const text = this.text();
+      const delay = setTimeout(() => this.mapText.set(text), MAP_DELAY);
+      onCleanup(() => clearTimeout(delay));
     });
 
-    // «Subir», en cuanto la marca del final del mapa ha pasado por debajo de la cabecera. Sin escuchar
-    // el scroll: el navegador avisa al cruzarla, sin JavaScript mientras tanto. Sin marca (en la ficha
-    // o mientras carga), no hay botón.
+    // «Subir», as soon as the mark at the end of the map has gone under the header. Without listening
+    // to scroll: the browser tells when it crosses, with no JavaScript in between. With no mark (in
+    // the venue view or while loading), there is no button.
     afterRenderEffect((onCleanup) => {
-      const marca = this.marcaSubir()?.nativeElement;
-      this.verSubir.set(false);
-      if (!marca) return;
-      const cabecera = this.host.querySelector<HTMLElement>('.cabecera')!.offsetHeight;
-      const observador = new IntersectionObserver(
+      const mark = this.scrollTopMark()?.nativeElement;
+      this.showScrollTop.set(false);
+      if (!mark) return;
+      const header = this.host.querySelector<HTMLElement>('.header')!.offsetHeight;
+      const observer = new IntersectionObserver(
         ([{ boundingClientRect, rootBounds }]) =>
-          this.verSubir.set(boundingClientRect.bottom <= (rootBounds?.top ?? 0)),
-        { rootMargin: `-${cabecera}px 0px 0px` },
+          this.showScrollTop.set(boundingClientRect.bottom <= (rootBounds?.top ?? 0)),
+        { rootMargin: `-${header}px 0px 0px` },
       );
-      observador.observe(marca);
-      onCleanup(() => observador.disconnect());
+      observer.observe(mark);
+      onCleanup(() => observer.disconnect());
     });
 
-    // Pinchar fuera del menú lo cierra; solo se escucha con el menú abierto: si no, cada clic en
-    // cualquier sitio de la página repasaría la vista.
+    // Clicking outside the menu closes it; it only listens while open: otherwise, every click
+    // anywhere on the page would check the view again.
     effect((onCleanup) => {
-      if (!this.menuAbierto()) return;
-      const alPinchar = (evento: MouseEvent) => this.cerrarMenuFuera(evento);
-      document.addEventListener('click', alPinchar);
-      onCleanup(() => document.removeEventListener('click', alPinchar));
+      if (!this.menuOpen()) return;
+      const onClick = (event: MouseEvent) => this.closeMenuOutside(event);
+      document.addEventListener('click', onClick);
+      onCleanup(() => document.removeEventListener('click', onClick));
     });
   }
 
   /**
-   * Los favoritos y las valoraciones, solo con su filtro puesto: si no, marcar un favorito o valorar
-   * una tapa volvería a filtrar la lista entera.
+   * Favorites and ratings, only with their filter on: otherwise, marking a favorite or rating a tapa
+   * would filter the whole list again.
    */
-  private filtrar(filtros: Filtros): Local[] {
-    return filtrarLocales(this.datos()?.locales ?? [], filtros, {
-      favoritos: filtros.favoritos ? this.almacen.favoritos() : SIN_MARCAS.favoritos,
-      valoraciones: filtros.probadas ? this.almacen.valoraciones() : SIN_MARCAS.valoraciones,
+  private filter(filters: Filters): Venue[] {
+    return filterVenues(this.data()?.venues ?? [], filters, {
+      favorites: filters.favorites ? this.store.favorites() : NO_MARKS.favorites,
+      ratings: filters.tried ? this.store.ratings() : NO_MARKS.ratings,
     });
   }
 
-  /** Lo que hace scroll: app-root en pantallas táctiles, el documento en el resto (ver styles.scss). */
-  private get desplazador(): Element {
-    if (globalThis.matchMedia?.(TACTIL).matches) return this.host;
+  /** What scrolls: app-root on touch screens, the document elsewhere (see styles.scss). */
+  private get scroller(): Element {
+    if (globalThis.matchMedia?.(TOUCH).matches) return this.host;
     return document.scrollingElement ?? document.documentElement;
   }
 
-  protected subir(): void {
-    const suave = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.desplazador.scrollTo({ top: 0, behavior: suave ? 'smooth' : 'auto' });
+  protected scrollToTop(): void {
+    const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.scroller.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
   }
 
-  /** Al abrir el menú, si hay una foto ampliada, se cierra (la cabecera queda por encima de ella). */
-  protected alternarMenu(): void {
-    const abrir = !this.menuAbierto();
-    this.menuAbierto.set(abrir);
-    if (abrir) this.visor.cerrar();
+  /** Opening the menu closes any enlarged photo (the header stays above it). */
+  protected toggleMenu(): void {
+    const open = !this.menuOpen();
+    this.menuOpen.set(open);
+    if (open) this.viewer.close();
   }
 
-  /** El botón del menú ya lo abre y lo cierra por su cuenta. */
-  private cerrarMenuFuera(evento: MouseEvent): void {
-    const objetivo = evento.target as Element | null;
-    if (objetivo?.closest('.menu, .boton-menu')) return;
-    this.menuAbierto.set(false);
+  /** The menu button already opens and closes it on its own. */
+  private closeMenuOutside(event: MouseEvent): void {
+    const target = event.target as Element | null;
+    if (target?.closest('.menu, .menu-button')) return;
+    this.menuOpen.set(false);
   }
 
-  /** Locales que sirven tapas ahora mismo. */
-  protected abiertoAhora(): void {
-    const fecha = new Date();
-    this.dia.set(diaDe(fecha));
-    this.desde.set(fecha.toTimeString().slice(0, 5));
-    this.hasta.set('');
+  /** Venues serving tapas right now. */
+  protected openNow(): void {
+    const date = new Date();
+    this.day.set(weekdayOf(date));
+    this.from.set(date.toTimeString().slice(0, 5));
+    this.to.set('');
   }
 
-  protected limpiar(): void {
-    this.texto.set('');
-    this.textoMapa.set('');
-    this.dia.set('');
-    this.desde.set('');
-    this.hasta.set('');
-    this.sinGluten.set('');
-    this.bebida.set('');
-    this.rutaDeSabor.set(false);
-    this.favoritos.set(false);
-    this.probadas.set('');
+  protected clearFilters(): void {
+    this.text.set('');
+    this.mapText.set('');
+    this.day.set('');
+    this.from.set('');
+    this.to.set('');
+    this.glutenFree.set('');
+    this.drink.set('');
+    this.flavorRoute.set(false);
+    this.favorites.set(false);
+    this.tried.set('');
   }
 
-  /** Para ordenar por cercanía hace falta un punto de partida: si no lo hay, pide la ubicación. */
-  protected ordenar(orden: Orden): void {
-    this.orden.set(orden);
-    this.almacen.guardarAjuste('orden', orden);
-    if (orden === 'cercania' && !this.ubicacion.origen()) this.ubicacion.usarMiUbicacion();
+  /** Sorting by distance needs a starting point: if there is none, it asks for the location. */
+  protected changeSort(sort: Sort): void {
+    this.sort.set(sort);
+    this.store.saveSetting('sort', sort);
+    if (sort === 'nearest' && !this.location.origin()) this.location.useMyLocation();
   }
 
-  protected cambiarVista(vista: Vista): void {
-    this.menuAbierto.set(false);
-    if (this.detalle() !== null) history.back();
-    else if (vista !== this.vista()) this.desplazador.scrollTo({ top: 0 });
-    this.vista.set(vista);
-    this.almacen.guardarAjuste('vista', vista);
+  protected changeView(view: View): void {
+    this.menuOpen.set(false);
+    if (this.detail() !== null) history.back();
+    else if (view !== this.view()) this.scroller.scrollTo({ top: 0 });
+    this.view.set(view);
+    this.store.saveSetting('view', view);
   }
 
-  /** En escritorio, al pinchar un marcador lleva la lista hasta su ficha. */
-  protected mostrarEnLista(numero: number): void {
-    if (!matchMedia(ESCRITORIO).matches) return;
+  /** On desktop, clicking a marker takes the list to its card. */
+  protected showInList(number: number): void {
+    if (!matchMedia(DESKTOP).matches) return;
     document
-      .getElementById(`local-${numero}`)
+      .getElementById(`venue-${number}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    this.destacado.set(numero);
-    setTimeout(() => this.destacado.update((n) => (n === numero ? null : n)), 1600);
+    this.highlighted.set(number);
+    setTimeout(() => this.highlighted.update((n) => (n === number ? null : n)), 1600);
   }
 
-  /** Abre un local en una entrada nueva del historial: el botón «atrás» del navegador vuelve a la galería. */
-  protected abrir(numero: number): void {
-    this.posicionGaleria = this.desplazador.scrollTop;
-    history.pushState({ local: numero }, '');
-    this.detalle.set(numero);
-    this.desplazador.scrollTo({ top: 0 });
+  /** Opens a venue in a new history entry: the browser's back button returns to the gallery. */
+  protected openVenue(number: number): void {
+    this.galleryScroll = this.scroller.scrollTop;
+    history.pushState({ venue: number }, '');
+    this.detail.set(number);
+    this.scroller.scrollTo({ top: 0 });
   }
 
-  protected volver(): void {
+  protected goBack(): void {
     history.back();
   }
 
-  protected alNavegar(event: PopStateEvent): void {
-    const numero = (event.state as { local?: number } | null)?.local ?? null;
-    this.detalle.set(numero);
-    const top = numero === null && this.vista() === 'fotos' ? this.posicionGaleria : 0;
-    afterNextRender(() => this.desplazador.scrollTo({ top }), { injector: this.injector });
+  protected onNavigate(event: PopStateEvent): void {
+    const number = (event.state as { venue?: number } | null)?.venue ?? null;
+    this.detail.set(number);
+    const top = number === null && this.view() === 'photos' ? this.galleryScroll : 0;
+    afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
   }
 }
 
-/** La que se eligió antes de que se guardara en el almacén. */
-function vistaAnterior(): Vista {
-  try {
-    return localStorage.getItem(CLAVE_VISTA) === 'fotos' ? 'fotos' : 'detalles';
-  } catch {
-    return 'detalles';
-  }
+/** The route's data, from the request index.html has already made (if not, it is requested now). */
+async function loadRouteData(): Promise<RouteData> {
+  const { routeData } = window as Window & { routeData?: Promise<Response> };
+  const response = await (routeData ?? fetch('data/venues.json'));
+  if (!response.ok) throw new Error(`data/venues.json: ${response.status}`);
+  const data = (await response.json()) as RouteData;
+  return { ...data, venues: sortDrinks(data.venues) };
 }

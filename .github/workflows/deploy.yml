@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Sin "version": usa la de "packageManager" en package.json.
+      # No "version": it uses the one in "packageManager" in package.json.
       - name: Set up pnpm
         uses: pnpm/action-setup@v6
 
@@ -48,11 +48,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
-      # El dominio (sabores.drackp2m.dev) se configura en Settings → Pages: con Actions no hace falta CNAME.
+      # The domain (sabores.drackp2m.dev) is set in Settings → Pages: with Actions no CNAME is needed.
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: './dist/ruta-tapas/browser'
+          path: './dist/tapas-route/browser'
 
   deploy:
     environment:

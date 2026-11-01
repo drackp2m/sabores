@@ -6,13 +6,13 @@ import {
 } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 
-import { Almacen } from './almacen';
+import { Store } from './store';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
-    // Valoraciones, favoritos y filtros guardados, antes de mostrar nada.
-    provideAppInitializer(() => inject(Almacen).cargar()),
+    // Saved ratings, favorites and filters, before showing anything.
+    provideAppInitializer(() => inject(Store).load()),
   ],
 };

@@ -12,18 +12,23 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <meta name="theme-color" content="#b4441b" />
-    <!-- App instalable (manifest para Android y Chrome; las etiquetas de Apple, para el iPhone). -->
+    <!-- Installable app (manifest for Android and Chrome; the Apple tags, for iPhone). -->
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Sabores" />
     <meta name="application-name" content="Sabores" />
-    <!-- El tema elegido (tema.ts), antes de pintar nada, para no ver un destello del otro. -->
+    <!-- The chosen theme (theme.ts), before painting anything, to avoid a flash of the other one. -->
     <script>
       try {
-        const tema = localStorage.getItem('ruta-tapas:tema');
-        if (tema === 'claro' || tema === 'oscuro') document.documentElement.dataset.tema = tema;
+        const theme = localStorage.getItem('tapas-route:theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
       } catch {}
+    </script>
+    <!-- The data, along with the JS, without waiting for the app to start (loadRouteData in app.ts).
+         Not with <link rel="preload">: Safari doesn't reuse it and downloads them twice. -->
+    <script>
+      window.routeData = fetch('data/venues.json');
     </script>
   </head>
   <body>

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Se ejecuta una vez al crear el contenedor. La primera vez (sin package.json) genera la app Angular.
+# Runs once when the container is created. The first time (no package.json) it generates the Angular app.
 set -eu
 cd "$(dirname "$0")/.."
 
@@ -8,38 +8,38 @@ if [ -f package.json ]; then
   exit 0
 fi
 
-echo "Generando la aplicación Angular…"
+echo "Generating the Angular application…"
 tmp="$(mktemp -d)"
-# --directory se resuelve siempre relativo al directorio actual (una ruta absoluta acaba dentro del
-# proyecto), así que se genera desde dentro de $tmp.
-(cd "$tmp" && pnpm dlx @angular/cli@latest new ruta-tapas --directory app --style=scss --ssr=false \
+# --directory always resolves relative to the current directory (an absolute path ends up inside the
+# project), so it generates from within $tmp.
+(cd "$tmp" && pnpm dlx @angular/cli@latest new tapas-route --directory app --style=scss --ssr=false \
   --package-manager=pnpm --skip-git --skip-install --interactive=false --defaults)
 
-# Copia recursiva sin sobrescribir lo que ya existe (README.md, data/, scripts/, el código de src/…).
+# Recursive copy that doesn't overwrite what already exists (README.md, data/, scripts/, the code in src/…).
 node -e 'require("fs").cpSync(process.argv[1], ".", { recursive: true, force: false })' "$tmp/app"
 rm -rf "$tmp"
 
 node -e '
   const fs = require("fs");
-  const leer = (fichero) => JSON.parse(fs.readFileSync(fichero, "utf8"));
-  const escribir = (fichero, json) => fs.writeFileSync(fichero, JSON.stringify(json, null, 2) + "\n");
+  const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
+  const write = (file, json) => fs.writeFileSync(file, JSON.stringify(json, null, 2) + "\n");
 
-  // Sirve data/ (locales.json y fotos) como recursos estáticos en /data y añade los estilos de Leaflet.
-  const ng = leer("angular.json");
+  // Serves data/ (venues.json and photos) as static assets in /data and adds the Leaflet styles.
+  const ng = read("angular.json");
   const build = Object.values(ng.projects)[0].architect.build.options;
   (build.assets ??= []).push({ glob: "**/*", input: "data", output: "data", ignore: ["geocode-*.json"] });
   build.styles = ["node_modules/leaflet/dist/leaflet.css", ...(build.styles ?? [])];
-  // Leaflet 1.x no es ESM: evita el aviso de dependencia CommonJS al compilar.
+  // Leaflet 1.x is not ESM: avoids the CommonJS dependency warning on building.
   (build.allowedCommonJsDependencies ??= []).push("leaflet");
-  escribir("angular.json", ng);
+  write("angular.json", ng);
 
-  // Escuchar en 0.0.0.0 para que el puerto sea accesible desde fuera del contenedor.
-  const pkg = leer("package.json");
+  // Listen on 0.0.0.0 so the port is reachable from outside the container.
+  const pkg = read("package.json");
   pkg.scripts.start = "ng serve --host 0.0.0.0";
-  escribir("package.json", pkg);
+  write("package.json", pkg);
 '
 
-# pnpm 11 falla si alguna dependencia trae scripts de instalación sin aprobar; estas son las del build de Angular.
+# pnpm 11 fails if a dependency brings unapproved install scripts; these are the ones in Angular's build.
 [ -f pnpm-workspace.yaml ] || cat > pnpm-workspace.yaml <<'EOF'
 allowBuilds:
   '@parcel/watcher': true
@@ -48,6 +48,6 @@ allowBuilds:
   msgpackr-extract: true
 EOF
 
-# Leaflet 1.x, la versión que describe @types/leaflet.
+# Leaflet 1.x, the version @types/leaflet describes.
 pnpm add leaflet@1
 pnpm add --save-dev @types/leaflet@1

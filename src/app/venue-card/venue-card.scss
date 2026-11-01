@@ -1,0 +1,275 @@
+:host {
+  display: block;
+}
+
+:host(.highlighted) article {
+  animation: flash 1.6s ease-out;
+}
+
+@keyframes flash {
+  from {
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+}
+
+article {
+  container: card / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+// Number and map button, centered with the name and the address.
+header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  button {
+    flex: none;
+  }
+}
+
+// It comes out of the card's left edge (covering the border), rounded only on the right.
+.number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 2.4rem;
+  height: 2rem;
+  margin-left: calc(-1rem - 1px);
+  padding: 0 0.5rem 0 0.4rem;
+  border-radius: 0 999px 999px 0;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+h2 {
+  font-size: 1rem;
+}
+
+.subtitle,
+.address {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.address {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.75rem;
+}
+
+.arrival {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--text);
+  font-weight: 600;
+  cursor: help;
+}
+
+.note {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+// Each tapa: photo on the left, in its original proportions (all 690×439), and on the right the name
+// with its seals and, below, the description. The second row (1fr) takes whatever the photo is taller
+// than the text, so that the description stays next to the name.
+.tapas {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'photo heading'
+      'photo text';
+    align-items: start;
+    gap: 0.2rem 0.75rem;
+  }
+}
+
+@container card (min-width: 34rem) {
+  .tapas li {
+    grid-template-columns: 11rem minmax(0, 1fr);
+  }
+}
+
+.photo {
+  grid-area: photo;
+}
+
+app-collapsible {
+  grid-area: text;
+}
+
+// The name wraps into as many lines as needed and the seals go on the right, centered with it.
+.heading {
+  grid-area: heading;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  font-size: 0.95rem;
+}
+
+h3 {
+  flex: 1;
+  min-width: 0;
+  font-size: inherit;
+}
+
+.info {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+details {
+  font-size: 0.88rem;
+}
+
+summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.6rem;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(-45deg);
+    transition: transform 0.15s;
+  }
+
+  // Open, it points down and rises a little to stay centered with the text.
+  &.open::before {
+    transform: translateY(-0.12rem) rotate(45deg);
+  }
+}
+
+// Five-column grid: the day; the morning slot, right-aligned; the dot, centered; the afternoon slot,
+// left-aligned (so the dot always stays in the same place), and a filler with the rest of the width,
+// so that today's highlight reaches the end. A column with nothing on any day (no mornings, say) takes
+// up nothing. Padding rather than margin on top, to be part of the height animated on opening and
+// closing; on the sides it sticks out as much as the cells are padded, so the text stays aligned with
+// the rest and the highlight has some room.
+dl {
+  display: grid;
+  grid-template-columns: repeat(4, max-content) 1fr;
+  row-gap: 0.15rem;
+  margin: 0 -0.5rem;
+  padding-top: 0.5rem;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+dt,
+dd {
+  margin: 0;
+  padding: 0.1rem 0;
+}
+
+dt {
+  padding: 0.1rem 1.25rem 0.1rem 0.5rem;
+  color: var(--muted);
+
+  &.active {
+    color: var(--text);
+    font-weight: 700;
+  }
+}
+
+.morning {
+  text-align: right;
+}
+
+.separator {
+  color: var(--muted);
+  text-align: center;
+
+  span {
+    padding-inline: 0.3rem;
+  }
+}
+
+// Centered in the gap of the two slots and the dot, not counting the filler.
+.no-tapas {
+  grid-column: 2 / 5;
+  color: var(--muted);
+  text-align: center;
+}
+
+.filler {
+  padding-right: 0.5rem;
+}
+
+// Today: the whole row on the soft accent color, with the day in the accent color.
+.today {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+dt.today {
+  border-radius: 0.375rem 0 0 0.375rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.filler.today {
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  font-size: 0.88rem;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--accent);
+  }
+}
+
+// In the corner, even with no phone or Instagram; without adding height to the row.
+app-favorite {
+  margin: -0.5rem -0.2rem -0.2rem auto;
+  font-size: 1.4rem;
+}

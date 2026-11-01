@@ -1,24 +1,24 @@
-// Extrae los locales de la guía PDF a data/locales.json + data/fotos/*.jpg
-// Uso (macOS, sin dependencias): swift scripts/extract.swift "GUÍA OFICIAL 2026 DIGITAL.pdf" data
+// Extracts the venues from the PDF guide to data/venues.json + data/photos/*.jpg
+// Usage (macOS, no dependencies): swift scripts/extract.swift "GUÍA OFICIAL 2026 DIGITAL.pdf" data
 import AppKit
 import PDFKit
 
 let args = CommandLine.arguments
 guard args.count >= 3, let doc = PDFDocument(url: URL(fileURLWithPath: args[1])) else {
-  FileHandle.standardError.write("uso: swift extract.swift <guia.pdf> <dir-salida>\n".data(using: .utf8)!)
+  FileHandle.standardError.write("usage: swift extract.swift <guide.pdf> <output-dir>\n".data(using: .utf8)!)
   exit(1)
 }
 let outDir = URL(fileURLWithPath: args[2])
-let photoDir = outDir.appendingPathComponent("fotos")
+let photoDir = outDir.appendingPathComponent("photos")
 try FileManager.default.createDirectory(at: photoDir, withIntermediateDirectories: true)
 
-// Geometría de la plantilla (puntos PDF, origen arriba-izquierda). Hay 2 locales por página.
+// Template geometry (PDF points, top-left origin). There are 2 venues per page.
 let blockOffset: CGFloat = 218.2
 let blockSplit: CGFloat = 233
 let columnSplit: CGFloat = 153
 let photoRects = [CGRect(x: 34.4, y: 82.2, width: 115.0, height: 73.2),
                   CGRect(x: 157.9, y: 82.2, width: 115.0, height: 73.2)]
-// Iconos junto a la etiqueta "TAPA n": sin gluten a la derecha, sello "Castelló Ruta de Sabor" a la izquierda.
+// Icons next to the "TAPA n" label: gluten-free on the right, "Castelló Ruta de Sabor" seal on the left.
 let glutenRects = [CGRect(x: 102, y: 158.5, width: 48, height: 15),
                    CGRect(x: 226, y: 158.5, width: 48, height: 15)]
 let sealRects = [CGRect(x: 35, y: 158.5, width: 46, height: 15),
@@ -31,10 +31,10 @@ enum Tone { case normal, hidden, grey, accent }
 
 struct Fragment {
   var text = ""
-  var rect = CGRect.null  // origen arriba-izquierda
+  var rect = CGRect.null  // top-left origin
   var size: CGFloat = 0
   var tone = Tone.normal
-  // Algunos glifos traen cajas desproporcionadas: la posición de línea es la mediana de sus caracteres.
+  // Some glyphs bring oversized boxes: the line's position is the median of its characters.
   var tops: [CGFloat] = []
   var mids: [CGFloat] = []
   var y: CGFloat { median(tops) }
@@ -53,7 +53,7 @@ func tone(of color: NSColor?) -> Tone {
   return .normal
 }
 
-// Agrupa caracteres consecutivos en fragmentos (misma línea, mismo tamaño y tono, sin huecos grandes).
+// Groups consecutive characters into fragments (same line, same size and tone, no big gaps).
 func fragments(of page: PDFPage) -> [Fragment] {
   guard let attr = page.attributedString else { return [] }
   let str = attr.string as NSString
@@ -125,8 +125,8 @@ func countPixels(_ page: PDFPage, _ rect: CGRect, _ match: (Int, Int, Int) -> Bo
   return hits
 }
 
-// PDFKit a veces devuelve cajas que abarcan varias filas; la fila real es el extremo (arriba o abajo)
-// que no ocupa ya otro fragmento y, si eso no decide, el que tiene tinta.
+// PDFKit sometimes returns boxes spanning several rows; the real row is the end (top or bottom)
+// that no other fragment already takes and, if that doesn't settle it, the one with ink.
 func fixTallBoxes(_ frs: [Fragment], _ page: PDFPage) -> [Fragment] {
   let isTall = { (f: Fragment) in f.rect.height > f.size * 1.4 * 1.5 }
   let normal = frs.filter { !isTall($0) }
@@ -151,17 +151,17 @@ func fixTallBoxes(_ frs: [Fragment], _ page: PDFPage) -> [Fragment] {
   }
 }
 
-// El icono "sin gluten" es naranja: basta con contar píxeles de ese tono en su zona.
+// The "gluten-free" icon is orange: counting pixels of that tone in its area is enough.
 func hasGlutenIcon(_ page: PDFPage, _ rect: CGRect) -> Bool {
   countPixels(page, rect) { r, g, b in r > 190 && g > 70 && g < 150 && b < 110 } > 40
 }
 
-// El sello "Castelló Ruta de Sabor" es muy saturado; la línea separadora que cruza la zona no lo es.
+// The "Castelló Ruta de Sabor" seal is very saturated; the divider line crossing the area isn't.
 func hasSealIcon(_ page: PDFPage, _ rect: CGRect) -> Bool {
   countPixels(page, rect) { r, g, b in max(r, g, b) - min(r, g, b) > 120 && b > 120 && r < 80 } > 40
 }
 
-// "close" es null cuando el tramo es "HH:MM - CIERRE" (hasta que cierre el local).
+// "close" is null when the slot is "HH:MM - CIERRE" (until the venue closes).
 func parseSlots(_ s: String) -> [[String: Any]] {
   let re = try! NSRegularExpression(pattern: #"(\d{1,2}):(\d{2})\s*-\s*(?:(\d{1,2}):(\d{2})|CIERRE)"#)
   return re.matches(in: s, range: NSRange(s.startIndex..., in: s)).compactMap { m in
@@ -193,8 +193,8 @@ func join(_ frs: [Fragment]) -> String {
     .replacingOccurrences(of: "  ", with: " ")
 }
 
-// Bebidas tal y como aparecen en la guía → nombre sin sinónimos (TERCIO = 1/3 CERVEZA…) y tipo por el
-// que se filtra en la app. Las que no estén aquí salen tal cual, con un aviso para añadirlas.
+// Drinks as they appear in the guide → name without synonyms (TERCIO = 1/3 CERVEZA…) and type used by
+// the app's filter. Those not listed here come out as they are, with a warning to add them.
 let drinkNames: [String: (name: String, type: String)] = [
   "1/3 CERVEZA": ("Tercio", "Cerveza"),
   "1/5 CERVEZA": ("Quinto", "Cerveza"),
@@ -224,14 +224,14 @@ let drinkNames: [String: (name: String, type: String)] = [
   "ZURITO DE VINO BLANCO O TINTO": ("Zurito de vino (blanco o tinto)", "Vino"),
 ]
 
-/// Bebidas normalizadas, sin repetidas y en orden alfabético.
+/// Normalized drinks, without duplicates and in alphabetical order.
 func parseDrinks(_ s: String, warn: (String) -> Void) -> [[String: String]] {
   var seen = Set<String>()
   return s.components(separatedBy: "·").map { $0.trimmingCharacters(in: .whitespaces) }
     .filter { !$0.isEmpty }
     .map { raw -> (name: String, type: String) in
       if let d = drinkNames[raw] { return d }
-      warn("bebida sin normalizar '\(raw)': añádela a drinkNames")
+      warn("drink not normalized '\(raw)': add it to drinkNames")
       return (raw, raw)
     }
     .filter { seen.insert($0.name).inserted }
@@ -239,7 +239,7 @@ func parseDrinks(_ s: String, warn: (String) -> Void) -> [[String: String]] {
     .map { ["name": $0.name, "type": $0.type] }
 }
 
-var locales: [[String: Any]] = []
+var venues: [[String: Any]] = []
 var warnings: [String] = []
 
 for pi in 0..<doc.pageCount {
@@ -270,7 +270,7 @@ for pi in 0..<doc.pageCount {
     for f in mine {
       let col = f.cx < columnSplit ? 0 : 1
       if f.tone == .accent {
-        // "OPCIONAL" junto al icono sin gluten: se puede pedir sin gluten.
+        // "OPCIONAL" next to the gluten-free icon: it can be ordered gluten-free.
         if (150..<176).contains(f.y) { glutenOptional[col] = true } else { notes.append(f) }
         continue
       }
@@ -288,12 +288,12 @@ for pi in 0..<doc.pageCount {
       case (165..<182, _): tapaName[col].append(f)
       case (182..<218, _): tapaDesc[col].append(f)
       case (218..<230, _): drinks.append(f)
-      default: warnings.append("p\(pi + 1) bloque \(block): fragmento sin clasificar '\(f.text)' y=\(f.y)")
+      default: warnings.append("p\(pi + 1) block \(block): unclassified fragment '\(f.text)' y=\(f.y)")
       }
     }
 
-    // La plantilla deja "ACORDES / GASTROBAR" tapado bajo el nombre real del primer bloque (son los
-    // primeros en el flujo de contenido); un "GASTROBAR" posterior sí forma parte del nombre.
+    // The template leaves "ACORDES / GASTROBAR" covered under the real name of the first block (they
+    // come first in the content stream); a later "GASTROBAR" is part of the name.
     if block == 0, nameFr.count > 2 {
       for word in ["ACORDES", "GASTROBAR"] {
         if let i = nameFr.firstIndex(where: { $0.text == word }) { nameFr.remove(at: i) }
@@ -301,7 +301,7 @@ for pi in 0..<doc.pageCount {
     }
 
     guard let num = number else {
-      if !mine.isEmpty { warnings.append("p\(pi + 1) bloque \(block): sin número de local") }
+      if !mine.isEmpty { warnings.append("p\(pi + 1) block \(block): no venue number") }
       continue
     }
     let id = String(format: "%02d", num)
@@ -309,13 +309,13 @@ for pi in 0..<doc.pageCount {
     var schedule: [String: Any] = [:]
     for d in dayOrder {
       guard let label = dayLabels.first(where: { $0.key == d }) else {
-        warnings.append("\(id): falta etiqueta \(d)"); schedule[d] = []; continue
+        warnings.append("\(id): missing label \(d)"); schedule[d] = []; continue
       }
       let row = slotFr.filter { abs($0.midY - label.y) < 3 }.sorted { $0.rect.minX < $1.rect.minX }
       let slots = label.closed ? [] : parseSlots(row.map(\.text).joined(separator: " "))
-      if !label.closed && slots.isEmpty { warnings.append("\(id): \(d) activo pero sin horario") }
+      if !label.closed && slots.isEmpty { warnings.append("\(id): \(d) active but with no schedule") }
       if zip(row, row.dropFirst()).contains(where: { $0.rect.maxX > $1.rect.minX }) {
-        warnings.append("\(id): \(d) con fragmentos solapados \(row.map(\.text))")
+        warnings.append("\(id): \(d) with overlapping fragments \(row.map(\.text))")
       }
       schedule[d] = slots
     }
@@ -331,14 +331,14 @@ for pi in 0..<doc.pageCount {
         "number": t + 1,
         "name": join(tapaName[t]),
         "description": join(tapaDesc[t]),
-        "photo": "fotos/\(file)",
+        "photo": "photos/\(file)",
         "glutenFree": !hasGlutenIcon(page, glutenRects[t].offsetBy(dx: 0, dy: dy)) ? "no"
           : glutenOptional[t] ? "optional" : "yes",
-        "castelloRutaDeSabor": hasSealIcon(page, sealRects[t].offsetBy(dx: 0, dy: dy)),
+        "flavorRoute": hasSealIcon(page, sealRects[t].offsetBy(dx: 0, dy: dy)),
       ])
     }
 
-    var local: [String: Any] = [
+    var venue: [String: Any] = [
       "number": num,
       "name": join(nameFr),
       "address": c.address,
@@ -347,15 +347,15 @@ for pi in 0..<doc.pageCount {
       "tapas": tapas,
       "page": pi + 1,
     ]
-    local["subtitle"] = subFr.isEmpty ? NSNull() : join(subFr)
-    local["phone"] = c.phone ?? NSNull()
-    local["instagram"] = c.instagram ?? NSNull()
-    local["notes"] = notes.map(\.text)
-    locales.append(local)
+    venue["subtitle"] = subFr.isEmpty ? NSNull() : join(subFr)
+    venue["phone"] = c.phone ?? NSNull()
+    venue["instagram"] = c.instagram ?? NSNull()
+    venue["notes"] = notes.map(\.text)
+    venues.append(venue)
   }
 }
 
-locales.sort { ($0["number"] as! Int) < ($1["number"] as! Int) }
+venues.sort { ($0["number"] as! Int) < ($1["number"] as! Int) }
 let result: [String: Any] = [
   "event": [
     "name": "Ruta de Tapas Sabores Castellón",
@@ -365,9 +365,9 @@ let result: [String: Any] = [
     "price": "Tapa + bebida 6,00 €",
     "city": "Castelló de la Plana",
   ],
-  "locales": locales,
+  "venues": venues,
 ]
 let json = try JSONSerialization.data(withJSONObject: result, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
-try json.write(to: outDir.appendingPathComponent("locales.json"))
-print("\(locales.count) locales extraídos")
+try json.write(to: outDir.appendingPathComponent("venues.json"))
+print("\(venues.count) venues extracted")
 warnings.forEach { print("⚠️ \($0)") }

@@ -1,7 +1,7 @@
-# zsh del devcontainer. ZDOTDIR (devcontainer.json) apunta a esta carpeta, así que aquí van también
-# .p10k.zsh (lo crea `p10k configure`), .aliases y el historial.
+# The devcontainer's zsh. ZDOTDIR (devcontainer.json) points to this folder, so this is also where
+# .p10k.zsh (created by `p10k configure`), .aliases and the history go.
 
-# Instant prompt de Powerlevel10k: tiene que quedarse al principio del fichero.
+# Powerlevel10k's instant prompt: it has to stay at the top of the file.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
@@ -23,6 +23,6 @@ source $zsh_plugins/powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f $ZDOTDIR/.aliases ]] || source $ZDOTDIR/.aliases
 
 source $zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-# zsh-syntax-highlighting tiene que cargarse el último.
+# zsh-syntax-highlighting has to load last.
 source $zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 unset zsh_plugins

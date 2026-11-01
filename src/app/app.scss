@@ -1,43 +1,43 @@
-.contenido {
+.content {
   max-width: 1280px;
   margin-inline: auto;
 }
 
 :host {
   display: block;
-  background: var(--fondo);
-  // El alto del mapa, en la lista y en la ficha; también el de la marca de «Subir».
-  --alto-mapa: 20rem;
+  background: var(--background);
+  // The height of the map, in the list and in the venue view; also that of the «Subir» mark.
+  --map-height: 20rem;
 }
 
-// En pantallas táctiles el scroll es de la app y no del documento (ver styles.scss).
+// On touch screens the app scrolls instead of the document (see styles.scss).
 @media (hover: none) and (pointer: coarse) {
   :host {
     height: 100%;
     overflow: hidden auto;
     overscroll-behavior: none;
-    scroll-padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
+    scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1rem);
   }
 }
 
-// Cabecera fija con el menú (vista y tema) siempre a mano.
-.cabecera {
+// Sticky header with the menu (view and theme) always at hand.
+.header {
   position: sticky;
   top: 0;
-  z-index: 1100; // Por encima de los controles de Leaflet (1000).
-  // El borde, del color del fondo, la separa de lo que pase por debajo con su mismo color (botones,
-  // números de los locales).
-  border-bottom: 1px solid var(--fondo);
-  background: var(--marca);
+  z-index: 1100; // Above Leaflet's controls (1000).
+  // The border, in the background color, sets it apart from what passes beneath in its same color
+  // (buttons, venue numbers).
+  border-bottom: 1px solid var(--background);
+  background: var(--brand);
   color: #fff;
-  padding: env(safe-area-inset-top, 0px) var(--margen-derecho) 0 var(--margen-izquierdo);
+  padding: env(safe-area-inset-top, 0px) var(--gutter-right) 0 var(--gutter-left);
 
-  .contenido {
+  .content {
     position: relative;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    height: var(--alto-cabecera);
+    height: var(--header-height);
   }
 
   h1 {
@@ -51,8 +51,8 @@
   }
 }
 
-// Junto al nombre, más pequeña y suave.
-.edicion {
+// Next to the name, smaller and softer.
+.edition {
   position: relative;
   bottom: 0.02rem;
   overflow: hidden;
@@ -62,10 +62,10 @@
   text-overflow: ellipsis;
 }
 
-.boton-menu {
+.menu-button {
   width: 2.5rem;
   color: #fff;
-  margin-right: -0.5rem; // El icono, alineado con el borde como el resto del contenido.
+  margin-right: -0.5rem; // The icon, aligned with the edge like the rest of the content.
   padding: 0;
   border-color: transparent;
   background: transparent;
@@ -77,52 +77,52 @@
   }
 }
 
-// Desplegable bajo el botón, con los colores de la página.
+// Dropdown under the button, in the page's colors.
 .menu {
   position: absolute;
   top: calc(100% + 0.25rem);
   right: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr); // Sin pasar del ancho máximo, aunque no quepa holgado.
+  grid-template-columns: minmax(0, 1fr); // Within the maximum width, even if it's a tight fit.
   gap: 0.9rem;
   width: max-content;
-  max-width: calc(100vw - var(--margen-izquierdo) - var(--margen-derecho));
+  max-width: calc(100vw - var(--gutter-left) - var(--gutter-right));
   padding: 0.9rem;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
-  background: var(--superficie);
-  color: var(--texto);
-  box-shadow: var(--sombra-elevada);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-raised);
   transform-origin: top right;
 
-  &.entrando {
-    animation: aparecer 0.18s ease-out;
+  &.entering {
+    animation: appear 0.18s ease-out;
   }
 
-  &.saliendo {
-    animation: aparecer 0.14s ease-in reverse;
+  &.leaving {
+    animation: appear 0.14s ease-in reverse;
   }
 }
 
-@keyframes aparecer {
+@keyframes appear {
   from {
     opacity: 0;
     transform: translateY(-0.4rem) scale(0.97);
   }
 }
 
-.grupo {
+.group {
   display: grid;
   gap: 0.3rem;
 
   > span {
     font-size: 0.8rem;
-    color: var(--suave);
+    color: var(--muted);
   }
 
-  // En móviles estrechos (o con la letra grande), los botones se reparten el ancho del menú en vez
-  // de salirse de él.
-  .segmentos button {
+  // On narrow phones (or with large text), the buttons share the menu's width instead of sticking
+  // out of it.
+  .segments button {
     flex: 1 1 auto;
     gap: 0.3rem;
     min-width: 0;
@@ -130,47 +130,47 @@
   }
 }
 
-// Botones flotantes: «Volver» de la ficha a la galería, abajo a la izquierda, y «Subir», a la
-// misma altura a la derecha cuando ya no se ve el mapa (el pie deja hueco para ellos).
-.volver,
-.subir {
+// Floating buttons: «Volver» from the venue back to the gallery, bottom left, and «Subir», at the
+// same height on the right once the map is out of sight (the footer leaves room for them).
+.back,
+.scroll-top {
   position: fixed;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  z-index: 1050; // Sobre los controles de Leaflet (1000); bajo la foto ampliada y la cabecera.
+  z-index: 1050; // Above Leaflet's controls (1000); below the enlarged photo and the header.
   height: 3rem;
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);
 }
 
-.volver {
-  left: var(--margen-izquierdo);
+.back {
+  left: var(--gutter-left);
   padding: 0 1.2rem 0 1rem;
   border-radius: 999px;
 }
 
-.subir {
-  right: var(--margen-derecho);
+.scroll-top {
+  right: var(--gutter-right);
   width: 3rem;
   padding: 0;
   border-radius: 50%;
   font-size: 1.3rem;
-  // Se deforma apoyado en el suelo, como si cayera hacia arriba y rebotara.
+  // It deforms resting on the floor, as if it fell upwards and bounced.
   transform-origin: 50% 100%;
-  // Lo que baja para quedar fuera de la pantalla: su alto, el margen y la zona segura.
-  --fuera: calc(100% + 1.5rem + env(safe-area-inset-bottom, 0px));
+  // How far down it goes to be off-screen: its height, the margin and the safe area.
+  --offscreen: calc(100% + 1.5rem + env(safe-area-inset-bottom, 0px));
 
-  &.entrando {
-    animation: llegar 0.5s;
+  &.entering {
+    animation: arrive 0.5s;
   }
 
-  &.saliendo {
-    animation: irse 0.22s ease-in;
+  &.leaving {
+    animation: depart 0.22s ease-in;
   }
 }
 
-// Sube desde abajo estirado en vertical, se achata un poco al llegar y se queda en su sitio.
-@keyframes llegar {
+// It rises from below stretched vertically, squashes a little on arrival and settles in place.
+@keyframes arrive {
   0% {
-    transform: translateY(var(--fuera)) scale(0.9, 1.14);
+    transform: translateY(var(--offscreen)) scale(0.9, 1.14);
     animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
@@ -189,19 +189,19 @@
   }
 }
 
-// Baja estirándose un poco.
-@keyframes irse {
+// It drops, stretching a little.
+@keyframes depart {
   to {
-    transform: translateY(var(--fuera)) scale(0.94, 1.1);
+    transform: translateY(var(--offscreen)) scale(0.94, 1.1);
   }
 }
 
-.filtros {
-  background: var(--superficie);
-  border-bottom: 1px solid var(--borde);
-  padding: 0.75rem var(--margen-derecho) 0.75rem var(--margen-izquierdo);
+.filters {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem var(--gutter-right) 0.75rem var(--gutter-left);
 
-  .contenido {
+  .content {
     display: flex;
     flex-wrap: wrap;
     align-items: end;
@@ -209,32 +209,32 @@
   }
 }
 
-// Dos campos por fila en el móvil (Día y Hora; Sin gluten y Bebida) y los que quepan en escritorio.
-.campo {
+// Two fields per row on phones (day and time; gluten-free and drink) and as many as fit on desktop.
+.field {
   display: flex;
   flex: 1 1 8rem;
   flex-direction: column;
   gap: 0.2rem;
   min-width: 0;
   font-size: 0.8rem;
-  color: var(--suave);
+  color: var(--muted);
 
-  &.texto {
+  &.text {
     flex: 2 1 16rem;
   }
 
-  &.hora {
-    flex: 1 1 12.5rem; // Junto al día también en un móvil de 375 px.
+  &.time {
+    flex: 1 1 12.5rem; // Next to the day, also on a 375 px phone.
   }
 
-  &.solo {
+  &.only {
     flex: 1 1 auto;
   }
 }
 
-// Las dos casillas, en la misma fila si caben, repartiéndose el ancho (en escritorio, sin pasar de
-// 15rem); si no, cada una en la suya.
-.casillas {
+// Both checkboxes, on the same row if they fit, sharing the width (on desktop, up to 15rem); if not,
+// each on its own.
+.checkboxes {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -245,23 +245,23 @@
   }
 }
 
-.corazon {
-  color: var(--corazon);
-  --relleno-icono: currentColor;
+.heart {
+  color: var(--heart);
+  --icon-fill: currentColor;
 }
 
-.rango {
+.range {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--suave);
+  color: var(--muted);
 
   input {
     flex: 1;
   }
 }
 
-.acciones {
+.actions {
   display: flex;
   gap: 0.5rem;
   margin-left: auto;
@@ -271,33 +271,33 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1rem var(--margen-derecho) 1rem var(--margen-izquierdo);
-  // El ancho máximo de .contenido es sin el padding, para alinearse con cabecera y filtros.
+  padding: 1rem var(--gutter-right) 1rem var(--gutter-left);
+  // The maximum width of .content excludes the padding, to line up with the header and filters.
   box-sizing: content-box;
 }
 
-// En su propia línea, con el texto como el del panel del punto de partida, que va justo debajo.
-.orden {
+// On its own line, with its text like that of the starting point panel, right below.
+.sort {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--suave);
+  color: var(--muted);
 }
 
-.resumen {
+.summary {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.35rem;
   text-align: center;
-  color: var(--suave);
+  color: var(--muted);
 
   p {
     margin: 0;
   }
 }
 
-.leyenda {
+.legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -311,90 +311,90 @@ main {
   }
 }
 
-.resultados {
+.results {
   position: relative;
   display: grid;
   gap: 1rem;
 }
 
-.mapa {
-  height: var(--alto-mapa);
+.map {
+  height: var(--map-height);
 }
 
-// Cuando su final pasa por debajo de la cabecera aparece «Subir» (app.ts). En la lista, mide lo que
-// el mapa (al lado de la lista en escritorio, encima en el móvil); en la vista de fotos, sin alto,
-// marca el principio de la galería.
-.resultados .marca-subir {
+// «Subir» appears when its end goes under the header (app.ts). In the list, it is as tall as the map
+// (next to the list on desktop, above it on phones); in the photo view, with no height, it marks the
+// top of the gallery.
+.results .scroll-top-mark {
   position: absolute;
   top: 0;
   left: 0;
   width: 1px;
-  height: var(--alto-mapa);
+  height: var(--map-height);
 }
 
-.lista {
+.list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
 }
 
-// Abajo, el hueco de los botones flotantes y la zona segura del indicador de inicio del iPhone.
-.pie {
+// At the bottom, room for the floating buttons and the safe area of the iPhone's home indicator.
+.footer {
   margin: 0;
-  padding: 0.5rem var(--margen-derecho) calc(5rem + env(safe-area-inset-bottom, 0px))
-    var(--margen-izquierdo);
+  padding: 0.5rem var(--gutter-right) calc(5rem + env(safe-area-inset-bottom, 0px))
+    var(--gutter-left);
   text-align: center;
   font-size: 0.8rem;
-  color: var(--suave);
+  color: var(--muted);
 
   p {
     margin: 0;
   }
 
   a {
-    color: var(--acento);
+    color: var(--accent);
     font-weight: 600;
   }
 }
 
-.estado {
+.message {
   text-align: center;
   padding: 3rem 1rem;
-  color: var(--suave);
+  color: var(--muted);
 }
 
 .error {
-  color: var(--acento);
+  color: var(--accent);
 }
 
 @media (min-width: 960px) {
   :host {
-    --alto-mapa: calc(100vh - var(--alto-cabecera) - env(safe-area-inset-top, 0px) - 2rem);
+    --map-height: calc(100vh - var(--header-height) - env(safe-area-inset-top, 0px) - 2rem);
   }
 
-  .resultados,
-  .detalle {
+  .results,
+  .detail {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
   }
 
-  // Lista a la izquierda y mapa fijo a la derecha mientras se hace scroll.
-  .resultados .mapa {
+  // List on the left and the map fixed on the right while scrolling.
+  .results .map {
     order: 2;
   }
 
-  .resultados .mapa,
-  .detalle .mapa {
+  .results .map,
+  .detail .map {
     position: sticky;
-    top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
+    top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1rem);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .menu,
-  .subir {
+  .scroll-top {
     animation: none !important;
   }
 }

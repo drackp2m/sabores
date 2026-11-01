@@ -133,10 +133,13 @@ export class App {
   });
 
   /** The venue to go back to, as long as the filters leave it in the list. */
-  protected readonly returnVenue = computed(() => {
+  private readonly returnVenue = computed(() => {
     const origin = this.position.returnTo();
     return this.visible().some((v) => v.number === origin) ? origin : null;
   });
+  protected readonly returnButton = computed(() =>
+    this.position.canReturn() ? this.returnVenue() : null,
+  );
 
   /** Gallery scroll when opening a venue, to leave it the same on the way back. */
   private galleryScroll = 0;
@@ -179,8 +182,15 @@ export class App {
       const venues = this.visible();
       if (!this.scrollTopMark()) return;
       const marks = [...this.host.querySelectorAll('.venue-mark')];
-      const root = isTouch() ? this.host : null;
-      onCleanup(this.position.follow(venues, marks, this.headerHeight, root));
+      onCleanup(this.position.follow(venues, marks, this.headerHeight, this.root));
+    });
+
+    // What decides on the venue to return to, only while there is one.
+    afterRenderEffect((onCleanup) => {
+      const card = this.card(this.returnVenue());
+      if (!card) return;
+      const cards = this.visible().flatMap((v) => this.card(v.number) ?? []);
+      onCleanup(this.position.watchReturn(card, cards, this.headerHeight, this.root));
     });
 
     // Clicking outside the menu closes it; it only listens while open: otherwise, every click
@@ -212,6 +222,11 @@ export class App {
   private get scroller(): Element {
     if (isTouch()) return this.host;
     return document.scrollingElement ?? document.documentElement;
+  }
+
+  /** What scrolls, for an IntersectionObserver: null is the document. */
+  private get root(): Element | null {
+    return isTouch() ? this.host : null;
   }
 
   private get headerHeight(): number {

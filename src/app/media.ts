@@ -13,3 +13,8 @@ export function isTouch(): boolean {
 export function reducedMotion(): boolean {
   return matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
+
+/** Pixels in 1rem (fewer on narrow screens, see styles/_base.scss). */
+export function remInPx(): number {
+  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+}

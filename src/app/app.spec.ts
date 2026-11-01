@@ -454,10 +454,22 @@ describe('App', () => {
       const report = stubIntersections();
       const started = await start({ ...DATA, venues });
       const { fixture, el, press } = started;
-      /** The venue on top: those before it in the list have gone under the header. */
-      const scrollTo = async (number: number) => {
+      /**
+       * The venue on top: those before it in the list have gone under the header. Others can be out
+       * of sight, and others whole on the screen.
+       */
+      const scrollTo = async (
+        number: number,
+        { lost = [], whole = [] }: { lost?: number[]; whole?: number[] } = {},
+      ) => {
         const marks = [...el.querySelectorAll('.venue-mark')];
-        report((mark) => marks.indexOf(mark) >= 0 && marks.indexOf(mark) < number - 1);
+        report(
+          (target) =>
+            marks.includes(target)
+              ? marks.indexOf(target) < number - 1
+              : lost.some((n) => target.id === `venue-${n}`),
+          (card) => whole.some((n) => card.id === `venue-${n}`),
+        );
         await fixture.whenStable();
       };
       const switchTo = async (view: string) => {
@@ -472,8 +484,13 @@ describe('App', () => {
         switchTo,
         position: TestBed.inject(ScrollPosition),
         locate: (number: number) => press(`#venue-${number} button[aria-label='Ver en el mapa']`),
-        /** Long enough for a scroll started by the app to be over. */
-        pageStops: () => new Promise((r) => setTimeout(r, 250)),
+        /** A scroll started by the app gets under way. */
+        pageMoves: () => document.dispatchEvent(new Event('scroll')),
+        /** Long enough for it to be over. */
+        pageStops: async () => {
+          await new Promise((r) => setTimeout(r, 250));
+          await fixture.whenStable();
+        },
         returnButton: () => el.querySelector('.return'),
       };
     }
@@ -527,11 +544,16 @@ describe('App', () => {
       expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
     });
 
-    it('«Volver al local» appears on going to the map and returns to the venue', async () => {
-      const { el, scrollTo, locate, press, returnButton, position } = await startFollowing();
+    it('«Volver al local» appears once the trip to the map stops and returns to it', async () => {
+      const { el, scrollTo, locate, pageMoves, pageStops, press, returnButton, position } =
+        await startFollowing();
       await scrollTo(6);
-      expect(returnButton()).toBeNull();
       await locate(6);
+      await scrollTo(6, { whole: [6] });
+      pageMoves();
+      await scrollTo(1);
+      expect(returnButton()).toBeNull();
+      await pageStops();
       expect(returnButton()!.textContent).toContain('Volver al local 6');
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
@@ -541,44 +563,88 @@ describe('App', () => {
       expect(position.returnTo()).toBeNull();
     });
 
-    it('the trip to the map doesn’t count, but three venues afterwards forget it', async () => {
-      const { scrollTo, locate, pageStops, returnButton } = await startFollowing();
-      await scrollTo(6);
-      await locate(6);
-      await scrollTo(1);
-      expect(returnButton()).not.toBeNull();
-
-      await pageStops();
-      await scrollTo(3);
-      expect(returnButton()).not.toBeNull();
-      await scrollTo(2);
-      expect(returnButton()).toBeNull();
-    });
-
-    it('«Volver al local» stays while looking at other venues on the map', async () => {
-      const { fixture, scrollTo, locate, pageStops, returnButton } = await startFollowing();
-      vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+    it('doesn’t offer going back if going to the map hasn’t moved the list', async () => {
+      const { scrollTo, locate, pageStops, returnButton, position } = await startFollowing();
       await scrollTo(1);
       await locate(1);
+      await scrollTo(1);
       await pageStops();
+      expect(returnButton()).toBeNull();
+      expect(position.returnTo()).toBe(1);
+    });
+
+    it('offers it when a marker takes the list away, not when the user does', async () => {
+      const { fixture, scrollTo, locate, pageMoves, pageStops, returnButton } =
+        await startFollowing();
+      vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+      await scrollTo(1, { whole: [1] });
+      await locate(1);
+      await scrollTo(1, { whole: [1] });
+      await pageStops();
+      await scrollTo(2);
+      await pageStops();
+      expect(returnButton()).toBeNull();
 
       fixture.componentInstance['showInList'](7);
+      pageMoves();
       await scrollTo(7);
+      await pageStops();
       expect(returnButton()!.textContent).toContain('Volver al local 1');
     });
 
+    it('forgets the venue after losing sight of three others', async () => {
+      const { scrollTo, locate, pageMoves, pageStops, returnButton, position } =
+        await startFollowing();
+      await scrollTo(6);
+      await locate(6);
+      await scrollTo(6);
+      pageMoves();
+      await scrollTo(1);
+      await pageStops();
+
+      await scrollTo(1, { whole: [1, 2, 3] });
+      await scrollTo(3, { lost: [1, 2] });
+      expect(returnButton()).not.toBeNull();
+      await scrollTo(4, { lost: [1, 2, 3] });
+      expect(returnButton()).toBeNull();
+      expect(position.returnTo()).toBeNull();
+    });
+
+    it('forgets the venue on bringing it back into sight', async () => {
+      const { scrollTo, locate, pageMoves, pageStops, returnButton, position } =
+        await startFollowing();
+      await scrollTo(1, { whole: [1] });
+      await locate(1);
+      await scrollTo(1, { whole: [1] });
+      pageMoves();
+      await scrollTo(1);
+      await pageStops();
+      expect(returnButton()).not.toBeNull();
+
+      await scrollTo(1, { whole: [1] });
+      expect(position.returnTo()).toBeNull();
+      expect(returnButton()).toBeNull();
+    });
+
     it('«Volver al local» changes to the last venue the user went to the map from', async () => {
-      const { scrollTo, locate, returnButton } = await startFollowing();
+      const { scrollTo, locate, pageMoves, pageStops, returnButton } = await startFollowing();
       await scrollTo(6);
       await locate(6);
       await locate(2);
+      await scrollTo(6);
+      pageMoves();
+      await pageStops();
       expect(returnButton()!.textContent).toContain('local 2');
     });
 
     it('«Volver al local» goes away on switching view', async () => {
-      const { scrollTo, switchTo, locate, returnButton } = await startFollowing();
+      const { scrollTo, switchTo, locate, pageMoves, pageStops, returnButton } =
+        await startFollowing();
       await scrollTo(6);
       await locate(6);
+      await scrollTo(6);
+      pageMoves();
+      await pageStops();
       expect(returnButton()).not.toBeNull();
 
       await switchTo('Fotos');
@@ -588,9 +654,13 @@ describe('App', () => {
     });
 
     it('«Volver al local» waits while its venue is filtered out', async () => {
-      const { fixture, el, scrollTo, locate, press, returnButton } = await startFollowing();
+      const { fixture, el, scrollTo, locate, pageMoves, pageStops, press, returnButton } =
+        await startFollowing();
       await scrollTo(6);
       await locate(6);
+      await scrollTo(6);
+      pageMoves();
+      await pageStops();
       const search = el.querySelector<HTMLInputElement>('.field.text input')!;
       search.value = 'local 2';
       search.dispatchEvent(new Event('input'));

@@ -18,7 +18,7 @@ import type * as L from 'leaflet';
 import { createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
-import { isTouch } from '../media';
+import { isTouch, remInPx } from '../media';
 import { directionsLink, findRoute } from '../routing';
 import { ScrollPosition } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
@@ -79,11 +79,6 @@ function sameKinds(
   b: ReadonlyMap<number, StatusKind>,
 ): boolean {
   return a.size === b.size && [...a].every(([number, kind]) => b.get(number) === kind);
-}
-
-/** Pixels in 1rem (fewer on narrow screens, see styles/_base.scss). */
-function remInPx(): number {
-  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
 }
 
 /**

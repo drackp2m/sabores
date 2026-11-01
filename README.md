@@ -124,8 +124,9 @@ The header switches between the «Detalles» view and the «Fotos» view: each v
 the arrival time, the status and the photos, with the same filters. Clicking one opens its card with its
 map, and the floating «Volver» button (or the browser's back button) returns to the gallery where it was
 left. Switching view keeps the scroll on the same venue. After going from a venue in the list to the map,
-«Volver al local N» takes you back to it, however many other venues you look at on the map; scrolling past
-three venues, up and down added together, forgets it.
+once the app has moved the list and left its card out of sight, «Volver al local N» takes you back to it,
+however many other venues you look at on the map. Bringing the card back into sight forgets it, and so
+do three other different venues that were shown and then went completely out of sight on the same side.
 
 Code, comments, file names and commands are in English; only the text the app shows is in Spanish.
 

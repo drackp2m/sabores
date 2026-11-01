@@ -21,6 +21,7 @@ import {
   statusBadge,
   statusKind,
   tapaKey,
+  timeRange,
   weekdayOf,
 } from './venues';
 
@@ -84,10 +85,26 @@ describe('openBetween', () => {
     expect(openBetween([], '', '')).toBe(false);
   });
 
-  it('with only "from", checks that exact time', () => {
-    expect(openBetween(slots, '12:00', '')).toBe(true);
-    expect(openBetween(slots, '16:00', '')).toBe(false);
+  it('with only "from", goes up to the end of the day', () => {
+    const lunch = slots.slice(0, 1);
+    expect(openBetween(lunch, '12:00', '')).toBe(true);
+    expect(openBetween(lunch, '16:00', '')).toBe(false);
+    expect(openBetween(slots, '16:00', '')).toBe(true); // It opens again at 20:00.
     expect(openBetween(slots, '23:30', '')).toBe(true); // "until closing time"
+  });
+
+  it('with the same time in both, checks that exact time', () => {
+    expect(openBetween(slots, '12:00', '12:00')).toBe(true);
+    expect(openBetween(slots, '16:00', '16:00')).toBe(false);
+    expect(openBetween(slots, '23:30', '23:30')).toBe(true);
+  });
+
+  it('takes 00:00 as the end of the day', () => {
+    const lunch = slots.slice(0, 1);
+    expect(openBetween(lunch, '', '00:00')).toBe(true);
+    expect(openBetween(lunch, '00:00', '00:00')).toBe(true);
+    expect(openBetween(lunch, '17:00', '00:00')).toBe(false);
+    expect(openBetween(slots, '17:00', '00:00')).toBe(true);
   });
 
   it('with a range, any overlapping slot counts', () => {
@@ -101,6 +118,35 @@ describe('openBetween', () => {
   it('accepts slots and ranges past midnight', () => {
     expect(openBetween([{ open: '21:00', close: '01:00' }], '23:00', '')).toBe(true);
     expect(openBetween([{ open: '21:00', close: '23:00' }], '22:00', '01:00')).toBe(true);
+  });
+});
+
+describe('timeRange', () => {
+  const sundayEvening = new Date(2026, 10, 1, 18, 30);
+  const range = (day: Weekday | '', from: string, to: string) =>
+    timeRange({ ...NO_FILTERS, day, from, to }, sundayEvening);
+
+  it('has nothing to fill in with both ends, with neither or without a day', () => {
+    expect(range('sunday', '12:00', '14:00')).toEqual({ from: '12:00', to: '14:00' });
+    expect(range('sunday', '', '')).toEqual({ from: '', to: '' });
+    expect(range('', '12:00', '')).toEqual({ from: '12:00', to: '' });
+    expect(range('', '', '20:00')).toEqual({ from: '', to: '20:00' });
+  });
+
+  it('without "to", goes up to midnight', () => {
+    expect(range('sunday', '12:00', '')).toEqual({ from: '12:00', to: '00:00' });
+    expect(range('monday', '12:00', '')).toEqual({ from: '12:00', to: '00:00' });
+  });
+
+  it('without "from", starts now if it is for today and "to" is still to come', () => {
+    expect(range('sunday', '', '20:00')).toEqual({ from: '18:30', to: '20:00' });
+    expect(range('sunday', '', '00:00')).toEqual({ from: '18:30', to: '00:00' });
+  });
+
+  it('without "from", starts with the day if now does not fit', () => {
+    expect(range('sunday', '', '14:00')).toEqual({ from: '00:00', to: '14:00' });
+    expect(range('sunday', '', '18:30')).toEqual({ from: '00:00', to: '18:30' });
+    expect(range('monday', '', '20:00')).toEqual({ from: '00:00', to: '20:00' });
   });
 });
 
@@ -151,7 +197,8 @@ describe('filterVenues', () => {
 
   it('filters by day and time range', () => {
     expect(names({ day: 'monday' })).toEqual(['CÚPULA', 'ORIGEN']);
-    expect(names({ day: 'monday', from: '13:00' })).toEqual(['ORIGEN']);
+    expect(names({ day: 'monday', from: '13:00' })).toEqual(['CÚPULA', 'ORIGEN']);
+    expect(names({ day: 'monday', from: '13:00', to: '13:00' })).toEqual(['ORIGEN']);
     expect(names({ day: 'monday', from: '15:00', to: '20:30' })).toEqual(['CÚPULA', 'ORIGEN']);
   });
 

@@ -1,6 +1,5 @@
 import {
   Component,
-  DestroyRef,
   ElementRef,
   Injector,
   afterNextRender,
@@ -8,12 +7,12 @@ import {
   computed,
   effect,
   inject,
-  resource,
   signal,
   viewChild,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
+import { Clock } from './clock';
+import { FiltersPanel } from './filters/filters';
 import { Gallery } from './gallery/gallery';
 import { Icon, IconName } from './icon/icon';
 import { legacyView } from './legacy-storage';
@@ -21,27 +20,19 @@ import { VenueMap, loadLeaflet } from './map/map';
 import { OriginPanel } from './origin/origin';
 import { Seal } from './seal/seal';
 import { Store } from './store';
+import { TapasRoute } from './tapas-route';
 import { Theme, Themes } from './theme';
 import { UserLocation } from './user-location';
 import { VenueCard } from './venue-card/venue-card';
 import {
-  Arrival,
   Filters,
   NO_FILTERS,
   NO_MARKS,
-  RouteData,
-  TriedFilter,
   Venue,
-  WEEKDAYS,
-  Weekday,
-  arrivalFrom,
   closingKey,
-  drinkTypes,
   filterVenues,
-  scheduleStatus,
   sortBy,
-  sortDrinks,
-  weekdayOf,
+  timeRange,
 } from './venues';
 import { PhotoViewer, Viewer } from './viewer/viewer';
 
@@ -63,7 +54,7 @@ const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule, Gallery, Icon, OriginPanel, PhotoViewer, Seal, VenueCard, VenueMap],
+  imports: [FiltersPanel, Gallery, Icon, OriginPanel, PhotoViewer, Seal, VenueCard, VenueMap],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
@@ -76,13 +67,13 @@ const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
 export class App {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly location = inject(UserLocation);
   protected readonly theme = inject(Themes);
   private readonly viewer = inject(Viewer);
   /** Already loaded at startup (app.config.ts): filters, sort order and view start as they were left. */
   private readonly store = inject(Store);
-  protected readonly weekdays = WEEKDAYS;
+  protected readonly tapasRoute = inject(TapasRoute);
+  private readonly clock = inject(Clock);
   protected readonly themes = THEMES;
 
   protected readonly menuOpen = signal(false);
@@ -90,38 +81,18 @@ export class App {
   protected readonly showScrollTop = signal(false);
   private readonly scrollTopMark = viewChild<ElementRef<HTMLElement>>('scrollTopMark');
 
-  protected readonly load = resource({ loader: loadRouteData });
-  /** undefined until it arrives (and if it doesn't: see load.error()). */
-  protected readonly data = computed(() => (this.load.hasValue() ? this.load.value() : undefined));
-
   /** Any that are missing (added after they were saved) start empty. */
-  private readonly saved: Filters = {
+  protected readonly filters = signal<Filters>({
     ...NO_FILTERS,
     ...this.store.setting<Partial<Filters>>('filters'),
-  };
-  protected readonly text = signal(this.saved.text);
-  protected readonly day = signal<Weekday | ''>(this.saved.day);
-  protected readonly from = signal(this.saved.from);
-  protected readonly to = signal(this.saved.to);
-  protected readonly glutenFree = signal<Filters['glutenFree']>(this.saved.glutenFree);
-  protected readonly drink = signal(this.saved.drink);
-  protected readonly flavorRoute = signal(this.saved.flavorRoute);
-  protected readonly favorites = signal(this.saved.favorites);
-  protected readonly tried = signal<TriedFilter>(this.saved.tried);
+  });
+  /** Every minute there's a new one, but the list only gets filtered again if it starts "now". */
+  protected readonly range = computed(() => timeRange(this.filters(), this.clock.now()), {
+    equal: (a, b) => a.from === b.from && a.to === b.to,
+  });
+  private readonly searchText = computed(() => this.filters().text);
   /** The search text for the map: the one from when typing stops (MAP_DELAY). */
-  private readonly mapText = signal(this.saved.text);
-
-  private readonly filters = computed<Filters>(() => ({
-    text: this.text(),
-    day: this.day(),
-    from: this.from(),
-    to: this.to(),
-    glutenFree: this.glutenFree(),
-    drink: this.drink(),
-    flavorRoute: this.flavorRoute(),
-    favorites: this.favorites(),
-    tried: this.tried(),
-  }));
+  private readonly mapText = signal(this.filters().text);
 
   protected readonly sort = signal<Sort>(this.store.setting<Sort>('sort') ?? 'number');
   protected readonly view = signal<View>(this.store.setting<View>('view') ?? legacyView());
@@ -129,9 +100,6 @@ export class App {
   protected readonly detail = signal<number | null>(null);
   /** Venue whose marker was just clicked, to highlight it in the list. */
   protected readonly highlighted = signal<number | null>(null);
-  protected readonly now = signal(new Date());
-
-  protected readonly drinks = computed(() => drinkTypes(this.data()?.venues ?? []));
 
   protected readonly filtered = computed(() => this.filter(this.filters()));
   /** The same ones, but with the text in mapText (the map doesn't care about the order). */
@@ -139,37 +107,17 @@ export class App {
     this.filter({ ...this.filters(), text: this.mapText() }),
   );
 
-  /** Schedule status of each venue right now. */
-  protected readonly statuses = computed(() => {
-    const data = this.data();
-    const now = this.now();
-    return new Map(
-      (data?.venues ?? []).map((v) => [v.number, scheduleStatus(v.schedule, now, data!.event)]),
-    );
-  });
-
-  /** Arrival time at each venue from the starting point. */
-  protected readonly arrivals = computed(() => {
-    const origin = this.location.origin();
-    const mode = this.location.travelMode() || undefined;
-    const arrivals = new Map<number, Arrival>();
-    for (const venue of origin ? (this.data()?.venues ?? []) : []) {
-      if (venue.location) arrivals.set(venue.number, arrivalFrom(origin!, venue.location, mode));
-    }
-    return arrivals;
-  });
-
   protected readonly visible = computed(() => {
     const venues = this.filtered();
     switch (this.sort()) {
       case 'nearest': {
-        const arrivals = this.arrivals();
+        const arrivals = this.tapasRoute.arrivals();
         return arrivals.size
           ? sortBy(venues, (v) => arrivals.get(v.number)?.meters ?? Infinity)
           : venues;
       }
       case 'closing': {
-        const statuses = this.statuses();
+        const statuses = this.tapasRoute.statuses();
         return sortBy(venues, (v) => closingKey(statuses.get(v.number)!));
       }
       default:
@@ -178,7 +126,7 @@ export class App {
   });
 
   protected readonly detailVenue = computed(() =>
-    this.data()?.venues.find((v) => v.number === this.detail()),
+    this.tapasRoute.venues().find((v) => v.number === this.detail()),
   );
   protected readonly detailOnly = computed(() => {
     const venue = this.detailVenue();
@@ -193,11 +141,14 @@ export class App {
     // it fails, the map will say so.
     if (this.view() === 'details') loadLeaflet().catch(() => {});
 
-    const clock = setInterval(() => this.now.set(new Date()), 30_000);
-    this.destroyRef.onDestroy(() => clearInterval(clock));
     effect(() => this.store.saveSetting('filters', this.filters()));
     effect((onCleanup) => {
-      const text = this.text();
+      const text = this.searchText();
+      // With the search empty («Limpiar», say) there's no more typing to wait for.
+      if (!text) {
+        this.mapText.set('');
+        return;
+      }
       const delay = setTimeout(() => this.mapText.set(text), MAP_DELAY);
       onCleanup(() => clearTimeout(delay));
     });
@@ -234,10 +185,14 @@ export class App {
    * would filter the whole list again.
    */
   private filter(filters: Filters): Venue[] {
-    return filterVenues(this.data()?.venues ?? [], filters, {
-      favorites: filters.favorites ? this.store.favorites() : NO_MARKS.favorites,
-      ratings: filters.tried ? this.store.ratings() : NO_MARKS.ratings,
-    });
+    return filterVenues(
+      this.tapasRoute.venues(),
+      { ...filters, ...this.range() },
+      {
+        favorites: filters.favorites ? this.store.favorites() : NO_MARKS.favorites,
+        ratings: filters.tried ? this.store.ratings() : NO_MARKS.ratings,
+      },
+    );
   }
 
   /** What scrolls: app-root on touch screens, the document elsewhere (see styles.scss). */
@@ -263,27 +218,6 @@ export class App {
     const target = event.target as Element | null;
     if (target?.closest('.menu, .menu-button')) return;
     this.menuOpen.set(false);
-  }
-
-  /** Venues serving tapas right now. */
-  protected openNow(): void {
-    const date = new Date();
-    this.day.set(weekdayOf(date));
-    this.from.set(date.toTimeString().slice(0, 5));
-    this.to.set('');
-  }
-
-  protected clearFilters(): void {
-    this.text.set('');
-    this.mapText.set('');
-    this.day.set('');
-    this.from.set('');
-    this.to.set('');
-    this.glutenFree.set('');
-    this.drink.set('');
-    this.flavorRoute.set(false);
-    this.favorites.set(false);
-    this.tried.set('');
   }
 
   /** Sorting by distance needs a starting point: if there is none, it asks for the location. */
@@ -329,13 +263,4 @@ export class App {
     const top = number === null && this.view() === 'photos' ? this.galleryScroll : 0;
     afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
   }
-}
-
-/** The route's data, from the request index.html has already made (if not, it is requested now). */
-async function loadRouteData(): Promise<RouteData> {
-  const { routeData } = window as Window & { routeData?: Promise<Response> };
-  const response = await (routeData ?? fetch('data/venues.json'));
-  if (!response.ok) throw new Error(`data/venues.json: ${response.status}`);
-  const data = (await response.json()) as RouteData;
-  return { ...data, venues: sortDrinks(data.venues) };
 }

@@ -46,16 +46,16 @@ en tres pasadas iguales); los recuentos de elementos y de cambios, no.
 
 Con `--cpu 4`:
 
-|                                                                   | Base (cfd87cc)     | Etapa 1            | Etapa 2            | Etapa 3            | Etapa 4             | Etapa 5             |
-| ----------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------- | ------------------- |
-| Primera ficha · LCP · bloqueo (≈ TBT)                             | 664 · 752 · 331 ms | 611 · 728 · 322 ms | 473 · 536 · 235 ms | 465 · 528 · 189 ms | 433 · 532 · 153 ms  | 402 · 492 · 137 ms  |
-| Elementos en la página                                            | 8.287              | 8.287              | 8.288              | **3.508**          | 3.510               | 3.510               |
-| Scroll de 52.000 px por la lista: trabajo (layouts)               | 2.162 ms (×112)    | 1.794 ms (×113)    | 1.711 ms (×112)    | 1.643 ms (×111)    | 1.809 ms (×107–116) | **1.624 ms** (×112) |
-| …de ello, JavaScript                                              | 63 ms              | 46 ms              | **24 ms**          | 26 ms              | 29 ms               | 24 ms               |
-| …fotogramas de más de 25 ms                                       | 29                 | 14                 | 8                  | 6–13               | 14                  | **8**               |
-| Favorito con un popup abierto: ¿sigue abierto? ¿se mueve el mapa? | no · sí            | **sí · no**        | sí · no            | sí · no            | sí · no             | sí · no             |
-| …veces que se rehacen los marcadores                              | 1                  | **0**              | 0                  | 0                  | 0                   | 0                   |
-| Escribir «queso»: cambios en los marcadores                       | 5                  | **1**              | 1                  | 1                  | 1                   | 1                   |
+|                                                                   | Base (cfd87cc)     | Etapa 1            | Etapa 2            | Etapa 3            | Etapa 4             | Etapa 5             | Etapa 6            |
+| ----------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ | ------------------- | ------------------- | ------------------ |
+| Primera ficha · LCP · bloqueo (≈ TBT)                             | 664 · 752 · 331 ms | 611 · 728 · 322 ms | 473 · 536 · 235 ms | 465 · 528 · 189 ms | 433 · 532 · 153 ms  | 402 · 492 · 137 ms  | 415 · 516 · 146 ms |
+| Elementos en la página                                            | 8.287              | 8.287              | 8.288              | **3.508**          | 3.510               | 3.510               | 3.513              |
+| Scroll de 52.000 px por la lista: trabajo (layouts)               | 2.162 ms (×112)    | 1.794 ms (×113)    | 1.711 ms (×112)    | 1.643 ms (×111)    | 1.809 ms (×107–116) | **1.624 ms** (×112) | 1.484 ms (×112)    |
+| …de ello, JavaScript                                              | 63 ms              | 46 ms              | **24 ms**          | 26 ms              | 29 ms               | 24 ms               | 19 ms              |
+| …fotogramas de más de 25 ms                                       | 29                 | 14                 | 8                  | 6–13               | 14                  | **8**               | 7                  |
+| Favorito con un popup abierto: ¿sigue abierto? ¿se mueve el mapa? | no · sí            | **sí · no**        | sí · no            | sí · no            | sí · no             | sí · no             | sí · no            |
+| …veces que se rehacen los marcadores                              | 1                  | **0**              | 0                  | 0                  | 0                   | 0                   | 0                  |
+| Escribir «queso»: cambios en los marcadores                       | 5                  | **1**              | 1                  | 1                  | 1                   | 1                   | 1                  |
 
 Los layouts que quedan en el scroll no son de la app, sino de las fotos diferidas al cargarse:
 sin fotos, o en una segunda pasada con ellas ya cargadas, se quedan en 1–4. Cuestan medio
@@ -73,14 +73,18 @@ pasadas), seguramente porque hay muchos menos píxeles que decodificar.
 
 Con `--cpu 4 --network` (mediana de 3 pasadas):
 
-|                                 | Etapa 3                   | Etapas 4 y 5                     |
-| ------------------------------- | ------------------------- | -------------------------------- |
-| JS inicial (transferido)        | 125,7 kB                  | **91,6 kB** + 37,6 kB de Leaflet |
-| `venues.json` empieza a bajar a | 1.172 ms, al acabar el JS | **177 ms**, a la vez que el JS   |
-| Primera ficha                   | 1.618 ms                  | **1.311 ms**                     |
-| LCP                             | 1.708 ms                  | **1.360 ms**                     |
-| Marcadores del mapa             | 1.618 ms                  | 1.488 ms                         |
-| Bloqueo                         | 172 ms                    | **122 ms**                       |
+|                                 | Etapa 3                   | Etapas 4 y 5                     | Etapa 6                          |
+| ------------------------------- | ------------------------- | -------------------------------- | -------------------------------- |
+| JS inicial (transferido)        | 125,7 kB                  | **91,6 kB** + 37,6 kB de Leaflet | **96,9 kB** + 37,6 kB de Leaflet |
+| `venues.json` empieza a bajar a | 1.172 ms, al acabar el JS | **177 ms**, a la vez que el JS   | 176 ms, a la vez que el JS       |
+| Primera ficha                   | 1.618 ms                  | **1.311 ms**                     | 1.295 ms                         |
+| LCP                             | 1.708 ms                  | **1.360 ms**                     | 1.336 ms                         |
+| Marcadores del mapa             | 1.618 ms                  | 1.488 ms                         | 1.508 ms                         |
+| Bloqueo                         | 172 ms                    | **122 ms**                       | 121 ms                           |
+
+La etapa 6 no busca mejorar estas filas y salen dentro del ruido (mediana de 3 pasadas; ese mismo día,
+la etapa 5 da 401 · 496 · 145 ms), con 5 kB más de JS por Signal Forms (decisión 6). Lo que cambia es
+lo que pasa cada minuto: está en la propia etapa.
 
 ---
 
@@ -277,22 +281,54 @@ ampliar. Con esa descarga retrasada 2 s, el visor enseña la miniatura desde el 
 
 ## Etapa 6 · Estado compartido y una `App` más pequeña
 
-**Qué pasa.** `App` (318 líneas) se ocupa de los filtros, el orden, la vista, el historial, el scroll
-y el reloj, y `statuses`, `arrivals` y `now` se pasan como inputs a `VenueCard`, `VenueMap`, `Gallery`
-y `ScheduleStatus` en cada sitio donde se usan.
+**Qué pasaba.** `App` (341 líneas) se ocupaba de los filtros, el orden, la vista, el historial, el
+scroll y el reloj, y `statuses`, `arrivals` y `now` se pasaban como inputs a `VenueCard`, `VenueMap`,
+`Gallery` y `ScheduleStatus` en cada sitio donde se usan. Ahora tiene 266.
 
-- [ ] Servicio `Clock` con un `now` que cambia al empezar cada minuto. Ahora es un `setInterval` de
-      30 s ([app.ts](src/app/app.ts)): el estado puede ir hasta 30 s tarde y se recalcula
-      el doble de veces de lo necesario.
-- [ ] Servicio con los datos de la ruta (`data`, `statuses`, `arrivals`) que cada componente inyecta,
-      en vez de recibirlos por inputs.
-- [ ] `statuses`: reutilizar el objeto de un local si su estado no ha cambiado, para que no se
-      actualicen las 60 pastillas y los marcadores cada minuto.
-- [ ] Componente `Filters` con el formulario ([app.html](src/app/app.html)) y un único
-      `signal<Filters>`. Signal Forms (`form()` de `@angular/forms/signals`, estable en 22) sustituye
-      las nueve señales, el `computed` y `clearFilters()`.
+- [x] Servicio `Clock` ([clock.ts](src/app/clock.ts)): `now` cambia al empezar cada minuto, en vez del
+      `setInterval` de 30 s. Se pone al día al volver a la página, porque con el móvil bloqueado los
+      temporizadores se paran.
+- [x] Servicio `TapasRoute` ([tapas-route.ts](src/app/tapas-route.ts)) con `data`, `venues`, `statuses`
+      y `arrivals`, que cada componente inyecta. `ScheduleStatus` solo recibe el número del local.
+- [x] Cambio sobre el plan: no se reutiliza el objeto de cada local, porque no serviría de nada.
+      `minutes` cambia cada minuto: en 16 momentos de dos días distintos, con los datos reales, no
+      sale igual ninguno de los 60. Lo que sí se repite es lo que se ve: de un minuto al siguiente no
+      cambió ningún color y el texto, en 8–52 locales. Por eso el mapa depende de `kinds`, un
+      `computed` con los colores, y `ScheduleStatus` compara su texto antes de actualizarse.
+- [x] Componente `FiltersPanel` ([filters.ts](src/app/filters/filters.ts)) y un único `signal<Filters>`
+      en `App`, porque el formulario desaparece en la vista de un local y los filtros se quedan.
+      Signal Forms sustituye las nueve señales, el `computed` y `clearFilters()`.
+- [x] Cambio sobre el plan: `OriginPanel` y el selector de orden también dejan `FormsModule`. Con las
+      dos librerías a la vez, el bundle inicial subía de 340 a 376 kB (ahora, 356 kB: decisión 6).
 - [ ] Quitar [legacy-storage.ts](src/app/legacy-storage.ts), con sus llamadas en `store.ts`, `theme.ts`
-      y `app.ts`, cuando nadie pueda tener ya datos de una versión anterior.
+      y `app.ts`, cuando nadie pueda tener ya datos de una versión anterior. Pendiente a propósito: la
+      migración es de esta misma semana y la ruta sigue hasta el 7 de noviembre, así que quien no haya
+      abierto la app desde entonces perdería sus valoraciones.
+- [ ] Probar en Safari, en el Mac y en el iPhone, los filtros (sobre todo el selector de hora, con la
+      hora que se superpone cuando falta una) y la dirección de partida: Signal Forms solo escucha
+      `input`, y de momento solo se ha probado en Chromium.
+
+Cada vez que cambia la hora, en «Detalles» y dejando la página quieta 125 s:
+
+|                                  | Antes                   | Ahora                               |
+| -------------------------------- | ----------------------- | ----------------------------------- |
+| Cuándo                           | cada 30 s, a destiempo  | a los 10–20 ms de empezar el minuto |
+| Clases tocadas en los marcadores | 300 cada vez            | **0**                               |
+| Pastillas que cambian de texto   | 31, una vez de cada dos | 31                                  |
+| JavaScript en total              | 57,7 ms                 | **17,8 ms**                         |
+
+**Comprobado.** 81 tests (13 nuevos); rompiendo a propósito cada comportamiento nuevo (8 casos), los
+tests fallan. En Chromium, con teclado y ratón de verdad:
+
+- El mismo guion en el build anterior y en este, con 30 observaciones (buscar, día, horas, selectores,
+  casillas, recargar, orden, dirección, abrir un local y volver), sin errores en la consola. Solo
+  cambiaba una: al borrar un trozo de una hora se mantenía la última válida. Se corrigió después, en
+  «Horas de los filtros» (arreglos fuera del plan), para que una hora a medias no se use.
+- Una bebida guardada se recupera al recargar, aunque sus opciones lleguen después, con los datos.
+- Filtros, orden, cabecera del horario y galería, idénticos píxel a píxel a 1.280 y 390 px.
+
+Un cambio pequeño: el mapa ya no espera medio segundo si se vacía la búsqueda a mano; antes, solo con
+«Limpiar».
 
 ## Etapa 7 · Reutilización y estilos
 
@@ -382,6 +418,21 @@ es quedarse con una versión vieja: habría que avisar cuando haya una nueva.
 - [x] **Commits con commitizen.** `commitizen`, `cz-emoji`, `commitlint` y `husky`, con la misma
       configuración que en chess-pecker ([.czrc](.czrc), [.commitlintrc.mjs](.commitlintrc.mjs) y
       [.husky/](.husky/)): `git commit` sin mensaje, o con uno que no vale, abre el asistente.
+- [x] **Horas de los filtros.** Con solo «Desde», el rango llega hasta las 00:00 de esa noche (antes,
+      valía solo esa hora exacta). Con solo «Hasta», empieza ahora si es para hoy y esa hora aún no ha
+      pasado; si no, con el día, porque un inicio posterior al final no tendría sentido. La hora que
+      falta se ve en gris dentro del campo y, si es «ahora», sigue al reloj; la lista solo se filtra de
+      nuevo cuando cambia (`timeRange()` en [venues.ts](src/app/venues.ts)). `<input type="time">` no
+      admite `placeholder`, así que se superpone en [time-field.ts](src/app/filters/time-field.ts), un
+      control propio para Signal Forms. Una hora a medias ya no se usa: cuenta como vacía, lo escrito
+      sigue en el campo para terminarlo y «Limpiar» lo borra, que antes no lo hacía. «Abierto ahora»
+      pone la misma hora en los dos extremos, que sigue significando esa hora exacta. Los campos
+      deshabilitados tienen fondo propio: con solo la opacidad eran una caja blanca sobre blanco.
+      95 tests (14 nuevos) y 15 de 15 roturas a propósito detectadas. En Chromium, con teclado de
+      verdad y horas en las que cada regla da un número distinto: el lunes desde las 12:00 salen 21
+      locales (8 con la regla anterior), hasta las 15:30, 12, y con «Hasta» a medias, otra vez 21 (12
+      con la anterior). Con el reloj congelado, a 1.280 y 390 px, lo único que cambia píxel a píxel
+      son los dos campos deshabilitados. El JS inicial sube 0,5 kB, a 97,4 kB transferidos.
 
 ---
 
@@ -395,3 +446,5 @@ es quedarse con una versión vieja: habría que avisar cuando haya una nueva.
    sustituiría el `pushState` a mano ([app.ts](src/app/app.ts)). En GitHub Pages
    hace falta un `404.html` que cargue la app. No mejora el rendimiento; es una funcionalidad.
 5. **Etapas 9 y 10**: ¿entran o no?
+6. ~~**Signal Forms** (etapa 6)~~: resuelta, se mantiene por usar lo que ofrece Angular, aunque el JS
+   inicial suba 5 kB transferidos.

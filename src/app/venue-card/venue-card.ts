@@ -9,15 +9,15 @@ import {
   signal,
 } from '@angular/core';
 
+import { Clock } from '../clock';
 import { Collapsible } from '../collapsible/collapsible';
 import { Favorite } from '../favorite/favorite';
 import { Icon } from '../icon/icon';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
+import { TapasRoute } from '../tapas-route';
 import {
-  Arrival,
-  Status,
   Venue,
   WEEKDAYS,
   Weekday,
@@ -38,16 +38,13 @@ export class VenueCard {
   readonly venue = input.required<Venue>();
   /** Day chosen in the filters, to highlight its schedule. */
   readonly day = input<Weekday | ''>('');
-  /** Schedule status right now. */
-  readonly status = input<Status>();
-  readonly now = input(new Date());
-  /** Arrival time from the starting point, if one was chosen. */
-  readonly arrival = input<Arrival | null>(null);
   readonly showOnMap = output<void>();
 
+  private readonly tapasRoute = inject(TapasRoute);
+  private readonly clock = inject(Clock);
   protected readonly weekdays = WEEKDAYS;
   /** To highlight today in the schedule. */
-  protected readonly today = computed(() => weekdayOf(this.now()));
+  protected readonly today = computed(() => weekdayOf(this.clock.now()));
   /** Each day with its slots split into columns (morning · afternoon). */
   protected readonly week = computed(() =>
     WEEKDAYS.map((day) => ({ ...day, ...splitSlots(this.venue().schedule[day.id]) })),
@@ -75,7 +72,7 @@ export class VenueCard {
   );
 
   protected readonly arrivalText = computed(() => {
-    const arrival = this.arrival();
+    const arrival = this.tapasRoute.arrivals().get(this.venue().number);
     if (!arrival) return undefined;
     const onFoot = arrival.mode === 'walking';
     return {

@@ -1,11 +1,12 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
 import { Favorite } from '../favorite/favorite';
 import { Icon } from '../icon/icon';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
-import { Arrival, Status, Venue, formatDistance, formatDuration } from '../venues';
+import { TapasRoute } from '../tapas-route';
+import { Venue, formatDistance, formatDuration } from '../venues';
 
 /**
  * The «Fotos» view: each venue's name with its seals and favorite heart, how long it takes to get
@@ -19,8 +20,7 @@ import { Arrival, Status, Venue, formatDistance, formatDuration } from '../venue
     <ul>
       @for (card of cards(); track card.venue.number) {
         @let venue = card.venue;
-        @let arrival = arrivals().get(venue.number);
-        @let status = statuses().get(venue.number);
+        @let arrival = tapasRoute.arrivals().get(venue.number);
         <li>
           <div class="heading">
             <span class="number">{{ venue.number }}</span>
@@ -38,20 +38,16 @@ import { Arrival, Status, Venue, formatDistance, formatDuration } from '../venue
                 }
                 <app-favorite [venue]="venue" />
               </div>
-              @if (arrival || status) {
-                <span class="data">
-                  @if (arrival) {
-                    <span class="arrival">
-                      <app-icon [name]="arrival.mode" />
-                      {{ formatDuration(arrival.minutes) }} ·
-                      {{ formatDistance(arrival.meters) }}
-                    </span>
-                  }
-                  @if (status) {
-                    <app-schedule-status [status]="status" [now]="now()" [arrival]="arrival" />
-                  }
-                </span>
-              }
+              <span class="data">
+                @if (arrival) {
+                  <span class="arrival">
+                    <app-icon [name]="arrival.mode" />
+                    {{ formatDuration(arrival.minutes) }} ·
+                    {{ formatDistance(arrival.meters) }}
+                  </span>
+                }
+                <app-schedule-status [venue]="venue.number" />
+              </span>
             </div>
           </div>
           <div class="photos">
@@ -217,11 +213,9 @@ import { Arrival, Status, Venue, formatDistance, formatDuration } from '../venue
 })
 export class Gallery {
   readonly venues = input.required<readonly Venue[]>();
-  readonly statuses = input<ReadonlyMap<number, Status>>(new Map());
-  readonly arrivals = input<ReadonlyMap<number, Arrival>>(new Map());
-  readonly now = input(new Date());
   readonly open = output<number>();
 
+  protected readonly tapasRoute = inject(TapasRoute);
   protected readonly formatDuration = formatDuration;
   protected readonly formatDistance = formatDistance;
 

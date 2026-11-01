@@ -15,12 +15,12 @@ import {
 } from '@angular/core';
 import type * as L from 'leaflet';
 
+import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
 import { directionsLink, findRoute } from '../routing';
+import { TapasRoute } from '../tapas-route';
 import {
-  Arrival,
   Coordinates,
-  Status,
   StatusKind,
   Venue,
   formatDuration,
@@ -76,6 +76,14 @@ function sameVenues(a: readonly Venue[], b: readonly Venue[]): boolean {
   if (a.length !== b.length) return false;
   const numbers = new Set(b.map((venue) => venue.number));
   return a.every((venue) => numbers.has(venue.number));
+}
+
+/** Whether each venue is the same color in both. */
+function sameKinds(
+  a: ReadonlyMap<number, StatusKind>,
+  b: ReadonlyMap<number, StatusKind>,
+): boolean {
+  return a.size === b.size && [...a].every(([number, kind]) => b.get(number) === kind);
 }
 
 /** Pixels in 1rem (fewer on narrow screens, see styles.scss). */
@@ -243,14 +251,13 @@ export class VenueMap {
   readonly venues = input.required<readonly Venue[]>();
   /** Starting point, if one was chosen. */
   readonly origin = input<Coordinates | null>(null);
-  /** Schedule status and arrival time of each venue, for the popup. */
-  readonly statuses = input<ReadonlyMap<number, Status>>(new Map());
-  readonly arrivals = input<ReadonlyMap<number, Arrival>>(new Map());
-  readonly now = input(new Date());
   /** Venue to always draw the route to (in the venue view); otherwise, the open popup's. */
   readonly routeTo = input<number | null>(null);
   /** Number of the venue whose marker was clicked. */
   readonly venueSelect = output<number>();
+
+  private readonly tapasRoute = inject(TapasRoute);
+  private readonly clock = inject(Clock);
 
   /** Full screen. */
   protected readonly large = signal(false);
@@ -273,11 +280,28 @@ export class VenueMap {
     const number = this.active();
     return this.venues().find((venue) => venue.number === number && venue.location);
   });
+  /**
+   * Each marker's color. Every minute there are new statuses, because the minutes left change, but
+   * this only changes when some color does: until then, the markers aren't touched.
+   */
+  private readonly kinds = computed(
+    () => {
+      const arrivals = this.tapasRoute.arrivals();
+      return new Map(
+        [...this.tapasRoute.statuses()].map(([number, status]) => [
+          number,
+          statusKind(status, arrivals.get(number)),
+        ]),
+      );
+    },
+    { equal: sameKinds },
+  );
 
   protected readonly externalLink = computed(() => {
     const venue = this.destination();
     if (!venue?.location) return null;
-    return directionsLink(venue.location, venue.name, this.arrivals().get(venue.number)?.mode);
+    const arrival = this.tapasRoute.arrivals().get(venue.number);
+    return directionsLink(venue.location, venue.name, arrival?.mode);
   });
 
   private readonly container = viewChild.required<ElementRef<HTMLElement>>('container');
@@ -330,7 +354,7 @@ export class VenueMap {
       const map = this.map();
       const origin = this.origin();
       const venue = this.destination();
-      const arrival = venue && this.arrivals().get(venue.number);
+      const arrival = venue && this.tapasRoute.arrivals().get(venue.number);
       const fixed = this.routeTo() !== null;
       if (!map) return;
       this.routeLayer.clearLayers();
@@ -372,13 +396,11 @@ export class VenueMap {
       const map = this.map();
       const venues = this.placed();
       const active = this.active();
-      const statuses = this.statuses();
-      const arrivals = this.arrivals();
+      const kinds = this.kinds();
       if (!map) return;
       untracked(() => this.paint(map, venues));
       for (const [number, marker] of this.markers) {
-        const status = statuses.get(number);
-        const kind = status && statusKind(status, arrivals.get(number));
+        const kind = kinds.get(number);
         const classes = marker.getElement()?.classList;
         for (const other of STATUS_KINDS) classes?.toggle(other, other === kind);
         classes?.toggle('active', number === active);
@@ -554,16 +576,16 @@ export class VenueMap {
     div.append(title, address);
     const row = document.createElement('div');
     row.className = 'popup-status';
-    const arrival = this.arrivals().get(venue.number);
+    const arrival = this.tapasRoute.arrivals().get(venue.number);
     if (arrival) {
       const time = document.createElement('span');
       time.className = 'popup-arrival';
       time.append(createIcon(arrival.mode), formatDuration(arrival.minutes));
       row.append(time);
     }
-    const status = this.statuses().get(venue.number);
+    const status = this.tapasRoute.statuses().get(venue.number);
     if (status) {
-      const { text, kind, warning } = statusBadge(status, this.now(), arrival);
+      const { text, kind, warning } = statusBadge(status, this.clock.now(), arrival);
       const badge = document.createElement('span');
       badge.className = `schedule-status ${kind}`;
       badge.textContent = text;

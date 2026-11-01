@@ -1,6 +1,8 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 
-import { Arrival, Status, statusBadge } from '../venues';
+import { Clock } from '../clock';
+import { TapasRoute } from '../tapas-route';
+import { statusBadge } from '../venues';
 
 /** "cierra en…" / "abre en…", in red if it closes before you can get there (styles in styles.scss). */
 @Component({
@@ -12,9 +14,20 @@ import { Arrival, Status, statusBadge } from '../venues';
   },
 })
 export class ScheduleStatus {
-  readonly status = input.required<Status>();
-  readonly now = input.required<Date>();
-  readonly arrival = input<Arrival | null | undefined>(null);
+  /** The venue's number. */
+  readonly venue = input.required<number>();
 
-  protected readonly badge = computed(() => statusBadge(this.status(), this.now(), this.arrival()));
+  private readonly tapasRoute = inject(TapasRoute);
+  private readonly clock = inject(Clock);
+
+  /** Every minute there are new statuses, but only the badges whose text changes get updated. */
+  protected readonly badge = computed(
+    () =>
+      statusBadge(
+        this.tapasRoute.statuses().get(this.venue())!,
+        this.clock.now(),
+        this.tapasRoute.arrivals().get(this.venue()),
+      ),
+    { equal: (a, b) => a.text === b.text && a.kind === b.kind && a.warning === b.warning },
+  );
 }

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormField, form } from '@angular/forms/signals';
 
 import { Icon } from '../icon/icon';
 import { UserLocation } from '../user-location';
@@ -7,7 +7,7 @@ import { UserLocation } from '../user-location';
 /** Chooses the starting point: the browser's location or an address typed by hand. */
 @Component({
   selector: 'app-origin',
-  imports: [FormsModule, Icon],
+  imports: [FormField, Icon],
   template: `
     @if (location.origin(); as origin) {
       <p class="from">
@@ -15,7 +15,7 @@ import { UserLocation } from '../user-location';
         <span
           >Desde <strong>{{ origin.label }}</strong></span
         >
-        <select aria-label="Cómo llegar" [(ngModel)]="location.travelMode">
+        <select aria-label="Cómo llegar" [formField]="travelMode">
           <option value="">Según la distancia</option>
           <option value="walking">A pie</option>
           <option value="driving">En coche</option>
@@ -25,16 +25,15 @@ import { UserLocation } from '../user-location';
         </button>
       </p>
     } @else {
-      <form (ngSubmit)="location.search(address())">
+      <form (submit)="search($event)">
         <button type="button" (click)="location.useMyLocation()" [disabled]="location.searching()">
           <app-icon name="location" /> Mi ubicación
         </button>
         <input
           type="search"
-          name="address"
           placeholder="o escribe una dirección…"
           aria-label="Dirección de partida"
-          [(ngModel)]="address"
+          [formField]="addressField"
         />
         <button
           type="submit"
@@ -91,4 +90,12 @@ import { UserLocation } from '../user-location';
 export class OriginPanel {
   protected readonly location = inject(UserLocation);
   protected readonly address = signal('');
+  protected readonly addressField = form(this.address);
+  protected readonly travelMode = form(this.location.travelMode);
+
+  /** So that the browser doesn't send the form and reload the page. */
+  protected search(event: Event): void {
+    event.preventDefault();
+    this.location.search(this.address());
+  }
 }

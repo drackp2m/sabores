@@ -62,9 +62,7 @@
   <details #scheduleDetails>
     <summary [class.open]="scheduleOpen()" (click)="toggleSchedule($event, scheduleDetails)">
       <span>Horario de tapas</span>
-      @if (status(); as status) {
-        <app-schedule-status [status]="status" [now]="now()" [arrival]="arrival()" />
-      }
+      <app-schedule-status [venue]="venue().number" />
     </summary>
     @if (scheduleCreated()) {
       <dl>

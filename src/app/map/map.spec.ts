@@ -1,7 +1,9 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import * as L from 'leaflet';
 
-import { Status, Venue } from '../venues';
+import { TapasRoute } from '../tapas-route';
+import { Arrival, Status, Venue } from '../venues';
 import { VenueMap } from './map';
 
 // jsdom has no ResizeObserver or scrollIntoView (focus).
@@ -40,8 +42,14 @@ const [ONE, TWO, THREE] = [1, 2, 3].map(venue);
 describe('VenueMap', () => {
   // In jsdom the map has no size: only the number of times it frames gets counted.
   let fitBounds: ReturnType<typeof vi.spyOn>;
+  const statuses = signal<ReadonlyMap<number, Status>>(new Map());
+  const arrivals = signal<ReadonlyMap<number, Arrival>>(new Map());
   beforeEach(() => {
     fitBounds = vi.spyOn(L.Map.prototype, 'fitBounds').mockReturnThis();
+    statuses.set(new Map());
+    TestBed.configureTestingModule({
+      providers: [{ provide: TapasRoute, useValue: { statuses, arrivals } }],
+    });
   });
   afterEach(() => fitBounds.mockRestore());
 
@@ -109,16 +117,34 @@ describe('VenueMap', () => {
     const soon: Status = { open: true, minutes: 20 };
     const closed: Status = { open: false, minutes: 60 };
     /** Venue 1's, venue 2's… */
-    const statuses = (...list: Status[]) => new Map(list.map((status, i) => [i + 1, status]));
-    const { change, marker } = await create([ONE]);
-    await change('statuses', statuses(open, closed));
+    const setStatuses = (...list: Status[]) =>
+      statuses.set(new Map(list.map((status, i) => [i + 1, status])));
+    const { fixture, change, marker } = await create([ONE]);
+    setStatuses(open, closed);
+    await fixture.whenStable();
     expect(marker(1)!.classList).toContain('open');
 
     await change('venues', [ONE, TWO]);
     expect(marker(2)!.classList).toContain('closed');
-    await change('statuses', statuses(soon, closed));
+    setStatuses(soon, closed);
+    await fixture.whenStable();
     expect(marker(1)!.classList).toContain('soon');
     expect(marker(1)!.classList).not.toContain('open');
     expect(fitBounds).toHaveBeenCalledTimes(2);
+  });
+
+  it('doesn’t touch the markers when the minutes change but no color does', async () => {
+    const { fixture, marker } = await create([ONE]);
+    statuses.set(new Map([[1, { open: true, minutes: 120 }]]));
+    await fixture.whenStable();
+    const toggle = vi.spyOn(marker(1)!.classList, 'toggle');
+
+    statuses.set(new Map([[1, { open: true, minutes: 119 }]]));
+    await fixture.whenStable();
+    expect(toggle).not.toHaveBeenCalled();
+
+    statuses.set(new Map([[1, { open: true, minutes: 30 }]]));
+    await fixture.whenStable();
+    expect(marker(1)!.classList).toContain('soon');
   });
 });

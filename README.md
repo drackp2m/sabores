@@ -108,8 +108,8 @@ configuration is in `.devcontainer/zsh/` (`ZDOTDIR`): that's where `.p10k.zsh` (
 `.aliases` and the history go. To install more packages: `sudo apk add …`.
 
 The app shows the venues in a list and on a map, with filters by text (venue, tapa, ingredient, street or
-drink), day and time range when they serve tapas («Abierto ahora» fills in day and time), gluten-free
-tapas (or «bajo petición»), drink type and the Castelló Ruta de Sabor seal. Each tapa's seals are icons
+drink), day and time range when they serve tapas («Abierto ahora» fills in day and time; with only one
+end of the range, the other is shown in grey: up to midnight, or from now on), gluten-free tapas (or «bajo petición»), drink type and the Castelló Ruta de Sabor seal. Each tapa's seals are icons
 (crossed-out wheat in green or amber and the route's logo, in `public/flavor-route.svg`) with a legend
 above the list. Descriptions are clamped to three lines with «Ver más» and, on clicking a photo, it
 enlarges from its place over the blurred background. Drinks, in the filter and on each card, go from most
@@ -130,7 +130,9 @@ Code, comments, file names and commands are in English; only the text the app sh
 ```
 src/app/
   venues.ts          types of venues.json and filtering logic (tests in venues.spec.ts)
-  app.*              header, filters, list and map
+  app.*              header, list and map, view and history
+  tapas-route.ts     the route's data, each venue's schedule status and arrival time
+  clock.ts           the current time, which changes as each minute starts
   store.ts           what's saved on the device: ratings, favorites and settings, in IndexedDB
   legacy-storage.ts  brings over what older versions saved (under Spanish names)
   theme.ts           light, dark or system theme
@@ -139,6 +141,7 @@ src/app/
   venue-card/        a venue's card with its tapas, notices and schedule
   gallery/           the «Fotos» view
   map/               Leaflet map with the filtered venues
+  filters/           the filters' form
   origin/            panel to choose the starting point
   schedule-status/   «cierra en… / abre en…» (in red if you can't get there in time)
   seal/              gluten-free and Ruta de Sabor icons

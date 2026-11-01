@@ -68,10 +68,7 @@
   <main class="detail content">
     <app-venue-card
       [venue]="venue"
-      [day]="day()"
-      [status]="statuses().get(venue.number)"
-      [now]="now()"
-      [arrival]="arrivals().get(venue.number) ?? null"
+      [day]="filters().day"
       (showOnMap)="detailMap.focus(venue.number)"
     />
     <app-map
@@ -80,97 +77,13 @@
       [venues]="detailOnly()"
       [routeTo]="venue.number"
       [origin]="location.origin()"
-      [statuses]="statuses()"
-      [arrivals]="arrivals()"
-      [now]="now()"
     />
     <button type="button" class="back" (click)="goBack()"><app-icon name="back" />Volver</button>
   </main>
 } @else {
-  <section class="filters" aria-label="Filtros">
-    <div class="content">
-      <label class="field text">
-        <span>Buscar</span>
-        <input
-          type="search"
-          placeholder="Nº, local, tapa, ingrediente, calle…"
-          [(ngModel)]="text"
-        />
-      </label>
+  <app-filters [(filters)]="filters" [range]="range()" />
 
-      <label class="field">
-        <span>Día</span>
-        <select [(ngModel)]="day">
-          <option value="">Cualquiera</option>
-          @for (d of weekdays; track d.id) {
-            <option [value]="d.id">{{ d.name }}</option>
-          }
-        </select>
-      </label>
-
-      <div class="field time" role="group" aria-labelledby="time-label">
-        <span id="time-label">Hora</span>
-        <div class="range">
-          <input type="time" aria-label="Desde" [(ngModel)]="from" [disabled]="!day()" />
-          <span aria-hidden="true">–</span>
-          <input type="time" aria-label="Hasta" [(ngModel)]="to" [disabled]="!day()" />
-        </div>
-      </div>
-
-      <label class="field">
-        <span>Sin gluten</span>
-        <select [(ngModel)]="glutenFree">
-          <option value="">Indiferente</option>
-          <option value="yes">Sin gluten</option>
-          <option value="optional">Bajo petición</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>Bebida</span>
-        <select [(ngModel)]="drink">
-          <option value="">Cualquiera</option>
-          @for (d of drinks(); track d.type) {
-            <option [value]="d.type">{{ d.type }} ({{ d.venues }})</option>
-          }
-        </select>
-      </label>
-
-      <label class="field">
-        <span>Probadas</span>
-        <select title="Las tapas con estrellas cuentan como probadas" [(ngModel)]="tried">
-          <option value="">Indiferente</option>
-          <option value="none">Ninguna probada</option>
-          <option value="some">Alguna probada</option>
-          <option value="pending">Alguna sin probar</option>
-          <option value="all">Todas probadas</option>
-        </select>
-      </label>
-
-      <div class="field only" role="group" aria-labelledby="only-label">
-        <span id="only-label">Mostrar solo</span>
-        <div class="checkboxes">
-          <label class="control">
-            <input type="checkbox" [(ngModel)]="favorites" />
-            <app-icon class="heart" name="heart" />
-            Favoritos
-          </label>
-          <label class="control" title="Castelló Ruta de Sabor">
-            <input type="checkbox" [(ngModel)]="flavorRoute" />
-            <app-seal kind="flavor-route" aria-hidden="true" />
-            Ruta de Sabor
-          </label>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button type="button" (click)="openNow()">Abierto ahora</button>
-        <button type="button" class="secondary" (click)="clearFilters()">Limpiar</button>
-      </div>
-    </div>
-  </section>
-
-  @if (data(); as route) {
+  @if (tapasRoute.data(); as data) {
     <main class="content">
       <div class="summary">
         <p class="legend">
@@ -178,12 +91,12 @@
           <span><app-seal kind="on-request" aria-hidden="true" />Bajo petición</span>
           <span><app-seal kind="flavor-route" aria-hidden="true" />Ruta de Sabor</span>
         </p>
-        <p>{{ visible().length }} de {{ route.venues.length }} locales</p>
+        <p>{{ visible().length }} de {{ data.venues.length }} locales</p>
       </div>
 
       <label class="sort">
         <span>Ordenar por</span>
-        <select [ngModel]="sort()" (ngModelChange)="changeSort($event)">
+        <select [value]="sort()" (change)="changeSort($any($event.target).value)">
           <option value="number">Número</option>
           <option value="nearest">Cercanía</option>
           <option value="closing">Cierre más próximo</option>
@@ -201,9 +114,6 @@
             class="map"
             [venues]="onMap()"
             [origin]="location.origin()"
-            [statuses]="statuses()"
-            [arrivals]="arrivals()"
-            [now]="now()"
             (venueSelect)="showInList($event)"
           />
 
@@ -213,10 +123,7 @@
                 [attr.id]="'venue-' + venue.number"
                 [class.highlighted]="highlighted() === venue.number"
                 [venue]="venue"
-                [day]="day()"
-                [status]="statuses().get(venue.number)"
-                [now]="now()"
-                [arrival]="arrivals().get(venue.number) ?? null"
+                [day]="filters().day"
                 (showOnMap)="map.focus(venue.number)"
               />
             } @empty {
@@ -226,19 +133,13 @@
         </div>
       } @else {
         <div #scrollTopMark class="scroll-top-mark"></div>
-        <app-gallery
-          [venues]="visible()"
-          [statuses]="statuses()"
-          [arrivals]="arrivals()"
-          [now]="now()"
-          (open)="openVenue($event)"
-        />
+        <app-gallery [venues]="visible()" (open)="openVenue($event)" />
         @if (!visible().length) {
           <p class="message">Ningún local cumple los filtros.</p>
         }
       }
     </main>
-  } @else if (load.error()) {
+  } @else if (tapasRoute.error()) {
     <p class="message error">No se han podido cargar los datos (<code>data/venues.json</code>).</p>
   } @else {
     <p class="message">Cargando locales…</p>

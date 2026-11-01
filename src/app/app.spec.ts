@@ -1,11 +1,13 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import * as L from 'leaflet';
 
 import { App } from './app';
+import { Clock } from './clock';
 import { Store } from './store';
-import { RouteData, Venue } from './venues';
+import { NO_FILTERS, RouteData, TimeSlot, Venue } from './venues';
 
 // jsdom has no ResizeObserver (collapsible text in the cards, map), IntersectionObserver (scroll-to-top
 // button), animate or getAnimations (photo viewer, stars, heart) or matchMedia. No IndexedDB either:
@@ -265,11 +267,11 @@ describe('App', () => {
       .find((f) => f.textContent!.includes('Probadas'))!
       .querySelector('select')!;
     tried.value = 'pending';
-    tried.dispatchEvent(new Event('change'));
+    tried.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     expect(names()).toEqual(['CÚPULA']);
     tried.value = 'all';
-    tried.dispatchEvent(new Event('change'));
+    tried.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     expect(names()).toEqual(['ORIGEN']);
 
@@ -307,6 +309,11 @@ describe('App', () => {
     await fixture.whenStable();
     expect(markers()).toBe(1);
     expect(fitBounds).toHaveBeenCalledTimes(2);
+
+    // With «Limpiar» there's nothing to wait for.
+    await press('.actions button', 'Limpiar');
+    expect(search.value).toBe('');
+    expect(markers()).toBe(2);
     fitBounds.mockRestore();
   });
 
@@ -325,6 +332,164 @@ describe('App', () => {
     const { el } = await start();
     expect(el.querySelector<HTMLInputElement>('.field.text input')!.value).toBe('cúpula');
     expect(el.querySelectorAll('app-gallery li').length).toBe(1);
+  });
+
+  it('shows a saved drink even though its option arrives with the data', async () => {
+    TestBed.inject(Store).saveSetting('filters', { ...NO_FILTERS, drink: 'Vermut' });
+    const { el } = await start();
+    await new Promise((r) => setTimeout(r)); // The form sets it again on seeing the new options.
+    const drink = [...el.querySelectorAll('.field')]
+      .find((f) => f.textContent!.includes('Bebida'))!
+      .querySelector('select')!;
+    expect(drink.value).toBe('Vermut');
+    expect(el.querySelectorAll('app-venue-card').length).toBe(1);
+  });
+
+  it('only allows a time range with a day, and «Abierto ahora» fills in both', async () => {
+    const { fixture, el, press } = await start();
+    const select = (label: string) =>
+      [...el.querySelectorAll('.field')]
+        .find((f) => f.textContent!.includes(label))!
+        .querySelector('select')!;
+    const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
+    expect(from.disabled).toBe(true);
+    expect(to.disabled).toBe(true);
+
+    await press('.actions button', 'Abierto ahora');
+    expect(select('Día').value).not.toBe('');
+    expect(from.value).toBe(new Date().toTimeString().slice(0, 5));
+    expect(to.value).toBe(from.value);
+    expect(from.disabled).toBe(false);
+    expect(to.disabled).toBe(false);
+
+    await press('.actions button', 'Limpiar');
+    expect(select('Día').value).toBe('');
+    expect(from.value).toBe('');
+    expect(from.disabled).toBe(true);
+    await fixture.whenStable();
+  });
+
+  describe('with only one end of the time range', () => {
+    const now = signal(new Date(2026, 10, 1, 18, 30)); // A Sunday.
+    const open = (number: number, slot: TimeSlot) => ({
+      ...DATA.venues[number],
+      schedule: { ...DATA.venues[number].schedule, sunday: [slot] },
+    });
+
+    async function startOnSunday() {
+      now.set(new Date(2026, 10, 1, 18, 30));
+      TestBed.overrideProvider(Clock, { useValue: { now } });
+      const venues = [
+        open(0, { open: '12:00', close: '14:00' }),
+        open(1, { open: '20:00', close: '22:00' }),
+      ];
+      const { fixture, el } = await start({ ...DATA, venues });
+      const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
+      const day = [...el.querySelectorAll('.field')]
+        .find((f) => f.textContent!.includes('Día'))!
+        .querySelector('select')!;
+      day.value = 'sunday';
+      day.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      const type = async (input: HTMLInputElement, time: string) => {
+        input.value = time;
+        input.dispatchEvent(new Event('input'));
+        await fixture.whenStable();
+      };
+      const tick = async (hour: number, minute: number) => {
+        now.set(new Date(2026, 10, 1, hour, minute));
+        await fixture.whenStable();
+      };
+      return {
+        fixture,
+        from,
+        to,
+        type,
+        tick,
+        cards: () => el.querySelectorAll('app-venue-card').length,
+        shown: () => [...el.querySelectorAll('app-time-field span')].map((s) => s.textContent),
+      };
+    }
+
+    it('without "to", it applies up to midnight and says so', async () => {
+      const { from, to, type, cards, shown } = await startOnSunday();
+      expect(shown()).toEqual([]);
+
+      await type(from, '13:00');
+      expect(shown()).toEqual(['00:00']);
+      expect(cards()).toBe(2);
+
+      await type(from, '15:00');
+      expect(cards()).toBe(1);
+
+      await type(to, '16:00');
+      expect(shown()).toEqual([]);
+      expect(cards()).toBe(0);
+    });
+
+    it('without "from", it applies from now on, following the clock', async () => {
+      const { to, type, tick, cards, shown } = await startOnSunday();
+
+      await type(to, '21:00');
+      expect(shown()).toEqual(['18:30']);
+      expect(cards()).toBe(1);
+
+      await tick(18, 31);
+      expect(shown()).toEqual(['18:31']);
+
+      await tick(21, 30);
+      expect(shown()).toEqual(['00:00']);
+      expect(cards()).toBe(2);
+    });
+
+    it('the list only gets filtered again if the time that applies changes', async () => {
+      const { fixture, from, to, type, tick } = await startOnSunday();
+      const filtered = () => fixture.componentInstance['filtered']();
+
+      await type(from, '13:00');
+      const list = filtered();
+      await tick(18, 31);
+      expect(filtered()).toBe(list);
+
+      await type(from, '');
+      await type(to, '21:00');
+      const untilNine = filtered();
+      await tick(18, 32);
+      expect(filtered()).not.toBe(untilNine);
+    });
+  });
+
+  it('the filters are still there on coming back from a venue', async () => {
+    Element.prototype.scrollTo = () => {}; // jsdom doesn't implement it
+    const { fixture, el, press } = await start();
+    await press('.menu-button');
+    await press('.menu button', 'Fotos');
+    const search = el.querySelector<HTMLInputElement>('.field.text input')!;
+    search.value = 'cúpula';
+    search.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+
+    await press('app-gallery li button', 'CÚPULA');
+    expect(el.querySelector('app-filters')).toBeNull();
+    window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
+    await new Promise((r) => setTimeout(r));
+    await fixture.whenStable();
+    expect(el.querySelector<HTMLInputElement>('.field.text input')!.value).toBe('cúpula');
+    expect(el.querySelectorAll('app-gallery li').length).toBe(1);
+  });
+
+  it('keeps the sort order chosen', async () => {
+    const first = await start();
+    const select = first.el.querySelector<HTMLSelectElement>('.sort select')!;
+    expect(select.value).toBe('number');
+    select.value = 'closing';
+    select.dispatchEvent(new Event('change'));
+    await first.fixture.whenStable();
+    expect(TestBed.inject(Store).setting('sort')).toBe('closing');
+    first.fixture.destroy();
+
+    const { el } = await start();
+    expect(el.querySelector<HTMLSelectElement>('.sort select')!.value).toBe('closing');
   });
 
   it('creates the schedule the first time it opens and keeps it', async () => {

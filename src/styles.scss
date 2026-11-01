@@ -187,8 +187,11 @@ select,
     border-color: var(--muted);
   }
 
+  // Sunk into the bar: with only the opacity it was still a white box on white.
   &:disabled {
-    opacity: 0.5;
+    background-color: var(--border);
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 
@@ -303,7 +306,9 @@ button {
   }
 }
 
-:focus-visible {
+// A time field's focus is on a segment inside it, so with the mouse it may not count as :focus-visible.
+:focus-visible,
+input[type='time']:focus {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

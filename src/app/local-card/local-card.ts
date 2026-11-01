@@ -1,9 +1,17 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 
-import { Almacen } from '../almacen';
 import { EstadoHorario } from '../estado-horario/estado-horario';
-import { Estrellas } from '../estrellas/estrellas';
 import { Favorito } from '../favorito/favorito';
+import { FotoTapa } from '../foto-tapa/foto-tapa';
 import { Icono } from '../icono/icono';
 import {
   DIAS,
@@ -11,8 +19,6 @@ import {
   Estado,
   Llegada,
   Local,
-  Tapa,
-  claveTapa,
   diaDe,
   formatearDistancia,
   formatearDuracion,
@@ -21,11 +27,10 @@ import {
 } from '../locales';
 import { Plegable } from '../plegable/plegable';
 import { Sello, selloGluten } from '../sello/sello';
-import { Visor } from '../visor/visor';
 
 @Component({
   selector: 'app-local-card',
-  imports: [EstadoHorario, Estrellas, Favorito, Icono, Plegable, Sello],
+  imports: [EstadoHorario, Favorito, FotoTapa, Icono, Plegable, Sello],
   templateUrl: './local-card.html',
   styleUrl: './local-card.scss',
 })
@@ -52,10 +57,10 @@ export class LocalCard {
    * hasta que termina de recogerse.
    */
   protected readonly horarioAbierto = signal(false);
+  /** Los siete días se crean la primera vez que se abre, y ya se quedan. */
+  protected readonly horarioCreado = signal(false);
   protected readonly selloGluten = selloGluten;
-  protected readonly claveTapa = claveTapa;
-  protected readonly valoraciones = inject(Almacen).valoraciones;
-  private readonly visor = inject(Visor);
+  private readonly injector = inject(Injector);
   private plegando = false;
 
   protected readonly horarioDia = computed(() => {
@@ -87,9 +92,20 @@ export class LocalCard {
   protected alternarHorario(evento: Event, detalles: HTMLDetailsElement): void {
     const abrir = !detalles.open || this.plegando;
     this.horarioAbierto.set(abrir);
+    this.horarioCreado.set(true);
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     evento.preventDefault();
-    const lista = detalles.querySelector('dl')!;
+    const lista = detalles.querySelector('dl');
+    if (lista) this.animarHorario(detalles, lista, abrir);
+    else {
+      // La primera vez, en cuanto está en la página (antes de pintarla).
+      afterNextRender(() => this.animarHorario(detalles, detalles.querySelector('dl')!, abrir), {
+        injector: this.injector,
+      });
+    }
+  }
+
+  private animarHorario(detalles: HTMLDetailsElement, lista: HTMLElement, abrir: boolean): void {
     // Si se pulsa a medio camino, se sigue desde la altura que tenga en ese momento.
     const desde = detalles.open ? lista.getBoundingClientRect().height : 0;
     for (const animacion of lista.getAnimations({ subtree: true })) animacion.cancel();
@@ -121,9 +137,5 @@ export class LocalCard {
         this.plegando = false;
       };
     }
-  }
-
-  protected ampliar(evento: Event, tapa: Tapa): void {
-    this.visor.ampliar(evento.currentTarget as HTMLElement, this.local().number, tapa);
   }
 }

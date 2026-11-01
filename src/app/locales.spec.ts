@@ -130,6 +130,16 @@ describe('filtrarLocales', () => {
     expect(nombres({ texto: 'casero' })).toEqual(['CÚPULA']);
   });
 
+  it('con un número, busca el local con ese número', () => {
+    const numerados = locales.map((l, i) => ({ ...l, number: i + 1 }));
+    const buscar = (texto: string) =>
+      filtrarLocales(numerados, { ...SIN_FILTROS, texto }).map((l) => l.name);
+    expect(buscar(' 2 ')).toEqual(['ORIGEN']);
+    // Aunque las direcciones lleven ese número (C/ MAYOR, 1).
+    expect(buscar('1')).toEqual(['CÚPULA']);
+    expect(buscar('12')).toEqual([]);
+  });
+
   it('filtra por día y rango de horas', () => {
     expect(nombres({ dia: 'monday' })).toEqual(['CÚPULA', 'ORIGEN']);
     expect(nombres({ dia: 'monday', desde: '13:00' })).toEqual(['ORIGEN']);

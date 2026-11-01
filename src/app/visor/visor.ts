@@ -4,6 +4,7 @@ import {
   Injectable,
   afterRenderEffect,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -67,7 +68,6 @@ const RADIO = 12;
           <img #imagen [src]="foto.src" [alt]="foto.alt" width="690" height="439" />
           <app-estrellas
             #estrellas
-            editable
             [valor]="valor()"
             [(previa)]="previa"
             (valorar)="valorar(foto, $event)"
@@ -87,7 +87,6 @@ const RADIO = 12;
   `,
   host: {
     '(document:keydown.escape)': 'cerrar()',
-    '(document:keydown)': 'teclear($event)',
   },
   styles: `
     // Bajo la cabecera (su alto, la zona segura y su borde), que no se tapa; por encima de lo demás,
@@ -142,7 +141,7 @@ const RADIO = 12;
       will-change: transform;
     }
 
-    // Más finas que en las miniaturas: en grande, la línea de siempre se ve gruesa.
+    // Más finas que en las miniaturas (1,5): en grande, la línea de siempre se ve gruesa.
     app-estrellas {
       --trazo-icono: 1.1;
     }
@@ -218,6 +217,15 @@ export class VisorFotos {
   constructor() {
     this.visor.cerrar = () => void this.cerrar();
 
+    // Las teclas, solo con la foto abierta: si no, cada tecla pulsada en cualquier sitio repasaría la
+    // vista.
+    effect((onCleanup) => {
+      if (!this.visor.foto()) return;
+      const alTeclear = (evento: KeyboardEvent) => this.teclear(evento);
+      document.addEventListener('keydown', alTeclear);
+      onCleanup(() => document.removeEventListener('keydown', alTeclear));
+    });
+
     // En cuanto la foto grande está en la página (antes de pintarla), arranca la ampliación.
     afterRenderEffect(() => {
       const imagen = this.imagen();
@@ -260,7 +268,7 @@ export class VisorFotos {
   }
 
   /** Con la foto abierta, las teclas del 1 al 5 la valoran y el 0 quita la valoración. */
-  protected teclear(evento: KeyboardEvent): void {
+  private teclear(evento: KeyboardEvent): void {
     const foto = this.visor.foto();
     if (!foto || this.cerrando || evento.ctrlKey || evento.metaKey || evento.altKey) return;
     if (/^[0-5]$/.test(evento.key)) this.valorar(foto, Number(evento.key));
@@ -334,7 +342,7 @@ export class VisorFotos {
       }),
     ];
     const estrellas = this.estrellas()!.nativeElement;
-    const estrellasOrigen = foto.origen.querySelector('app-estrellas');
+    const estrellasOrigen = foto.origen.querySelector('.pastilla-estrellas');
     if (estrellasOrigen) {
       const desdeEstrellas = estrellasOrigen.getBoundingClientRect();
       animaciones.push(

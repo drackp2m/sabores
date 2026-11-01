@@ -1,17 +1,24 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import * as L from 'leaflet';
 
 import { Almacen } from './almacen';
 import { App } from './app';
 import { DatosRuta, Local } from './locales';
 
-// jsdom no tiene ResizeObserver (texto plegable de las fichas), animate y getAnimations (visor de
-// fotos, estrellas, corazón) ni matchMedia. Tampoco IndexedDB: el almacén se queda en memoria.
+// jsdom no tiene ResizeObserver (texto plegable de las fichas, mapa), IntersectionObserver (botón de
+// subir), animate y getAnimations (visor de fotos, estrellas, corazón) ni matchMedia. Tampoco
+// IndexedDB: el almacén se queda en memoria.
 globalThis.ResizeObserver ??= class {
   observe() {}
+  unobserve() {}
   disconnect() {}
 } as unknown as typeof ResizeObserver;
+globalThis.IntersectionObserver ??= class {
+  observe() {}
+  disconnect() {}
+} as unknown as typeof IntersectionObserver;
 Element.prototype.animate ??= () => ({ finished: Promise.resolve() }) as unknown as Animation;
 Element.prototype.getAnimations ??= () => [];
 window.matchMedia ??= () => ({ matches: false }) as MediaQueryList;
@@ -80,9 +87,9 @@ describe('App', () => {
     });
   });
 
-  async function arrancar() {
+  async function arrancar(datos = DATOS) {
     const fixture = TestBed.createComponent(App);
-    TestBed.inject(HttpTestingController).expectOne('data/locales.json').flush(DATOS);
+    TestBed.inject(HttpTestingController).expectOne('data/locales.json').flush(datos);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
     const pulsar = async (selector: string, texto?: string) => {
@@ -149,6 +156,16 @@ describe('App', () => {
     await new Promise((r) => setTimeout(r));
     await fixture.whenStable();
     expect(visor()).toBeNull();
+  });
+
+  it('cierra el menú al pinchar fuera de él, pero no dentro', async () => {
+    const { el, pulsar } = await arrancar();
+    await pulsar('.boton-menu');
+    await pulsar('.menu .grupo');
+    expect(el.querySelector('.menu')).not.toBeNull();
+
+    await pulsar('.resumen');
+    expect(el.querySelector('.menu')).toBeNull();
   });
 
   it('cierra la foto ampliada al abrir el menú', async () => {
@@ -231,6 +248,39 @@ describe('App', () => {
     expect(nombres()).toEqual(['ORIGEN', 'CÚPULA']);
   });
 
+  it('el mapa no se mueve al marcar un favorito ni al valorar, y espera a que se deje de escribir', async () => {
+    // En jsdom el mapa no tiene tamaño: solo se cuenta cuántas veces se encuadra.
+    const encuadrar = vi.spyOn(L.Map.prototype, 'fitBounds').mockReturnThis();
+    const { fixture, el, pulsar } = await arrancar({
+      ...DATOS,
+      locales: DATOS.locales.map((l) => ({
+        ...l,
+        location: { lat: 39.98 + l.number / 1000, lng: 0 },
+      })),
+    });
+    const marcadores = () => el.querySelectorAll('app-mapa .leaflet-marker-icon').length;
+    expect(marcadores()).toBe(2);
+    expect(encuadrar).toHaveBeenCalledTimes(1);
+
+    await pulsar('app-local-card:nth-of-type(2) app-favorito button');
+    TestBed.inject(Almacen).valorar(1, 1, 4);
+    await fixture.whenStable();
+    expect(encuadrar).toHaveBeenCalledTimes(1);
+
+    // La lista cambia al momento; el mapa, medio segundo después de la última letra.
+    const buscar = el.querySelector<HTMLInputElement>('.campo.texto input')!;
+    buscar.value = 'cúpula';
+    buscar.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(el.querySelectorAll('app-local-card').length).toBe(1);
+    expect(marcadores()).toBe(2);
+    await new Promise((r) => setTimeout(r, 600));
+    await fixture.whenStable();
+    expect(marcadores()).toBe(1);
+    expect(encuadrar).toHaveBeenCalledTimes(2);
+    encuadrar.mockRestore();
+  });
+
   it('al volver a abrir la app, los filtros, el orden y la vista son los que se dejaron', async () => {
     const primera = await arrancar();
     const buscar = primera.el.querySelector<HTMLInputElement>('.campo.texto input')!;
@@ -248,9 +298,40 @@ describe('App', () => {
     expect(el.querySelectorAll('app-galeria li').length).toBe(1);
   });
 
-  it('pinta los iconos como SVG', async () => {
+  it('crea el horario la primera vez que se abre y lo deja creado', async () => {
+    const { fixture, el } = await arrancar();
+    const fichas = el.querySelectorAll('app-local-card');
+    const horario = fichas[0].querySelector('details')!;
+    expect(el.querySelector('app-local-card dl')).toBeNull();
+
+    horario.querySelector('summary')!.click();
+    await fixture.whenStable();
+    expect(horario.open).toBe(true);
+    expect(horario.querySelectorAll('dt').length).toBe(7);
+    expect(fichas[1].querySelector('dl')).toBeNull();
+  });
+
+  it('el corazón solo tiene la onda y las chispas mientras late', async () => {
+    const { fixture, el } = await arrancar();
+    const corazon = el.querySelector<HTMLElement>('app-local-card app-favorito')!;
+    expect(corazon.querySelector('.onda, .chispa')).toBeNull();
+
+    const animar = vi.spyOn(Element.prototype, 'animate');
+    corazon.querySelector('button')!.click();
+    await fixture.whenStable();
+    expect(animar.mock.instances.filter((e) => (e as Element).matches('.chispa')).length).toBe(8);
+    animar.mockRestore();
+    await vi.waitFor(() => expect(corazon.querySelector('.onda, .chispa')).toBeNull());
+  });
+
+  it('pinta los iconos como SVG, con sus trazos una sola vez en la página', async () => {
     const { el } = await arrancar();
-    const trazo = el.querySelector('app-local-card footer app-icono path')!;
-    expect(trazo.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    const iconos = el.querySelectorAll('app-local-card footer app-icono use');
+    expect(iconos.length).toBe(6); // Teléfono, Instagram y corazón, en las dos fichas.
+    for (const icono of iconos) expect(icono.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    const simbolo = document.querySelectorAll(iconos[0].getAttribute('href')!);
+    expect(simbolo.length).toBe(1);
+    expect(simbolo[0].querySelector('path')!.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    expect(el.querySelector('app-icono path')).toBeNull();
   });
 });

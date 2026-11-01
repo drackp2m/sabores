@@ -1,4 +1,13 @@
-import { Component, ElementRef, computed, inject, input } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
 import { Almacen } from '../almacen';
 import { Icono } from '../icono/icono';
@@ -9,7 +18,8 @@ const CHISPAS = [0, 45, 90, 135, 180, 225, 270, 315];
 
 /**
  * Corazón para marcar un local como favorito, del tamaño de la letra. Al marcarlo late, con una
- * onda y unas chispas alrededor; al desmarcarlo se encoge un momento.
+ * onda y unas chispas alrededor, que solo existen mientras se animan; al desmarcarlo se encoge un
+ * momento.
  */
 @Component({
   selector: 'app-favorito',
@@ -23,9 +33,11 @@ const CHISPAS = [0, 45, 90, 135, 180, 225, 270, 315];
       [title]="activo() ? 'Quitar de favoritos' : 'Marcar como favorito'"
       (click)="alternar()"
     >
-      <span class="onda" aria-hidden="true"></span>
-      @for (giro of chispas; track giro) {
-        <span class="chispa" aria-hidden="true"></span>
+      @if (latiendo()) {
+        <span class="onda" aria-hidden="true"></span>
+        @for (giro of chispas; track giro) {
+          <span class="chispa" aria-hidden="true"></span>
+        }
       }
       <app-icono nombre="corazon" />
     </button>
@@ -104,6 +116,10 @@ export class Favorito {
   protected readonly chispas = CHISPAS;
   private readonly almacen = inject(Almacen);
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
+  private readonly injector = inject(Injector);
+  protected readonly latiendo = signal(false);
+  /** Va cambiando con cada pulsación: lo que quede del latido anterior ya no toca nada. */
+  private latido = 0;
   protected readonly activo = computed(() => this.almacen.favoritos().has(this.local().number));
 
   protected alternar(): void {
@@ -112,8 +128,10 @@ export class Favorito {
     // Si se pulsa otra vez a medio latido, empieza de nuevo.
     for (const animacion of this.host.getAnimations({ subtree: true })) animacion.cancel();
     const corazon = this.host.querySelector('app-icono')!;
+    const latido = ++this.latido;
 
     if (!this.activo()) {
+      this.latiendo.set(false);
       corazon.animate([{ transform: 'scale(0.7)' }, {}], {
         duration: 320,
         easing: 'cubic-bezier(0.3, 1.6, 0.6, 1)',
@@ -129,22 +147,35 @@ export class Favorito {
       ],
       { duration: 560, easing: 'ease-out' },
     );
-    this.host.querySelector('.onda')!.animate(
-      [
-        { opacity: 1, transform: 'scale(0.2)', borderWidth: '0.5em' },
-        { opacity: 0, transform: 'scale(1)', borderWidth: '0.05em' },
-      ],
-      { duration: 420, easing: 'ease-out' },
-    );
-    this.host.querySelectorAll('.chispa').forEach((chispa, i) => {
-      const giro = `rotate(${CHISPAS[i]}deg)`;
-      chispa.animate(
+    this.latiendo.set(true);
+    afterNextRender(() => latido === this.latido && this.chispear(latido), {
+      injector: this.injector,
+    });
+  }
+
+  /** La onda y las chispas; al acabar (o si otra pulsación las corta), se quitan. */
+  private chispear(latido: number): void {
+    const animaciones = [
+      this.host.querySelector('.onda')!.animate(
         [
-          { opacity: 1, transform: `${giro} translateY(-0.45em) scale(1)` },
-          { opacity: 0, transform: `${giro} translateY(-1.15em) scale(0.2)` },
+          { opacity: 1, transform: 'scale(0.2)', borderWidth: '0.5em' },
+          { opacity: 0, transform: 'scale(1)', borderWidth: '0.05em' },
         ],
-        { duration: 520, delay: 120, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
-      );
+        { duration: 420, easing: 'ease-out' },
+      ),
+      ...[...this.host.querySelectorAll('.chispa')].map((chispa, i) => {
+        const giro = `rotate(${CHISPAS[i]}deg)`;
+        return chispa.animate(
+          [
+            { opacity: 1, transform: `${giro} translateY(-0.45em) scale(1)` },
+            { opacity: 0, transform: `${giro} translateY(-1.15em) scale(0.2)` },
+          ],
+          { duration: 520, delay: 120, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' },
+        );
+      }),
+    ];
+    void Promise.allSettled(animaciones.map((animacion) => animacion.finished)).then(() => {
+      if (latido === this.latido) this.latiendo.set(false);
     });
   }
 }

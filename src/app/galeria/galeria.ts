@@ -1,21 +1,11 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
-import { Almacen } from '../almacen';
 import { EstadoHorario } from '../estado-horario/estado-horario';
-import { Estrellas } from '../estrellas/estrellas';
 import { Favorito } from '../favorito/favorito';
+import { FotoTapa } from '../foto-tapa/foto-tapa';
 import { Icono } from '../icono/icono';
-import {
-  Estado,
-  Llegada,
-  Local,
-  Tapa,
-  claveTapa,
-  formatearDistancia,
-  formatearDuracion,
-} from '../locales';
+import { Estado, Llegada, Local, formatearDistancia, formatearDuracion } from '../locales';
 import { Sello, selloGluten } from '../sello/sello';
-import { Visor } from '../visor/visor';
 
 /**
  * Vista «Fotos»: el nombre del local con sus sellos y el corazón de favorito, cuánto se tarda en
@@ -24,7 +14,7 @@ import { Visor } from '../visor/visor';
  */
 @Component({
   selector: 'app-galeria',
-  imports: [EstadoHorario, Estrellas, Favorito, Icono, Sello],
+  imports: [EstadoHorario, Favorito, FotoTapa, Icono, Sello],
   template: `
     <ul>
       @for (ficha of fichas(); track ficha.local.number) {
@@ -66,27 +56,8 @@ import { Visor } from '../visor/visor';
           </div>
           <div class="fotos">
             @for (tapa of local.tapas; track tapa.number) {
-              @let estrellas = valoraciones().get(claveTapa(local.number, tapa.number)) ?? 0;
               <figure>
-                <button
-                  type="button"
-                  class="foto"
-                  [attr.aria-label]="
-                    'Ampliar y valorar la foto de ' +
-                    tapa.name +
-                    (estrellas ? ' (' + estrellas + ' de 5 estrellas)' : ' (sin valorar)')
-                  "
-                  (click)="ampliar($event, local, tapa)"
-                >
-                  <img
-                    [src]="'data/' + tapa.photo"
-                    [alt]="tapa.name"
-                    loading="lazy"
-                    width="690"
-                    height="439"
-                  />
-                  <app-estrellas class="estrellas" aria-hidden="true" [valor]="estrellas" />
-                </button>
+                <button appFotoTapa [local]="local.number" [tapa]="tapa"></button>
                 <figcaption>{{ tapa.name }}</figcaption>
               </figure>
             }
@@ -242,50 +213,6 @@ import { Visor } from '../visor/visor';
       color: var(--suave);
       text-wrap: balance;
     }
-
-    // Por encima del ::after de la cabecera, para ampliarse en vez de abrir el local. Con todo el
-    // ancho: un botón se ajusta a lo que tiene dentro, y hasta que carga la foto (en diferido) no
-    // mediría nada, ni se cargaría en algunos navegadores.
-    .foto,
-    .foto:hover:not(:disabled) {
-      position: relative;
-      display: block;
-      width: 100%;
-      height: auto;
-      padding: 0;
-      border: 0.5px solid var(--borde); // Fino, para las fotos de fondo claro (como en las fichas).
-      border-radius: 0.5rem;
-      background: var(--borde);
-      overflow: hidden;
-      cursor: zoom-in;
-    }
-
-    // Al pasar por encima, la foto se acerca un poco dentro de su hueco, sin mover nada más.
-    img {
-      display: block;
-      width: 100%;
-      height: auto;
-      aspect-ratio: 690 / 439;
-      object-fit: cover;
-      transition: transform 0.3s ease-out;
-
-      .foto:is(:hover, :focus-visible) & {
-        transform: scale(1.06);
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        transition: none;
-      }
-    }
-
-    // Abajo en el centro de la foto (en el visor van a ponerse debajo de ella, en grande).
-    .estrellas {
-      position: absolute;
-      bottom: 0.3rem;
-      left: 50%;
-      font-size: 0.8rem;
-      translate: -50%;
-    }
   `,
 })
 export class Galeria {
@@ -295,10 +222,6 @@ export class Galeria {
   readonly ahora = input(new Date());
   readonly abrir = output<number>();
 
-  private readonly visor = inject(Visor);
-  protected readonly valoraciones = inject(Almacen).valoraciones;
-
-  protected readonly claveTapa = claveTapa;
   protected readonly formatearDuracion = formatearDuracion;
   protected readonly formatearDistancia = formatearDistancia;
 
@@ -310,8 +233,4 @@ export class Galeria {
       ruta: local.tapas.some((t) => t.castelloRutaDeSabor),
     })),
   );
-
-  protected ampliar(evento: Event, local: Local, tapa: Tapa): void {
-    this.visor.ampliar(evento.currentTarget as HTMLElement, local.number, tapa);
-  }
 }

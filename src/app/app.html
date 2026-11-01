@@ -93,7 +93,11 @@
     <div class="contenido">
       <label class="campo texto">
         <span>Buscar</span>
-        <input type="search" placeholder="Local, tapa, ingrediente, calle…" [(ngModel)]="texto" />
+        <input
+          type="search"
+          placeholder="Nº, local, tapa, ingrediente, calle…"
+          [(ngModel)]="texto"
+        />
       </label>
 
       <label class="campo">
@@ -193,10 +197,11 @@
 
       @if (vista() === 'detalles') {
         <div class="resultados">
+          <div #marcaSubir class="marca-subir"></div>
           <app-mapa
             #mapa
             class="mapa"
-            [locales]="visibles()"
+            [locales]="enMapa()"
             [origen]="ubicacion.origen()"
             [estados]="estados()"
             [llegadas]="llegadas()"
@@ -222,6 +227,7 @@
           </section>
         </div>
       } @else {
+        <div #marcaSubir class="marca-subir"></div>
         <app-galeria
           [locales]="visibles()"
           [estados]="estados()"

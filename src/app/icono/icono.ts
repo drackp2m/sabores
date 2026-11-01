@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 /**
  * Trazos de cada icono en un viewBox de 24×24, con línea de 2 (o la de --trazo-icono) y extremos
@@ -88,6 +88,45 @@ const ICONOS = {
 
 export type NombreIcono = keyof typeof ICONOS;
 
+const SVG = 'http://www.w3.org/2000/svg';
+
+/** Los del <svg> de cada icono, como en la plantilla de Icono: los trazos de su <symbol> los heredan. */
+const ATRIBUTOS = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  'stroke-width': '2',
+  'stroke-linecap': 'round',
+  'stroke-linejoin': 'round',
+  'aria-hidden': 'true',
+};
+
+let sprite: SVGSVGElement | undefined;
+
+/**
+ * Los trazos de todos los iconos, una sola vez en la página (un <symbol> por icono): cada icono es
+ * un <use> que apunta al suyo.
+ */
+function ponerSprite(): void {
+  if (sprite?.isConnected) return;
+  if (!sprite) {
+    sprite = document.createElementNS(SVG, 'svg');
+    sprite.setAttribute('aria-hidden', 'true');
+    sprite.style.cssText = 'position: absolute; width: 0; height: 0; overflow: hidden';
+    for (const [nombre, trazos] of Object.entries(ICONOS)) {
+      const simbolo = document.createElementNS(SVG, 'symbol');
+      simbolo.id = `icono-${nombre}`;
+      for (const d of trazos) {
+        const trazo = document.createElementNS(SVG, 'path');
+        trazo.setAttribute('d', d);
+        simbolo.append(trazo);
+      }
+      sprite.append(simbolo);
+    }
+  }
+  document.body.prepend(sprite);
+}
+
 @Component({
   selector: 'app-icono',
   template: `
@@ -100,9 +139,7 @@ export type NombreIcono = keyof typeof ICONOS;
       stroke-linejoin="round"
       aria-hidden="true"
     >
-      @for (d of trazos(); track $index) {
-        <path [attr.d]="d" />
-      }
+      <use [attr.href]="'#icono-' + nombre()" />
     </svg>
   `,
   styles: `
@@ -124,27 +161,18 @@ export type NombreIcono = keyof typeof ICONOS;
 export class Icono {
   readonly nombre = input.required<NombreIcono>();
 
-  protected readonly trazos = computed(() => ICONOS[this.nombre()]);
+  constructor() {
+    ponerSprite();
+  }
 }
 
 /** El mismo icono como elemento suelto, para el DOM que se crea fuera de Angular (popups del mapa). */
 export function crearIcono(nombre: NombreIcono): SVGSVGElement {
-  const ns = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  const atributos = {
-    viewBox: '0 0 24 24',
-    fill: 'none',
-    stroke: 'currentColor',
-    'stroke-width': '2',
-    'stroke-linecap': 'round',
-    'stroke-linejoin': 'round',
-    'aria-hidden': 'true',
-  };
-  for (const [atributo, valor] of Object.entries(atributos)) svg.setAttribute(atributo, valor);
-  for (const d of ICONOS[nombre]) {
-    const trazo = document.createElementNS(ns, 'path');
-    trazo.setAttribute('d', d);
-    svg.append(trazo);
-  }
+  ponerSprite();
+  const svg = document.createElementNS(SVG, 'svg');
+  for (const [atributo, valor] of Object.entries(ATRIBUTOS)) svg.setAttribute(atributo, valor);
+  const uso = document.createElementNS(SVG, 'use');
+  uso.setAttribute('href', `#icono-${nombre}`);
+  svg.append(uso);
   return svg;
 }

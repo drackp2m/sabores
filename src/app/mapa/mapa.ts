@@ -3,7 +3,6 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
-  afterRenderEffect,
   computed,
   effect,
   inject,
@@ -60,6 +59,13 @@ function iconoLocal(rem: number): L.DivIcon {
   });
 }
 
+/** Si son los mismos locales, aunque estén en otro orden o en otro array. */
+function mismosLocales(a: readonly Local[], b: readonly Local[]): boolean {
+  if (a.length !== b.length) return false;
+  const numeros = new Set(b.map((local) => local.number));
+  return a.every((local) => numeros.has(local.number));
+}
+
 /** Píxeles de 1rem (menos en pantallas estrechas, ver styles.scss). */
 function remEnPx(): number {
   return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
@@ -75,13 +81,7 @@ function remEnPx(): number {
   imports: [Icono],
   template: `
     <div class="marco" [class.grande]="grande()">
-      <div
-        #contenedor
-        class="contenedor"
-        (touchstart)="empezarToque($event)"
-        (touchmove)="avisar($event)"
-        (touchend)="inicioToque = undefined"
-      ></div>
+      <div #contenedor class="contenedor"></div>
       <div class="botones">
         <button
           type="button"
@@ -236,6 +236,13 @@ export class Mapa {
   /** Si al pinchar en el mapa había un popup abierto (ese clic solo lo cierra). */
   private habiaPopup = false;
   private readonly activo = computed(() => this.rutaHacia() ?? this.seleccionado());
+  /**
+   * Los que tienen marcador. Solo cambia cuando cambia cuáles son: la lista llega en un array nuevo
+   * al reordenarla, al marcar un favorito o al valorar una tapa, y el mapa no tiene que moverse.
+   */
+  private readonly situados = computed(() => this.locales().filter((local) => local.location), {
+    equal: mismosLocales,
+  });
   private readonly destino = computed(() => {
     const numero = this.activo();
     return this.locales().find((local) => local.number === numero && local.location);
@@ -255,10 +262,11 @@ export class Mapa {
    * Dónde se ha puesto un dedo en el mapa, hasta saber hacia dónde va. Al soltarlo se borra: los
    * controles y popups de Leaflet no dejan pasar el touchstart y quedaría el del toque anterior.
    */
-  protected inicioToque?: { x: number; y: number };
+  private inicioToque?: { x: number; y: number };
   private readonly capa = new L.FeatureGroup();
   private readonly capaCamino = new L.FeatureGroup();
   private readonly marcadores = new Map<number, L.Marker>();
+  private tamano?: ResizeObserver;
   private readonly marcadorOrigen = new L.CircleMarker(CASTELLON, {
     radius: 7,
     color: '#fff',
@@ -269,8 +277,16 @@ export class Mapa {
 
   constructor() {
     afterNextRender(() => {
+      // A mano y pasivos: con los de Angular, si el dedo empieza encima del mapa, el navegador
+      // tendría que esperar a que acaben antes de hacer scroll (ninguno llama a preventDefault).
+      const contenedor = this.contenedor().nativeElement;
+      const pasivo = { passive: true };
+      contenedor.addEventListener('touchstart', (evento) => this.empezarToque(evento), pasivo);
+      contenedor.addEventListener('touchmove', (evento) => this.avisar(evento), pasivo);
+      contenedor.addEventListener('touchend', () => (this.inicioToque = undefined), pasivo);
+
       // Sin zoom con la rueda: al hacer scroll por la página, pasar por encima del mapa no lo mueve.
-      const mapa = new L.Map(this.contenedor().nativeElement, {
+      const mapa = new L.Map(contenedor, {
         center: CASTELLON,
         zoom: 14,
         scrollWheelZoom: false,
@@ -301,17 +317,18 @@ export class Mapa {
       });
       this.capaCamino.addTo(mapa);
       this.capa.addTo(mapa);
+      // Cada vez que cambia de tamaño (al ampliarlo o reducirlo, al aparecer o desaparecer la barra
+      // de scroll…), Leaflet tiene que volver a medir.
+      this.tamano = new ResizeObserver(() => mapa.invalidateSize());
+      this.tamano.observe(contenedor);
       this.mapa.set(mapa);
     });
 
-    // Al ampliar o reducir, Leaflet tiene que volver a medir; ampliado, se mueve con un dedo (no hay
-    // página que desplazar).
-    afterRenderEffect(() => {
+    // Ampliado, se mueve con un dedo (no hay página que desplazar).
+    effect(() => {
       const mapa = this.mapa();
-      const grande = this.grande();
       if (!mapa) return;
-      mapa.invalidateSize();
-      if (grande || !TACTIL) mapa.dragging.enable();
+      if (this.grande() || !TACTIL) mapa.dragging.enable();
       else mapa.dragging.disable();
     });
 
@@ -350,31 +367,29 @@ export class Mapa {
     });
 
     inject(DestroyRef).onDestroy(() => {
+      this.tamano?.disconnect();
       this.mapa()?.remove();
       clearTimeout(this.ocultarAviso);
     });
 
+    // Un marcador por local, del color de su pastilla de horario (abierto, a punto de cerrar, no da
+    // tiempo, cerrado); el activo, dorado (como las estrellas) y por encima de los demás.
     effect(() => {
       const mapa = this.mapa();
-      const locales = this.locales();
-      if (mapa) untracked(() => this.pintar(mapa, locales));
-    });
-
-    // Cada uno, del color de su pastilla de horario (abierto, a punto de cerrar, no da tiempo,
-    // cerrado); el activo, dorado (como las estrellas) y por encima de los demás.
-    effect(() => {
+      const locales = this.situados();
       const activo = this.activo();
       const estados = this.estados();
       const llegadas = this.llegadas();
-      this.mapa();
-      this.locales(); // Tras pintar los marcadores.
+      if (!mapa) return;
+      untracked(() => this.pintar(mapa, locales));
       for (const [numero, marcador] of this.marcadores) {
-        const clases = marcador.getElement()?.classList;
         const estado = estados.get(numero);
-        clases?.remove(...TIPOS_ESTADO);
-        if (estado) clases?.add(tipoEstado(estado, llegadas.get(numero)));
+        const tipo = estado && tipoEstado(estado, llegadas.get(numero));
+        const clases = marcador.getElement()?.classList;
+        for (const otro of TIPOS_ESTADO) clases?.toggle(otro, otro === tipo);
         clases?.toggle('activo', numero === activo);
-        marcador.setZIndexOffset(numero === activo ? 1000 : 0);
+        const encima = numero === activo ? 1000 : 0;
+        if (marcador.options.zIndexOffset !== encima) marcador.setZIndexOffset(encima);
       }
     });
 
@@ -397,7 +412,7 @@ export class Mapa {
     marcador.openPopup();
   }
 
-  protected empezarToque(evento: TouchEvent): void {
+  private empezarToque(evento: TouchEvent): void {
     if (evento.touches.length > 1) sabeMoverlo = true;
     const [dedo] = evento.touches;
     this.inicioToque =
@@ -408,7 +423,7 @@ export class Mapa {
    * Al intentar mover el mapa con un dedo, recuerda que son dos (y la página sigue haciendo scroll).
    * Solo si arrastra de lado: en vertical está desplazando la página, que es lo que quería.
    */
-  protected avisar(evento: TouchEvent): void {
+  private avisar(evento: TouchEvent): void {
     const inicio = this.inicioToque;
     if (!inicio || !TACTIL || this.grande() || sabeMoverlo || evento.touches.length !== 1) return;
     const [dedo] = evento.touches;
@@ -422,12 +437,29 @@ export class Mapa {
     this.ocultarAviso = setTimeout(() => this.aviso.set(false), 1200);
   }
 
+  /**
+   * Quita los marcadores de los que ya no están y añade los de los nuevos (los demás, con su popup
+   * abierto si lo tienen, se quedan como están). Si ha cambiado algo, encuadra los que quedan.
+   */
   private pintar(mapa: L.Map, locales: readonly Local[]): void {
-    this.capa.clearLayers();
-    this.marcadores.clear();
+    const numeros = new Set(locales.map((local) => local.number));
+    const quitados = [...this.marcadores.keys()].filter((numero) => !numeros.has(numero));
+    for (const numero of quitados) {
+      this.capa.removeLayer(this.marcadores.get(numero)!);
+      this.marcadores.delete(numero);
+    }
     // Si el seleccionado ya no está entre los filtrados, deja de estarlo.
     const seleccionado = this.seleccionado();
-    if (!locales.some((l) => l.number === seleccionado && l.location)) this.seleccionado.set(null);
+    if (seleccionado !== null && !numeros.has(seleccionado)) this.seleccionado.set(null);
+    const nuevos = locales.filter((local) => !this.marcadores.has(local.number));
+    if (nuevos.length) this.anadir(nuevos);
+    if ((quitados.length || nuevos.length) && this.marcadores.size) {
+      mapa.fitBounds(this.capa.getBounds(), { padding: [30, 30], maxZoom: 16 });
+    }
+  }
+
+  private anadir(locales: readonly Local[]): void {
+    // Leer el tamaño de la letra obliga a recalcular los estilos: solo cuando hay que crear alguno.
     const rem = remEnPx();
     const icono = iconoLocal(rem);
     const anchoPopup = Math.round(15 * rem);
@@ -443,11 +475,7 @@ export class Mapa {
         .on('click', () => this.seleccionar.emit(local.number))
         .on('popupopen', () => this.seleccionado.set(local.number));
       marcador.addTo(this.capa);
-      if (local.number === this.activo()) marcador.getElement()?.classList.add('activo');
       this.marcadores.set(local.number, marcador);
-    }
-    if (this.marcadores.size) {
-      mapa.fitBounds(this.capa.getBounds(), { padding: [30, 30], maxZoom: 16 });
     }
   }
 

@@ -4,10 +4,12 @@ import {
   ElementRef,
   Injector,
   afterNextRender,
+  afterRenderEffect,
   computed,
   effect,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -24,8 +26,10 @@ import {
   Dia,
   Filtros,
   Llegada,
+  Local,
   Probadas,
   SIN_FILTROS,
+  SIN_MARCAS,
   claveCierre,
   diaDe,
   estadoHorario,
@@ -49,6 +53,8 @@ type Orden = 'numero' | 'cercania' | 'cierre';
 const ESCRITORIO = '(min-width: 960px)';
 /** Igual que en styles.scss: en pantallas táctiles hace scroll app-root; en el resto, el documento. */
 const TACTIL = '(hover: none) and (pointer: coarse)';
+/** Lo que espera el mapa a que se deje de escribir en el buscador para recolocarse. */
+const RETARDO_MAPA = 500;
 /** Donde se guardaba la vista antes de tener el almacén. */
 const CLAVE_VISTA = 'ruta-tapas:vista';
 
@@ -68,7 +74,6 @@ const TEMAS: readonly { tema: Tema; nombre: string; icono: NombreIcono }[] = [
     // Safari en iOS ignora user-scalable=no: el pellizco para hacer zoom se bloquea aquí.
     '(document:gesturestart)': '$event.preventDefault()',
     '(document:keydown.escape)': 'menuAbierto.set(false)',
-    '(document:click)': 'cerrarMenuFuera($event)',
   },
 })
 export class App {
@@ -86,6 +91,7 @@ export class App {
   protected readonly menuAbierto = signal(false);
   /** El botón de subir, cuando ya no se ve el mapa (en la vista de fotos, el principio de la galería). */
   protected readonly verSubir = signal(false);
+  private readonly marcaSubir = viewChild<ElementRef<HTMLElement>>('marcaSubir');
 
   /** undefined mientras carga; null si no se ha podido cargar. */
   protected readonly datos = toSignal(
@@ -111,6 +117,8 @@ export class App {
   protected readonly rutaDeSabor = signal(this.guardados.rutaDeSabor);
   protected readonly favoritos = signal(this.guardados.favoritos);
   protected readonly probadas = signal<Probadas>(this.guardados.probadas);
+  /** El texto del buscador para el mapa: el de cuando se deja de escribir (RETARDO_MAPA). */
+  private readonly textoMapa = signal(this.guardados.texto);
 
   private readonly filtros = computed<Filtros>(() => ({
     texto: this.texto(),
@@ -134,11 +142,10 @@ export class App {
 
   protected readonly bebidas = computed(() => tiposDeBebida(this.datos()?.locales ?? []));
 
-  protected readonly filtrados = computed(() =>
-    filtrarLocales(this.datos()?.locales ?? [], this.filtros(), {
-      favoritos: this.almacen.favoritos(),
-      valoraciones: this.almacen.valoraciones(),
-    }),
+  protected readonly filtrados = computed(() => this.filtrar(this.filtros()));
+  /** Los mismos, pero con el texto de textoMapa (el orden le da igual). */
+  protected readonly enMapa = computed(() =>
+    this.filtrar({ ...this.filtros(), texto: this.textoMapa() }),
   );
 
   /** Estado del horario de cada local ahora mismo. */
@@ -194,15 +201,47 @@ export class App {
     const reloj = setInterval(() => this.ahora.set(new Date()), 30_000);
     this.destroyRef.onDestroy(() => clearInterval(reloj));
     effect(() => this.almacen.guardarAjuste('filtros', this.filtros()));
+    effect((onCleanup) => {
+      const texto = this.texto();
+      const espera = setTimeout(() => this.textoMapa.set(texto), RETARDO_MAPA);
+      onCleanup(() => clearTimeout(espera));
+    });
 
-    // A mano y pasivo: con un listener de Angular, cada evento de scroll repasaría toda la vista. En
-    // los dos sitios que pueden hacer scroll: app-root o el documento.
-    afterNextRender(() => {
-      const alHacerScroll = () => this.verSubir.set(this.pasadoElMapa());
-      for (const objetivo of [this.host, window]) {
-        objetivo.addEventListener('scroll', alHacerScroll, { passive: true });
-        this.destroyRef.onDestroy(() => objetivo.removeEventListener('scroll', alHacerScroll));
-      }
+    // «Subir», en cuanto la marca del final del mapa ha pasado por debajo de la cabecera. Sin escuchar
+    // el scroll: el navegador avisa al cruzarla, sin JavaScript mientras tanto. Sin marca (en la ficha
+    // o mientras carga), no hay botón.
+    afterRenderEffect((onCleanup) => {
+      const marca = this.marcaSubir()?.nativeElement;
+      this.verSubir.set(false);
+      if (!marca) return;
+      const cabecera = this.host.querySelector<HTMLElement>('.cabecera')!.offsetHeight;
+      const observador = new IntersectionObserver(
+        ([{ boundingClientRect, rootBounds }]) =>
+          this.verSubir.set(boundingClientRect.bottom <= (rootBounds?.top ?? 0)),
+        { rootMargin: `-${cabecera}px 0px 0px` },
+      );
+      observador.observe(marca);
+      onCleanup(() => observador.disconnect());
+    });
+
+    // Pinchar fuera del menú lo cierra; solo se escucha con el menú abierto: si no, cada clic en
+    // cualquier sitio de la página repasaría la vista.
+    effect((onCleanup) => {
+      if (!this.menuAbierto()) return;
+      const alPinchar = (evento: MouseEvent) => this.cerrarMenuFuera(evento);
+      document.addEventListener('click', alPinchar);
+      onCleanup(() => document.removeEventListener('click', alPinchar));
+    });
+  }
+
+  /**
+   * Los favoritos y las valoraciones, solo con su filtro puesto: si no, marcar un favorito o valorar
+   * una tapa volvería a filtrar la lista entera.
+   */
+  private filtrar(filtros: Filtros): Local[] {
+    return filtrarLocales(this.datos()?.locales ?? [], filtros, {
+      favoritos: filtros.favoritos ? this.almacen.favoritos() : SIN_MARCAS.favoritos,
+      valoraciones: filtros.probadas ? this.almacen.valoraciones() : SIN_MARCAS.valoraciones,
     });
   }
 
@@ -210,18 +249,6 @@ export class App {
   private get desplazador(): Element {
     if (globalThis.matchMedia?.(TACTIL).matches) return this.host;
     return document.scrollingElement ?? document.documentElement;
-  }
-
-  /**
-   * Si el principio de los resultados y el mapa (en el móvil va encima de la lista; en escritorio,
-   * a su lado, así que hay que bajar lo que mide) han quedado por encima de la cabecera.
-   */
-  private pasadoElMapa(): boolean {
-    const resultados = this.host.querySelector<HTMLElement>('.resultados, app-galeria');
-    if (!resultados || this.detalle() !== null) return false;
-    const mapa = resultados.querySelector<HTMLElement>('app-mapa');
-    const final = resultados.getBoundingClientRect().top + (mapa?.offsetHeight ?? 0);
-    return final < this.host.querySelector('.cabecera')!.getBoundingClientRect().bottom;
   }
 
   protected subir(): void {
@@ -236,8 +263,8 @@ export class App {
     if (abrir) this.visor.cerrar();
   }
 
-  /** Pinchar fuera del menú lo cierra (el botón del menú ya lo abre y cierra por su cuenta). */
-  protected cerrarMenuFuera(evento: MouseEvent): void {
+  /** El botón del menú ya lo abre y lo cierra por su cuenta. */
+  private cerrarMenuFuera(evento: MouseEvent): void {
     const objetivo = evento.target as Element | null;
     if (objetivo?.closest('.menu, .boton-menu')) return;
     this.menuAbierto.set(false);
@@ -253,6 +280,7 @@ export class App {
 
   protected limpiar(): void {
     this.texto.set('');
+    this.textoMapa.set('');
     this.dia.set('');
     this.desde.set('');
     this.hasta.set('');

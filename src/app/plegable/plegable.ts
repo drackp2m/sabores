@@ -16,6 +16,19 @@ import {
 /** Alto del degradado con el que aparecen las líneas al abrir (unas dos líneas). */
 const DEGRADADO = 40;
 
+const alCambiarDeTamano = new WeakMap<Element, () => void>();
+let observador: ResizeObserver | undefined;
+
+/** Un solo observador para todos los textos (dos por ficha). Devuelve cómo dejar de observar. */
+function observarTamano(elemento: Element, alCambiar: () => void): () => void {
+  const compartido = (observador ??= new ResizeObserver((entradas) => {
+    for (const { target } of entradas) alCambiarDeTamano.get(target)?.();
+  }));
+  alCambiarDeTamano.set(elemento, alCambiar);
+  compartido.observe(elemento);
+  return () => compartido.unobserve(elemento);
+}
+
 @Component({
   selector: 'app-plegable',
   template: `
@@ -77,11 +90,10 @@ export class Plegable {
     afterNextRender(() => {
       const parrafo = this.parrafo().nativeElement;
       // Se vuelve a medir al cambiar el ancho; abierto se ve entero, así que solo se mide recortado.
-      const observador = new ResizeObserver(() => {
+      const dejarDeObservar = observarTamano(parrafo, () => {
         if (this.recortado()) this.sobra.set(parrafo.scrollHeight > parrafo.clientHeight + 1);
       });
-      observador.observe(parrafo);
-      destroyRef.onDestroy(() => observador.disconnect());
+      destroyRef.onDestroy(dejarDeObservar);
     });
   }
 

@@ -35,27 +35,8 @@
 
   <ul class="tapas">
     @for (tapa of local().tapas; track tapa.number) {
-      @let estrellas = valoraciones().get(claveTapa(local().number, tapa.number)) ?? 0;
       <li>
-        <button
-          type="button"
-          class="foto"
-          [attr.aria-label]="
-            'Ampliar y valorar la foto de ' +
-            tapa.name +
-            (estrellas ? ' (' + estrellas + ' de 5 estrellas)' : ' (sin valorar)')
-          "
-          (click)="ampliar($event, tapa)"
-        >
-          <img
-            [src]="'data/' + tapa.photo"
-            [alt]="tapa.name"
-            loading="lazy"
-            width="690"
-            height="439"
-          />
-          <app-estrellas class="estrellas" aria-hidden="true" [valor]="estrellas" />
-        </button>
+        <button appFotoTapa class="foto" [local]="local().number" [tapa]="tapa"></button>
         <div class="cabeza">
           <h3>{{ tapa.name }}</h3>
           @if (selloGluten([tapa]); as sello) {
@@ -85,33 +66,35 @@
         <app-estado-horario [estado]="estado" [ahora]="ahora()" [llegada]="llegada()" />
       }
     </summary>
-    <dl>
-      <!-- Rejilla: día · mañana (a la derecha) · punto · tarde (a la izquierda) · relleno hasta el final. -->
-      @for (d of semana(); track d.id; let fila = $index) {
-        @let esHoy = d.id === hoy();
-        <dt
-          [class.activo]="d.id === dia()"
-          [class.hoy]="esHoy"
-          [attr.aria-current]="esHoy ? 'date' : null"
-          [attr.data-fila]="fila"
-        >
-          {{ d.nombre }}
-        </dt>
-        @if (d.manana || d.tarde) {
-          <dd class="manana" [class.hoy]="esHoy" [attr.data-fila]="fila">{{ d.manana }}</dd>
-          <!-- El punto, con su aire, solo si hay dos franjas: si no hay ninguno, la columna no ocupa nada. -->
-          <dd class="separador" [class.hoy]="esHoy" [attr.data-fila]="fila" aria-hidden="true">
-            @if (d.manana && d.tarde) {
-              <span>·</span>
-            }
-          </dd>
-          <dd class="tarde" [class.hoy]="esHoy" [attr.data-fila]="fila">{{ d.tarde }}</dd>
-        } @else {
-          <dd class="sin-tapas" [class.hoy]="esHoy" [attr.data-fila]="fila">Sin tapas</dd>
+    @if (horarioCreado()) {
+      <dl>
+        <!-- Rejilla: día · mañana (a la derecha) · punto · tarde (a la izquierda) · relleno hasta el final. -->
+        @for (d of semana(); track d.id; let fila = $index) {
+          @let esHoy = d.id === hoy();
+          <dt
+            [class.activo]="d.id === dia()"
+            [class.hoy]="esHoy"
+            [attr.aria-current]="esHoy ? 'date' : null"
+            [attr.data-fila]="fila"
+          >
+            {{ d.nombre }}
+          </dt>
+          @if (d.manana || d.tarde) {
+            <dd class="manana" [class.hoy]="esHoy" [attr.data-fila]="fila">{{ d.manana }}</dd>
+            <!-- El punto, con su aire, solo si hay dos franjas: si no hay ninguno, la columna no ocupa nada. -->
+            <dd class="separador" [class.hoy]="esHoy" [attr.data-fila]="fila" aria-hidden="true">
+              @if (d.manana && d.tarde) {
+                <span>·</span>
+              }
+            </dd>
+            <dd class="tarde" [class.hoy]="esHoy" [attr.data-fila]="fila">{{ d.tarde }}</dd>
+          } @else {
+            <dd class="sin-tapas" [class.hoy]="esHoy" [attr.data-fila]="fila">Sin tapas</dd>
+          }
+          <dd class="relleno" [class.hoy]="esHoy" [attr.data-fila]="fila" aria-hidden="true"></dd>
         }
-        <dd class="relleno" [class.hoy]="esHoy" [attr.data-fila]="fila" aria-hidden="true"></dd>
-      }
-    </dl>
+      </dl>
+    }
   </details>
 
   <!-- Abajo a la derecha, el corazón de favorito. -->

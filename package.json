@@ -7,7 +7,8 @@
     "start:safari": "node scripts/safari.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "medir": "ng build && node scripts/medir.mjs"
   },
   "private": true,
   "packageManager": "pnpm@11.28.9",

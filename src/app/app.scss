@@ -6,6 +6,8 @@
 :host {
   display: block;
   background: var(--fondo);
+  // El alto del mapa, en la lista y en la ficha; también el de la marca de «Subir».
+  --alto-mapa: 20rem;
 }
 
 // En pantallas táctiles el scroll es de la app y no del documento (ver styles.scss).
@@ -310,12 +312,24 @@ main {
 }
 
 .resultados {
+  position: relative;
   display: grid;
   gap: 1rem;
 }
 
 .mapa {
-  height: 20rem;
+  height: var(--alto-mapa);
+}
+
+// Cuando su final pasa por debajo de la cabecera aparece «Subir» (app.ts). En la lista, mide lo que
+// el mapa (al lado de la lista en escritorio, encima en el móvil); en la vista de fotos, sin alto,
+// marca el principio de la galería.
+.resultados .marca-subir {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: var(--alto-mapa);
 }
 
 .lista {
@@ -355,6 +369,10 @@ main {
 }
 
 @media (min-width: 960px) {
+  :host {
+    --alto-mapa: calc(100vh - var(--alto-cabecera) - env(safe-area-inset-top, 0px) - 2rem);
+  }
+
   .resultados,
   .detalle {
     display: grid;
@@ -371,7 +389,6 @@ main {
   .detalle .mapa {
     position: sticky;
     top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
-    height: calc(100vh - var(--alto-cabecera) - env(safe-area-inset-top, 0px) - 2rem);
   }
 }
 

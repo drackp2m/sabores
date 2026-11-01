@@ -100,6 +100,12 @@ html {
   scroll-padding-top: calc(var(--alto-cabecera) + env(safe-area-inset-top, 0px) + 1rem);
   // Sin zoom de la página (pellizcar o doble toque); el mapa y sus gestos van aparte.
   touch-action: pan-x pan-y;
+  // Con barras de scroll de las que ocupan sitio (Windows, Linux, macOS con «mostrar siempre»), el
+  // hueco se queda aunque la página quepa en la pantalla: al filtrar, la página no se mueve de lado.
+  scrollbar-gutter: stable;
+  // Sin rebote al llegar arriba o abajo (Safari y Chrome en el Mac): arrastraría la cabecera y el
+  // mapa, que son sticky.
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -125,6 +131,7 @@ body {
   html {
     overflow: hidden;
     overscroll-behavior: none;
+    scrollbar-gutter: auto;
     background: linear-gradient(var(--marca) 50%, var(--fondo) 50%) var(--marca);
   }
 
@@ -332,6 +339,22 @@ button {
     background: var(--fondo);
     color: var(--suave);
   }
+}
+
+// Las estrellas de una tapa, del tamaño de la letra, sobre una pastilla gris translúcida con un filo
+// de luz arriba y a la izquierda, como un cristal: las de las miniaturas (foto-tapa.ts) y las del
+// visor (estrellas.ts), que crecen desde ellas al ampliar la foto. Sin backdrop-filter: con dos por
+// local, al hacer scroll da tirones (hasta en un iPhone 15 Pro Max).
+.pastilla-estrellas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+  padding: 0.2em 0.35em;
+  border-radius: 999px;
+  background: rgb(38 38 38 / 0.4);
+  box-shadow: inset 1px 1px 0 rgb(255 255 255 / 0.3);
+  color: rgb(255 255 255 / 0.7);
+  line-height: 1;
 }
 
 // Leaflet con los colores del tema (sus estilos van antes, en angular.json).

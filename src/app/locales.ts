@@ -71,7 +71,10 @@ export const DIAS: readonly { id: Dia; nombre: string }[] = [
 ];
 
 export interface Filtros {
-  /** Busca en nombre, dirección, bebidas y tapas, sin distinguir acentos ni mayúsculas. */
+  /**
+   * Busca en nombre, dirección, bebidas y tapas, sin distinguir acentos ni mayúsculas. Si es un
+   * número, busca el local con ese número.
+   */
   texto: string;
   dia: Dia | '';
   /** Rango 'HH:MM'; solo se tiene en cuenta si hay día. Sin "hasta", vale la hora exacta de "desde". */
@@ -126,12 +129,13 @@ export function filtrarLocales(
   marcas: Marcas = SIN_MARCAS,
 ): Local[] {
   const texto = normalizar(filtros.texto.trim());
+  const numero = /^\d+$/.test(texto) ? Number(texto) : null;
   const { dia, desde, hasta, sinGluten, bebida, rutaDeSabor, favoritos, probadas } = filtros;
   return locales.filter(
     (local) =>
       (!favoritos || marcas.favoritos.has(local.number)) &&
       (!probadas || cumpleProbadas(local, probadas, marcas.valoraciones)) &&
-      (!texto || textoDe(local).includes(texto)) &&
+      (!texto || (numero !== null ? local.number === numero : textoDe(local).includes(texto))) &&
       (!dia || abiertoEntre(local.schedule[dia], desde, hasta)) &&
       (!sinGluten ||
         local.tapas.some(
@@ -406,18 +410,27 @@ function isoDe(fecha: Date): string {
   return `${fecha.getFullYear()}-${dos(fecha.getMonth() + 1)}-${dos(fecha.getDate())}`;
 }
 
-function normalizar(texto: string): string {
+/** En minúsculas y sin tildes, para comparar lo que se escribe. */
+export function normalizar(texto: string): string {
   return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
+/** Lo que se busca de cada local, ya normalizado: se prepara la primera vez que se busca. */
+const textos = new WeakMap<Local, string>();
+
 function textoDe(local: Local): string {
-  return normalizar(
-    [
-      local.name,
-      local.subtitle,
-      local.address,
-      ...local.drinks.flatMap((b) => [b.name, b.type]),
-      ...local.tapas.flatMap((t) => [t.name, t.description]),
-    ].join(' '),
-  );
+  let texto = textos.get(local);
+  if (texto === undefined) {
+    texto = normalizar(
+      [
+        local.name,
+        local.subtitle,
+        local.address,
+        ...local.drinks.flatMap((b) => [b.name, b.type]),
+        ...local.tapas.flatMap((t) => [t.name, t.description]),
+      ].join(' '),
+    );
+    textos.set(local, texto);
+  }
+  return texto;
 }

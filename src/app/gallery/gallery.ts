@@ -24,20 +24,22 @@ import { Venue } from '../venues';
         <li [attr.id]="'venue-' + venue.number">
           <span class="venue-mark"></span>
           <div class="heading">
-            <span class="venue-number small">{{ venue.number }}</span>
+            <span class="venue-number">{{ venue.number }}</span>
             <div class="title">
               <div class="name">
                 <!-- Its ::after covers the whole card: the venue opens by clicking anywhere except the photos and the heart. -->
                 <button type="button" class="open-venue" (click)="open.emit(venue.number)">
                   {{ venue.name }}
                 </button>
-                @if (card.gluten) {
-                  <app-seal [kind]="card.gluten" />
-                }
-                @if (card.flavorRoute) {
-                  <app-seal kind="flavor-route" />
-                }
-                <app-favorite [venue]="venue" />
+                <div class="corner">
+                  @if (card.gluten) {
+                    <app-seal [kind]="card.gluten" />
+                  }
+                  @if (card.flavorRoute) {
+                    <app-seal kind="flavor-route" />
+                  }
+                  <app-favorite [venue]="venue" />
+                </div>
               </div>
               <span class="data">
                 @if (arrival) {
@@ -73,12 +75,14 @@ import { Venue } from '../venues';
       list-style: none;
     }
 
+    // On top, the padding of the cards: with the rest of the heading measured like theirs, switching
+    // view leaves it in place.
     li {
       position: relative;
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
-      padding: 0.6rem;
+      padding: 1rem 0.6rem 0.6rem;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: var(--surface);
@@ -92,7 +96,12 @@ import { Venue } from '../venues';
     .heading {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
+    }
+
+    // Out of the left edge, past less padding on the sides than the cards'.
+    .venue-number {
+      margin-left: calc(-0.6rem - 1px);
     }
 
     // The name, as text: the button is there to open the venue from the whole card.
@@ -137,12 +146,11 @@ import { Venue } from '../venues';
       display: flex;
       flex: 1;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.1rem;
       min-width: 0;
     }
 
-    // Like in the cards: the seals and the heart on the right, centered with the name even if it
-    // takes several lines.
+    // A long name wraps before reaching the seals and the heart.
     .name {
       display: flex;
       align-items: center;
@@ -152,16 +160,29 @@ import { Venue } from '../venues';
       line-height: 1.2;
     }
 
+    // In the card's corner, without adding height to the row. The heart's drawing, as far from the top
+    // as from the right: it has more room in its box above than on its side.
+    .corner {
+      flex: none;
+      display: flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: -0.46rem;
+    }
+
+    // The size of the seals next to it, whose drawing fills more of its box.
     app-favorite {
       margin-left: 0.1rem;
+      font-size: 1.2rem;
     }
 
     .data {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.25rem 0.6rem;
-      font-size: 0.8rem;
+      gap: 0.25rem 0.4rem;
+      font-size: 0.85rem;
       font-weight: 600;
     }
 

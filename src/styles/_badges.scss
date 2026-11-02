@@ -1,5 +1,5 @@
 // A venue's number: it comes out of the left edge of its card (covering the border), rounded only on
-// the right. Small in the gallery, whose cards have less padding.
+// the right.
 .venue-number {
   flex: none;
   display: grid;
@@ -12,14 +12,6 @@
   background: var(--brand);
   color: #fff;
   font-weight: 700;
-
-  &.small {
-    min-width: 2.1rem;
-    height: 1.75rem;
-    margin-left: calc(-0.6rem - 1px);
-    padding: 0 0.45rem 0 0.35rem;
-    font-size: 0.85rem;
-  }
 }
 
 // How long it takes to get there (arrival-time.ts), in the cards, the gallery and the map's popups.

@@ -653,6 +653,23 @@ describe('App', () => {
       expect(returnButton()).toBeNull();
     });
 
+    it('«Volver al local» goes away on opening a venue from its popup', async () => {
+      const { el, press, scrollTo, locate, pageMoves, pageStops, returnButton, position } =
+        await startFollowing();
+      await scrollTo(6);
+      await locate(6);
+      await scrollTo(6);
+      pageMoves();
+      await pageStops();
+      expect(returnButton()).not.toBeNull();
+
+      await press(`.leaflet-popup button[aria-label='Ver los detalles del local']`);
+      expect(el.querySelector('.back')).not.toBeNull();
+      expect(el.querySelectorAll('app-venue-card').length).toBe(1);
+      expect(returnButton()).toBeNull();
+      expect(position.returnTo()).toBeNull();
+    });
+
     it('«Volver al local» waits while its venue is filtered out', async () => {
       const { fixture, el, scrollTo, locate, pageMoves, pageStops, press, returnButton } =
         await startFollowing();

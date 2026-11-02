@@ -115,6 +115,7 @@
             [venues]="onMap()"
             [origin]="location.origin()"
             (venueSelect)="showInList($event)"
+            (venueOpen)="openVenue($event)"
           />
 
           <section class="list" aria-label="Locales">

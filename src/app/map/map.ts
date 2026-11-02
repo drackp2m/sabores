@@ -47,6 +47,11 @@ const STATUS_KINDS: StatusKind[] = ['open', 'soon', 'late', 'closed'];
 /** How far a finger must move to know where it's going (fingers tremble a little on touching). */
 const DRAG_THRESHOLD = 10;
 
+/** How far the map's buttons (and Leaflet's zoom ones) are from its edges, and a popup from them. */
+const BUTTON_MARGIN = 10;
+/** Their width, in rem. */
+const BUTTON_WIDTH = 2.25;
+
 /**
  * Whether the map has already been moved with two fingers: then they know, and aren't told again.
  * For the whole session, on both maps (list and venue).
@@ -164,11 +169,11 @@ function sameKinds(
       }
     }
 
-    // Top right, like Leaflet's controls (which are on the left).
+    // Top right, like Leaflet's controls (which are on the left): those are inside the map's border.
     .buttons {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 11px;
+      right: 11px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
@@ -246,10 +251,15 @@ export class VenueMap {
   readonly venues = input.required<readonly Venue[]>();
   /** Starting point, if one was chosen. */
   readonly origin = input<Coordinates | null>(null);
-  /** Venue to always draw the route to (in the venue view); otherwise, the open popup's. */
+  /**
+   * Venue to always draw the route to (in the venue view, which has no popups: its data is already on
+   * the page); otherwise, the open popup's.
+   */
   readonly routeTo = input<number | null>(null);
   /** Number of the venue whose marker was clicked. */
   readonly venueSelect = output<number>();
+  /** Number of the venue to open, from the button on its popup. */
+  readonly venueOpen = output<number>();
 
   private readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
@@ -258,8 +268,8 @@ export class VenueMap {
   /** Full screen. */
   protected readonly large = signal(false);
   /**
-   * Venue selected on opening its popup. When closed (with its button or by clicking outside) it
-   * stays selected, with its route; clicking outside again deselects it.
+   * Venue selected on opening its popup. When closed (by clicking outside) it stays selected, with
+   * its route; clicking outside again deselects it.
    */
   private readonly selected = signal<number | null>(null);
   /** Whether a popup was open when the map was clicked (that click only closes it). */
@@ -309,7 +319,7 @@ export class VenueMap {
   private hideHint?: ReturnType<typeof setTimeout>;
   /**
    * Where a finger landed on the map, until it's known where it's going. It's cleared on lifting it:
-   * Leaflet's controls and popups don't let touchstart through and the previous touch would remain.
+   * Leaflet's controls don't let touchstart through and the previous touch would remain.
    */
   private touchStart?: { x: number; y: number };
   // Created with the map: if there's a map, they're there.
@@ -417,7 +427,7 @@ export class VenueMap {
     });
   }
 
-  /** Centers the map on a venue and opens its popup. */
+  /** Zooms in on a venue and opens its popup; with no popup, it just centers it. */
   focus(number: number): void {
     const map = this.map();
     if (!map) {
@@ -428,8 +438,13 @@ export class VenueMap {
     if (!marker) return;
     this.container().nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     this.position.appScrolled();
-    map.setView(marker.getLatLng(), 17);
-    marker.openPopup();
+    const zoom = 17;
+    if (marker.getPopup()) {
+      marker.openPopup();
+      this.placePopup(marker, zoom);
+    } else {
+      map.setView(marker.getLatLng(), zoom);
+    }
   }
 
   /** As soon as Leaflet arrives, the map and its layers. */
@@ -482,11 +497,27 @@ export class VenueMap {
     map.on('click', () => {
       if (!this.hadPopup) this.selected.set(null);
     });
+    // Leaflet keeps what starts on a popup away from the map: without that, dragging it moves the map.
+    // Clicks are still only the popup's.
+    map.on('popupopen', ({ popup }) =>
+      leaflet.DomEvent.off(
+        popup.getElement()!,
+        'mousedown touchstart',
+        leaflet.DomEvent.stopPropagation,
+      ),
+    );
     this.routeLayer.addTo(map);
     this.layer.addTo(map);
     // Every time its size changes (on enlarging or reducing it, when the scrollbar comes or goes…),
-    // Leaflet has to measure again.
-    this.resizeObserver = new ResizeObserver(() => map.invalidateSize());
+    // Leaflet has to measure again and the open popup, if any, to fit again.
+    this.resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+      const marker = this.markers.get(this.selected()!);
+      if (marker?.isPopupOpen()) {
+        marker.getPopup()!.update();
+        this.placePopup(marker);
+      }
+    });
     this.resizeObserver.observe(container);
     this.map.set(map);
   }
@@ -542,35 +573,84 @@ export class VenueMap {
     // Reading the font size forces a style recalculation: only when one has to be created.
     const rem = remInPx();
     const icon = venueIcon(this.leaflet, rem);
-    const popupWidth = Math.round(15 * rem);
+    // A popup leaves this much on each side: the map's buttons, with their margin on both sides.
+    const side = 2 * BUTTON_MARGIN + Math.round(BUTTON_WIDTH * rem);
+    const popups = this.routeTo() === null;
     for (const venue of venues) {
       if (!venue.location) continue;
       const marker = new this.leaflet.Marker([venue.location.lat, venue.location.lng], {
         icon,
         title: `${venue.number}. ${venue.name}`,
         riseOnHover: true,
+        interactive: popups,
+        keyboard: popups,
       })
-        // The content is generated on opening, with the schedule status of that moment.
-        .bindPopup(() => this.popup(venue), { minWidth: popupWidth, maxWidth: popupWidth })
         .on('click', () => this.venueSelect.emit(venue.number))
-        .on('popupopen', () => this.selected.set(venue.number));
+        .on('popupopen', () => {
+          this.selected.set(venue.number);
+          this.placePopup(marker);
+        });
+      // The content is generated just before measuring it, on opening and when the map changes size:
+      // with the schedule status and the width of that moment.
+      if (popups) {
+        marker.bindPopup(
+          () => {
+            this.fitPopup(marker.getPopup()!, side);
+            return this.popup(venue);
+          },
+          { closeButton: false, autoPan: false }, // The map moves in placePopup.
+        );
+      }
       marker.addTo(this.layer);
       this.markers.set(venue.number, marker);
     }
   }
 
+  /** As wide as the map allows, between its buttons. Leaflet adds 1px to these widths. */
+  private fitPopup(popup: L.Popup, side: number): void {
+    const width = this.map()!.getSize().x - 2 * side - 1;
+    popup.options.minWidth = popup.options.maxWidth = width;
+  }
+
   /**
-   * Name, address, arrival time, schedule status and tapa photos (styles in styles/_popups.scss: Leaflet
-   * paints it outside the component).
+   * Moves the map to leave an open popup in its place, at the zoom given (the current one if none).
+   * Its venue, always in the middle, which leaves the popup centered between the buttons: enlarged, a
+   * third of the way down, or lower if the popup doesn't fit above; otherwise, with the popup as high
+   * as it goes, as far from the top as the buttons.
+   */
+  private placePopup(marker: L.Marker, zoom = this.map()!.getZoom()): void {
+    const map = this.map()!;
+    const icon = marker.getElement()!.getBoundingClientRect();
+    const popup = marker.getPopup()!.getElement()!.getBoundingClientRect();
+    const highest = icon.top + icon.height / 2 - popup.top + BUTTON_MARGIN;
+    const { y: height } = map.getSize();
+    const y = this.large() ? Math.max(height / 3, highest) : highest;
+    const center = map.project(marker.getLatLng(), zoom).add([0, height / 2 - y]);
+    map.setView(map.unproject(center, zoom), zoom);
+  }
+
+  /**
+   * Laid out like a card: number, name and address, with a button to the venue on the right. Below,
+   * arrival time, schedule status and tapa photos (styles in styles/_popups.scss: Leaflet paints it
+   * outside the component).
    */
   private popup(venue: Venue): HTMLElement {
     const div = document.createElement('div');
     div.className = 'venue-popup';
+    const header = document.createElement('div');
+    header.className = 'popup-header';
+    const number = document.createElement('span');
+    number.className = 'venue-number';
+    number.textContent = `${venue.number}`;
+    const heading = document.createElement('div');
+    heading.className = 'popup-heading';
     const title = document.createElement('strong');
-    title.textContent = `${venue.number}. ${venue.name}`;
+    title.textContent = venue.name;
     const address = document.createElement('span');
     address.textContent = venue.address;
-    div.append(title, address);
+    heading.append(title, address);
+    header.append(number, heading, this.openButton(venue));
+    div.append(header);
     const row = document.createElement('div');
     row.className = 'popup-status';
     const arrival = this.tapasRoute.arrivals().get(venue.number);
@@ -601,5 +681,20 @@ export class VenueMap {
     }
     div.append(tapas);
     return div;
+  }
+
+  private openButton(venue: Venue): HTMLElement {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'secondary icon';
+    button.title = 'Ver los detalles del local';
+    button.setAttribute('aria-label', button.title);
+    button.append(createIcon('list'));
+    button.addEventListener('click', () => {
+      // With the mouse, letting go after dragging the map from the button also clicks it.
+      const dragging = this.map()!.dragging as L.Handler & { moved(): boolean };
+      if (!dragging.moved()) this.venueOpen.emit(venue.number);
+    });
+    return button;
   }
 }

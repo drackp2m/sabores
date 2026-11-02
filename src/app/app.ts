@@ -95,7 +95,7 @@ export class App {
 
   protected readonly sort = signal<Sort>(this.store.setting<Sort>('sort') ?? 'number');
   protected readonly view = signal<View>(this.store.setting<View>('view') ?? legacyView());
-  /** Venue opened from the photo view. */
+  /** Venue opened from the photo view or from its popup on the map. */
   protected readonly detail = signal<number | null>(null);
   /** Venue whose marker was just clicked, to highlight it in the list. */
   protected readonly highlighted = signal<number | null>(null);
@@ -316,9 +316,13 @@ export class App {
     setTimeout(() => this.highlighted.update((n) => (n === number ? null : n)), 1600);
   }
 
-  /** Opens a venue in a new history entry: the browser's back button returns to the gallery. */
+  /**
+   * Opens a venue in a new history entry: the browser's back button returns to where it was. From the
+   * map, on that venue's card (onNavigate): the one it had gone to the map from no longer counts.
+   */
   protected openVenue(number: number): void {
     this.galleryScroll = this.scroller.scrollTop;
+    this.position.returnTo.set(null);
     history.pushState({ venue: number }, '');
     this.detail.set(number);
     this.scroller.scrollTo({ top: 0 });

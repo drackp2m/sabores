@@ -97,10 +97,6 @@
   border-right-color: var(--surface);
 }
 
-.leaflet-container a.leaflet-popup-close-button {
-  color: var(--muted);
-}
-
 // Venue markers (map.ts): the dot, in the middle of its area to click on; the selected one, golden
 // like the stars.
 .venue-marker {

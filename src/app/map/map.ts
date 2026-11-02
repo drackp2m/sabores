@@ -862,7 +862,10 @@ export class VenueMap {
     this.placePopup(marker);
   }
 
-  /** As wide as the map allows, between its buttons with their margin on both sides. */
+  /**
+   * As wide as the map allows, between its buttons with their margin on both sides: at most, since its
+   * photos have a limit too (styles/_popups.scss).
+   */
   private fitPopup(popup: ml.Popup): void {
     const side = 2 * BUTTON_MARGIN + Math.round(BUTTON_WIDTH * remInPx());
     popup.setMaxWidth(`${this.map()!.getContainer().clientWidth - 2 * side}px`);

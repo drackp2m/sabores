@@ -1,8 +1,10 @@
-// Map popups (MapLibre creates them outside the components). The width map.ts gives them, as a
-// maximum, is the popup's. Above the markers, whose z-index goes up to 3 (styles/_map.scss).
+// Map popups (MapLibre creates them outside the components). As wide as map.ts lets them be, unless
+// that makes the photos larger than at their smallest in the cards (9rem, venue-card.scss): two, with
+// the gap between them and the padding and border around them (.venue-popup). Above the markers,
+// whose z-index goes up to 3 (styles/_map.scss).
 .map-popup {
   z-index: 4;
-  width: 100%;
+  width: min(100%, 2 * 9rem + 3 * 0.5em + 2px);
   animation: popup-in 0.2s linear;
 }
 
@@ -17,6 +19,8 @@
 // same.
 .map-popup,
 .origin-tooltip {
+  font-size: 0.75rem;
+
   .maplibregl-popup-content {
     padding: 0;
     border: 1px solid var(--border);
@@ -24,7 +28,6 @@
     background: var(--surface);
     box-shadow: 0 3px 14px rgb(0 0 0 / 0.4);
     color: var(--text);
-    font-size: 0.75rem;
     line-height: 1.3;
   }
 }

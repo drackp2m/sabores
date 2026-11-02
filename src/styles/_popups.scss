@@ -4,7 +4,8 @@
   cursor: inherit;
 }
 
-// No margins of Leaflet's: the width map.ts gives the content is the popup's.
+// No margins of Leaflet's: the width map.ts gives the content is the popup's. The border, that of
+// the cards, goes on the content for that same reason: within the width.
 .leaflet-popup-content-wrapper {
   padding: 0;
 }
@@ -12,9 +13,16 @@
 // The only font size in the popup: everything inside is in em, so this one scales all of it.
 .leaflet-popup-content {
   margin: 0;
+  border: 1px solid var(--border);
+  border-radius: inherit;
   font: inherit;
   font-size: 0.75rem;
   line-height: 1.3;
+}
+
+// The arrow continues the border: its fill covers it where they meet (Leaflet overlaps them 1px).
+.leaflet-popup-tip {
+  border: 1px solid var(--border);
 }
 
 .venue-popup {
@@ -25,7 +33,7 @@
 }
 
 // Like a card's header, but with the button in the corner. The number comes out of the left edge,
-// past the padding.
+// past the padding and covering the border.
 .popup-header {
   display: flex;
   align-items: center;
@@ -34,7 +42,7 @@
   .venue-number {
     min-width: 2.4em;
     height: 2em;
-    margin-left: -0.5em;
+    margin-left: calc(-0.5em - 1px);
     padding: 0 0.5em 0 0.4em;
   }
 

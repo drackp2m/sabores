@@ -19,7 +19,7 @@
     height: 100%;
     overflow: hidden auto;
     overscroll-behavior: none;
-    scroll-padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1rem);
+    scroll-padding-top: calc(var(--header-bottom) + 1rem);
   }
 }
 
@@ -135,7 +135,8 @@
 
 // Floating buttons: bottom left, «Volver» from the venue back to the gallery and, in the list,
 // «Volver al local» after having gone to the map; at the same height on the right, «Subir» once the
-// map is out of sight (the footer leaves room for them).
+// map is out of sight (the footer leaves room for them). The border, that of the cards, sets them
+// apart from what passes beneath in their same color (buttons, venue numbers).
 .back,
 .return,
 .scroll-top {
@@ -143,7 +144,12 @@
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   z-index: 1050; // Above Leaflet's controls (1000); below the enlarged photo and the header.
   height: 3rem;
+  border-color: var(--border);
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);
+
+  &:hover:not(:disabled) {
+    border-color: var(--border);
+  }
 }
 
 .back,
@@ -309,7 +315,7 @@ main {
 
 @include media.desktop {
   :host {
-    --map-height: calc(100vh - var(--header-height) - env(safe-area-inset-top, 0px) - 2rem);
+    --map-height: calc(100vh - var(--header-bottom) - 2rem);
   }
 
   .results,
@@ -327,7 +333,7 @@ main {
   .results .map,
   .detail .map {
     position: sticky;
-    top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1rem);
+    top: calc(var(--header-bottom) + 1rem);
   }
 }
 

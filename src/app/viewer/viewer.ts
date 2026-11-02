@@ -118,7 +118,7 @@ const LARGE_STROKE = 1.1;
     // exactly on its thumbnail. This way the scroll moves them both the same. Above everything but the
     // header, floating buttons included.
     .viewer {
-      --top: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1px);
+      --top: var(--header-bottom);
       position: absolute;
       left: 0;
       z-index: 1090;

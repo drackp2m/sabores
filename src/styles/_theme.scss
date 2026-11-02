@@ -24,6 +24,8 @@
   --radius: 0.75rem;
   --control-height: 2.5rem;
   --header-height: 3.5rem;
+  // Where the sticky header ends: its height, the top safe area (status bar) and its border.
+  --header-bottom: calc(var(--header-height) + env(safe-area-inset-top, 0px) + 1px);
   // Side margins that respect the safe areas (notch in landscape, with viewport-fit=cover).
   --gutter-left: max(1rem, env(safe-area-inset-left, 0px));
   --gutter-right: max(1rem, env(safe-area-inset-right, 0px));

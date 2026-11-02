@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, effect, inject, signal } from '@angular/core';
-import { firstValueFrom, timeout } from 'rxjs';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { firstValueFrom, fromEvent, timeout } from 'rxjs';
 
 import { Store } from './store';
-import { Coordinates, TravelMode, normalize } from './venues';
+import { Coordinates, TravelMode, distanceMeters, normalize } from './venues';
 
 export interface Origin extends Coordinates {
   /** "Tu ubicación" or the address that was typed. */
@@ -50,13 +51,20 @@ interface OsmPlace {
   category: string;
 }
 
+/** In meters: GPS wanders a little even standing still, and nothing has to recalculate for that. */
+const MIN_MOVE = 20;
+
+const MY_LOCATION = 'Tu ubicación';
+
 /** Where the last starting point came from, to recover it when the app opens again. */
 type Source = 'geolocation' | 'address';
 
 /**
  * Point from which distances and arrival times are calculated. The last one is recovered when the
  * app opens: the current location if that's what was used and the browser already allows it;
- * otherwise, the last address searched for.
+ * otherwise, the last address searched for. The current location keeps moving with the phone for as
+ * long as it's the starting point, but only while a map shows it: otherwise, it isn't worth the
+ * battery, nor having the list change while it's being read.
  */
 @Injectable({ providedIn: 'root' })
 export class UserLocation {
@@ -68,10 +76,31 @@ export class UserLocation {
   readonly travelMode = signal<TravelMode | ''>(this.store.setting<TravelMode>('travelMode') ?? '');
   readonly searching = signal(false);
   readonly error = signal('');
+  /** Whether a map is on screen, whole or full screen (the map says so). */
+  readonly mapInSight = signal(false);
+  /** The phone has stopped giving the location: the starting point is the last one it gave. */
+  readonly lost = signal(false);
+  /** The current location is the starting point, or is about to be. */
+  private readonly following = signal(false);
+  /** With no map in sight, only until the first reading: the list needs it to work out distances. */
+  private readonly watching = computed(
+    () => this.following() && (this.mapInSight() || this.searching()),
+  );
+  private watchId?: number;
 
   constructor() {
     effect(() => this.store.saveSetting('travelMode', this.travelMode()));
+    effect(() => {
+      if (this.watching()) this.watch();
+      else this.stopWatching();
+    });
     void this.restore();
+    // While the app is hidden the browser stops telling, and it doesn't always resume on its own.
+    fromEvent(document, 'visibilitychange')
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (!document.hidden && this.watchId !== undefined) this.watch();
+      });
   }
 
   useMyLocation(): void {
@@ -80,15 +109,7 @@ export class UserLocation {
       return;
     }
     this.begin();
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) =>
-        this.setOrigin(
-          { lat: coords.latitude, lng: coords.longitude, label: 'Tu ubicación' },
-          'geolocation',
-        ),
-      () => this.fail('No se ha podido obtener tu ubicación: escribe una dirección.'),
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
-    );
+    this.following.set(true);
   }
 
   /**
@@ -109,9 +130,47 @@ export class UserLocation {
   }
 
   clear(): void {
+    this.following.set(false);
+    this.lost.set(false);
     this.origin.set(null);
     this.error.set('');
     this.store.saveSetting('source', null);
+  }
+
+  /**
+   * The browser tells when the location changes: there's nothing to ask for every so often. Once it's
+   * known, a failure (no signal for a while) leaves it where it was, marked as lost, and the browser
+   * keeps trying.
+   */
+  private watch(): void {
+    this.stopWatching();
+    this.watchId = navigator.geolocation.watchPosition(
+      ({ coords }) => this.moveTo(coords),
+      () => {
+        if (this.searching()) {
+          this.following.set(false);
+          this.fail('No se ha podido obtener tu ubicación: escribe una dirección.');
+        } else {
+          this.lost.set(true);
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
+    );
+  }
+
+  private stopWatching(): void {
+    if (this.watchId !== undefined) navigator.geolocation.clearWatch(this.watchId);
+    this.watchId = undefined;
+  }
+
+  /** Less than it should move, or than the reading's own margin of error, isn't a move. */
+  private moveTo({ latitude: lat, longitude: lng, accuracy }: GeolocationCoordinates): void {
+    if (!this.following()) return; // It was removed and the watch hasn't stopped yet.
+    this.lost.set(false);
+    const origin = this.origin();
+    const distance = origin?.label === MY_LOCATION && distanceMeters(origin, { lat, lng });
+    if (distance !== false && distance < Math.max(MIN_MOVE, accuracy)) return;
+    this.setOrigin({ lat, lng, label: MY_LOCATION }, 'geolocation');
   }
 
   private async restore(): Promise<void> {
@@ -203,7 +262,10 @@ export class UserLocation {
     this.origin.set(origin);
     this.searching.set(false);
     this.store.saveSetting('source', source);
-    if (source === 'address') this.store.saveSetting('address', origin);
+    if (source === 'address') {
+      this.following.set(false);
+      this.store.saveSetting('address', origin);
+    }
   }
 
   private fail(message: string): void {

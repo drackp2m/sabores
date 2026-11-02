@@ -97,6 +97,49 @@
   border-right-color: var(--surface);
 }
 
+// The user's point (map.ts). With the location lost, blue-grey, and flickering back to its blue in
+// irregular bursts, like a light that's failing. A long loop, so that it doesn't look like one.
+.origin-marker.lost {
+  fill: #7b8aa3;
+  animation: origin-flicker 9s steps(1, end) infinite;
+
+  @include media.reduced-motion {
+    animation: none;
+  }
+}
+
+@keyframes origin-flicker {
+  0%,
+  11%,
+  15%,
+  32%,
+  33.7%,
+  38%,
+  58.8%,
+  64.6%,
+  66.2%,
+  67.2%,
+  74%,
+  75.6%,
+  100% {
+    fill: #7b8aa3;
+  }
+
+  10%,
+  13%,
+  31%,
+  33%,
+  34.5%,
+  58%,
+  64%,
+  65.6%,
+  66.8%,
+  68%,
+  75% {
+    fill: #2563eb;
+  }
+}
+
 // Venue markers (map.ts): the dot, in the middle of its area to click on; the selected one, golden
 // like the stars.
 .venue-marker {

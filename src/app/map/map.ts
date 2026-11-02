@@ -19,10 +19,19 @@ import { createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
 import { isTouch, remInPx } from '../media';
-import { directionsLink, findRoute } from '../routing';
-import { ScrollPosition } from '../scroll-position';
+import { Route, directionsLink, distanceToRoute, findRoute } from '../routing';
+import { ScrollPosition, WHOLE } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
-import { Coordinates, StatusKind, Venue, photoUrl, statusBadge, statusKind } from '../venues';
+import { UserLocation } from '../user-location';
+import {
+  Coordinates,
+  StatusKind,
+  Venue,
+  distanceMeters,
+  photoUrl,
+  statusBadge,
+  statusKind,
+} from '../venues';
 
 const CASTELLON: L.LatLngExpression = [39.986, -0.037];
 
@@ -46,6 +55,9 @@ const STATUS_KINDS: StatusKind[] = ['open', 'soon', 'late', 'closed'];
 
 /** How far a finger must move to know where it's going (fingers tremble a little on touching). */
 const DRAG_THRESHOLD = 10;
+
+/** In meters: how far the starting point can get from the route drawn before asking for another. */
+const OFF_ROUTE = 40;
 
 /** How far the map's buttons (and Leaflet's zoom ones) are from its edges, and a popup from them. */
 const BUTTON_MARGIN = 10;
@@ -264,9 +276,12 @@ export class VenueMap {
   private readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
   private readonly position = inject(ScrollPosition);
+  private readonly location = inject(UserLocation);
 
   /** Full screen. */
   protected readonly large = signal(false);
+  /** The whole map on screen, below the header. */
+  private readonly inSight = signal(false);
   /**
    * Venue selected on opening its popup. When closed (by clicking outside) it stays selected, with
    * its route; clicking outside again deselects it.
@@ -303,6 +318,22 @@ export class VenueMap {
     { equal: sameKinds },
   );
 
+  /**
+   * Where the route drawn starts. The starting point moves with the phone, but while it stays on the
+   * route this doesn't change: there's no need to ask for it again, nor to redraw it or frame it.
+   */
+  private readonly routeStart = computed(() => this.origin(), {
+    equal: (a, b) => {
+      if (!a || !b) return a === b;
+      return (this.route ? distanceToRoute(b, this.route) : distanceMeters(a, b)) < OFF_ROUTE;
+    },
+  });
+  /** On foot or by car: the arrival itself changes with every step, but this rarely does. */
+  private readonly routeMode = computed(() => {
+    const venue = this.destination();
+    return venue && this.tapasRoute.arrivals().get(venue.number)?.mode;
+  });
+
   protected readonly externalLink = computed(() => {
     const venue = this.destination();
     if (!venue?.location) return null;
@@ -327,6 +358,8 @@ export class VenueMap {
   private layer!: L.FeatureGroup;
   private routeLayer!: L.FeatureGroup;
   private originMarker!: L.CircleMarker;
+  /** The route drawn, from the starting point itself: it may be some way off the street it begins on. */
+  private route?: Route;
   private readonly markers = new Map<number, L.Marker>();
   private resizeObserver?: ResizeObserver;
   /** The venue asked to be focused before Leaflet arrived. */
@@ -344,8 +377,11 @@ export class VenueMap {
       container.addEventListener('touchmove', (event) => this.showHint(event), passive);
       container.addEventListener('touchend', () => (this.touchStart = undefined), passive);
 
+      this.watchSight(container);
       pendingTasks.run(() => this.createMap(container));
     });
+
+    effect(() => this.location.mapInSight.set(this.large() || this.inSight()));
 
     // Enlarged, it moves with one finger (there's no page to scroll).
     effect(() => {
@@ -358,17 +394,19 @@ export class VenueMap {
     // Route along the streets to the venue, with the same mode (on foot or by car) as the arrival time.
     effect((onCleanup) => {
       const map = this.map();
-      const origin = this.origin();
+      const origin = this.routeStart();
       const venue = this.destination();
-      const arrival = venue && this.tapasRoute.arrivals().get(venue.number);
+      const mode = this.routeMode();
       const fixed = this.routeTo() !== null;
       if (!map) return;
       this.routeLayer.clearLayers();
-      if (!origin || !venue?.location || !arrival) return;
+      this.route = undefined;
+      if (!origin || !venue?.location || !mode) return;
       let current = true;
       onCleanup(() => (current = false));
-      void findRoute(origin, venue.location, arrival.mode).then((route) => {
+      void findRoute(origin, venue.location, mode).then((route) => {
         if (!current || !route) return;
+        this.route = [[origin.lat, origin.lng], ...route];
         const line = new this.leaflet.Polyline(route, {
           pane: 'route',
           color: '#2563eb',
@@ -377,7 +415,7 @@ export class VenueMap {
           lineCap: 'round',
           lineJoin: 'round',
           // On foot, dotted; by car, solid.
-          dashArray: arrival.mode === 'walking' ? '1 9' : undefined,
+          dashArray: mode === 'walking' ? '1 9' : undefined,
           interactive: false,
         }).addTo(this.routeLayer);
         // In the venue view, show the whole route; with a popup open the map doesn't move.
@@ -390,10 +428,23 @@ export class VenueMap {
       });
     });
 
+    // The open popup keeps up with the arrival time and the schedule status.
+    effect(() => {
+      const venue = this.destination();
+      const status = venue && this.popupStatus(venue);
+      const popup = venue && this.markers.get(venue.number)?.getPopup();
+      if (!status || !popup?.isOpen()) return;
+      popup
+        .getElement()!
+        .querySelector('.popup-status')!
+        .replaceChildren(...status);
+    });
+
     this.destroyRef.onDestroy(() => {
       this.resizeObserver?.disconnect();
       this.map()?.remove();
       clearTimeout(this.hideHint);
+      this.location.mapInSight.set(false);
     });
 
     // One marker per venue, in the color of its schedule badge (open, about to close, no time to get
@@ -421,9 +472,11 @@ export class VenueMap {
     effect(() => {
       const map = this.map();
       const origin = this.origin();
+      const lost = this.location.lost();
       if (!map) return;
       if (origin) this.originMarker.setLatLng([origin.lat, origin.lng]).addTo(map);
       else this.originMarker.remove();
+      this.originMarker.getElement()?.classList.toggle('lost', lost);
     });
   }
 
@@ -461,6 +514,7 @@ export class VenueMap {
     this.layer = new leaflet.FeatureGroup();
     this.routeLayer = new leaflet.FeatureGroup();
     this.originMarker = new leaflet.CircleMarker(CASTELLON, {
+      className: 'origin-marker',
       radius: 7,
       color: '#fff',
       weight: 3,
@@ -520,6 +574,17 @@ export class VenueMap {
     });
     this.resizeObserver.observe(container);
     this.map.set(map);
+  }
+
+  /** Only with the whole map in sight: half of it, with the list below, doesn't count. */
+  private watchSight(container: HTMLElement): void {
+    const header = document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
+    const observer = new IntersectionObserver(
+      (entries) => this.inSight.set(entries.at(-1)!.intersectionRatio >= WHOLE),
+      { rootMargin: `-${header}px 0px 0px`, threshold: WHOLE },
+    );
+    observer.observe(container);
+    this.destroyRef.onDestroy(() => observer.disconnect());
   }
 
   private startTouch(event: TouchEvent): void {
@@ -653,18 +718,8 @@ export class VenueMap {
     div.append(header);
     const row = document.createElement('div');
     row.className = 'popup-status';
-    const arrival = this.tapasRoute.arrivals().get(venue.number);
-    if (arrival) row.append(createArrivalTime(arrival));
-    const status = this.tapasRoute.statuses().get(venue.number);
-    if (status) {
-      const { text, kind, warning } = statusBadge(status, this.clock.now(), arrival);
-      const badge = document.createElement('span');
-      badge.className = `schedule-status ${kind}`;
-      badge.textContent = text;
-      if (warning) badge.title = warning;
-      row.append(badge);
-    }
-    if (row.childElementCount) div.append(row);
+    row.append(...this.popupStatus(venue));
+    div.append(row);
     const tapas = document.createElement('div');
     tapas.className = 'popup-tapas';
     for (const tapa of venue.tapas) {
@@ -681,6 +736,22 @@ export class VenueMap {
     }
     div.append(tapas);
     return div;
+  }
+
+  /** Arrival time and schedule status, right now. */
+  private popupStatus(venue: Venue): HTMLElement[] {
+    const arrival = this.tapasRoute.arrivals().get(venue.number);
+    const status = this.tapasRoute.statuses().get(venue.number);
+    const row: HTMLElement[] = arrival ? [createArrivalTime(arrival)] : [];
+    if (status) {
+      const { text, kind, warning } = statusBadge(status, this.clock.now(), arrival);
+      const badge = document.createElement('span');
+      badge.className = `schedule-status ${kind}`;
+      badge.textContent = text;
+      if (warning) badge.title = warning;
+      row.push(badge);
+    }
+    return row;
   }
 
   private openButton(venue: Venue): HTMLElement {

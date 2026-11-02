@@ -1,4 +1,4 @@
-import { Coordinates, TravelMode } from './venues';
+import { Coordinates, TravelMode, distanceMeters } from './venues';
 
 /** The route's [lat, lng] points, the way Leaflet draws them. */
 export type Route = [number, number][];
@@ -37,6 +37,26 @@ export function findRoute(
     routes.set(url, route);
   }
   return route;
+}
+
+/** How many meters a point is from a route: from the closest spot along any of its stretches. */
+export function distanceToRoute(point: Coordinates, route: Route): number {
+  // Near the point the Earth is flat enough: each stretch, in meters from it.
+  const metersPerDegree = (2 * Math.PI * 6_371_000) / 360;
+  const toMeters = ([lat, lng]: [number, number]) => ({
+    x: (lng - point.lng) * metersPerDegree * Math.cos((point.lat * Math.PI) / 180),
+    y: (lat - point.lat) * metersPerDegree,
+  });
+  let closest = Infinity;
+  for (let i = 1; i < route.length; i++) {
+    const a = toMeters(route[i - 1]);
+    const b = toMeters(route[i]);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const along = Math.min(1, Math.max(0, -(a.x * dx + a.y * dy) / (dx * dx + dy * dy || 1)));
+    closest = Math.min(closest, Math.hypot(a.x + along * dx, a.y + along * dy));
+  }
+  return closest;
 }
 
 /** Directions in the system's maps app: Apple Maps on iPhone, iPad and Mac; Google Maps elsewhere. */

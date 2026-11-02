@@ -54,6 +54,136 @@ describe('UserLocation', () => {
     (await request('nominatim')).flush(inCastello);
   }
 
+  describe('the current location', () => {
+    const watchPosition = vi.fn();
+    const clearWatch = vi.fn();
+    beforeEach(() => {
+      watchPosition.mockReset().mockReturnValue(7);
+      clearWatch.mockReset();
+      Object.defineProperty(navigator, 'geolocation', {
+        configurable: true,
+        value: { watchPosition, clearWatch },
+      });
+    });
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'geolocation');
+      localStorage.clear();
+    });
+
+    /** Starts following it and returns what the browser calls: with each reading and on failing. */
+    function follow(mapInSight = true) {
+      location.mapInSight.set(mapInSight);
+      location.useMyLocation();
+      TestBed.tick();
+      const [onReading, onFailure] = watchPosition.mock.lastCall as [
+        (position: { coords: Partial<GeolocationCoordinates> }) => void,
+        () => void,
+      ];
+      const read = (latitude: number, longitude: number, accuracy = 10) =>
+        onReading({ coords: { latitude, longitude, accuracy } });
+      return { read, onFailure };
+    }
+
+    it('moves the starting point with the phone', () => {
+      const { read } = follow();
+      expect(location.searching()).toBe(true);
+
+      read(39.98, -0.04);
+      expect(location.origin()).toEqual({ lat: 39.98, lng: -0.04, label: 'Tu ubicación' });
+      expect(location.searching()).toBe(false);
+
+      read(39.981, -0.04);
+      expect(location.origin()?.lat).toBe(39.981);
+    });
+
+    it('takes no notice of what GPS wanders standing still', () => {
+      const { read } = follow();
+      read(39.98, -0.04);
+      const origin = location.origin();
+
+      read(39.9801, -0.04); // Some 11 m.
+      expect(location.origin()).toBe(origin);
+      read(39.981, -0.04, 200); // Some 110 m, but it could be wrong by 200.
+      expect(location.origin()).toBe(origin);
+    });
+
+    it('if the first reading fails it says so and stops; later on, it stays where it was', () => {
+      const failing = follow();
+      failing.onFailure();
+      TestBed.tick();
+      expect(location.error()).toContain('No se ha podido obtener tu ubicación');
+      expect(location.searching()).toBe(false);
+      expect(clearWatch).toHaveBeenCalledTimes(1);
+
+      const { read, onFailure } = follow();
+      read(39.98, -0.04);
+      onFailure();
+      TestBed.tick();
+      expect(location.origin()?.lat).toBe(39.98);
+      expect(clearWatch).toHaveBeenCalledTimes(1);
+    });
+
+    it('a failure once known marks it as lost, until there is another reading', () => {
+      const { read, onFailure } = follow();
+      read(39.98, -0.04);
+      expect(location.lost()).toBe(false);
+
+      onFailure();
+      expect(location.lost()).toBe(true);
+
+      read(39.98, -0.04); // Even if it hasn't moved: it's back.
+      expect(location.lost()).toBe(false);
+    });
+
+    it('with no map in sight it stops after the first reading, and resumes with the map', () => {
+      const { read } = follow(false);
+      expect(watchPosition).toHaveBeenCalledTimes(1);
+
+      read(39.98, -0.04);
+      TestBed.tick();
+      expect(location.origin()?.lat).toBe(39.98);
+      expect(clearWatch).toHaveBeenCalledTimes(1);
+
+      location.mapInSight.set(true);
+      TestBed.tick();
+      expect(watchPosition).toHaveBeenCalledTimes(2);
+
+      location.mapInSight.set(false);
+      TestBed.tick();
+      expect(clearWatch).toHaveBeenCalledTimes(2);
+    });
+
+    it('stops following it on removing it or when an address takes over', async () => {
+      follow();
+      location.clear();
+      TestBed.tick();
+      expect(clearWatch).toHaveBeenCalledTimes(1);
+
+      follow();
+      const search = location.search('Benicàssim');
+      (await request('nominatim')).flush([{ lat: '40.05', lon: '0.06', category: 'place' }]);
+      await search;
+      TestBed.tick();
+      expect(clearWatch).toHaveBeenCalledTimes(2);
+    });
+
+    it('starts over on coming back to the app, in case the browser has stopped telling', () => {
+      const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(watchPosition).not.toHaveBeenCalled();
+
+      follow();
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(watchPosition).toHaveBeenCalledTimes(1);
+
+      hidden.mockReturnValue(false);
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(clearWatch).toHaveBeenCalledTimes(1);
+      expect(watchPosition).toHaveBeenCalledTimes(2);
+      hidden.mockRestore();
+    });
+  });
+
   it('with a number, uses the portal of that street from the official street map', async () => {
     const search = location.search('Calle Herrero, 49');
     await streetMap([

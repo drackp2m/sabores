@@ -77,6 +77,10 @@
   align-items: center;
   gap: 0.5em;
 
+  &:empty {
+    display: none;
+  }
+
   .arrival-time svg {
     width: 1.1em;
     height: 1.1em;

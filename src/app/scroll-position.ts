@@ -8,7 +8,7 @@ const FAR = 1_000_000;
 /** How many different venues must go out of sight on one side to forget the one to return to. */
 const FORGET_AFTER = 3;
 /** A whole card in sight. Not 1: with fractional sizes, some browsers never quite get there. */
-const WHOLE = 0.99;
+export const WHOLE = 0.99;
 /** In px: the browser tells when a card crosses an edge, but rounds where that edge is. */
 const SNAP = 1;
 /** With no movement for this long, a scroll started by the app has finished. */

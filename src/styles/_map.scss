@@ -1,0 +1,161 @@
+@use 'media';
+
+// MapLibre in the theme's colors (its styles go first: loadMapLibreStyles, in map.ts).
+.maplibregl-map {
+  background: var(--background);
+}
+
+// What's on the map, whatever its z-index, stays under its controls.
+.maplibregl-canvas-container {
+  isolation: isolate;
+}
+
+// map.ts has its own notice: this one would also appear on scrolling the page.
+.maplibregl-cooperative-gesture-screen {
+  display: none;
+}
+
+// The credits, in a strip across the bottom of the map: centered, with room between them and below
+// (the letters' tails don't touch the edge). Enlarged on a phone, it goes on to the bottom edge, with
+// the text above the home indicator (see map.ts).
+.maplibregl-ctrl-bottom-right {
+  left: 0;
+}
+
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl.maplibregl-ctrl-attrib {
+  float: none;
+  padding: 2px 8px calc(5px + var(--attribution-bottom, 0px));
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  color: var(--muted);
+  line-height: 1.4;
+
+  a {
+    color: var(--accent);
+  }
+}
+
+.maplibregl-ctrl-attrib-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.75em; // On one line in a phone's small map.
+
+  > * {
+    white-space: nowrap;
+  }
+}
+
+// The user's point (map.ts). With the location lost, blue-grey, and flickering back to its blue in
+// irregular bursts, like a light that's failing. A long loop, so that it doesn't look like one.
+.origin-marker {
+  width: 17px;
+  height: 17px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background-color: #2563eb;
+
+  &.lost {
+    background-color: #7b8aa3;
+    animation: origin-flicker 9s steps(1, end) infinite;
+
+    @include media.reduced-motion {
+      animation: none;
+    }
+  }
+}
+
+@keyframes origin-flicker {
+  0%,
+  11%,
+  15%,
+  32%,
+  33.7%,
+  38%,
+  58.8%,
+  64.6%,
+  66.2%,
+  67.2%,
+  74%,
+  75.6%,
+  100% {
+    background-color: #7b8aa3;
+  }
+
+  10%,
+  13%,
+  31%,
+  33%,
+  34.5%,
+  58%,
+  64%,
+  65.6%,
+  66.8%,
+  68%,
+  75% {
+    background-color: #2563eb;
+  }
+}
+
+// Venue markers (map.ts): the dot, in the middle of its area to click on; the selected one, golden
+// like the stars.
+.venue-marker {
+  z-index: 1; // Above the user's point; the selected and the hovered one, above the others.
+  display: grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  cursor: pointer;
+
+  &.active {
+    z-index: 2;
+  }
+
+  &:hover {
+    z-index: 3;
+  }
+
+  // In the venue view: the map under it is what gets touched.
+  &.static {
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--marker-color, var(--brand));
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+    transition:
+      background-color 0.15s,
+      transform 0.15s;
+  }
+
+  &:hover::after {
+    transform: scale(1.15);
+  }
+
+  // In the text color of its schedule badge (.schedule-status).
+  &.open {
+    --marker-color: var(--green);
+  }
+
+  &.soon {
+    --marker-color: var(--warning);
+  }
+
+  &.late {
+    --marker-color: var(--red);
+  }
+
+  &.closed {
+    --marker-color: var(--muted);
+  }
+
+  &.active::after {
+    background: var(--star);
+    transform: scale(1.25);
+  }
+}

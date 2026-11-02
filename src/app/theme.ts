@@ -1,6 +1,7 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 
 import { legacyTheme } from './legacy-storage';
+import { systemDark } from './media';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -14,8 +15,16 @@ const THEME_KEY = 'tapas-route:theme';
 @Injectable({ providedIn: 'root' })
 export class Themes {
   readonly theme = signal<Theme>(readTheme());
+  private readonly systemDark = signal(systemDark().matches);
+  /** Whether what's showing is dark: for what the styles can't reach, like the map's own colors. */
+  readonly dark = computed(() => {
+    const theme = this.theme();
+    return theme === 'system' ? this.systemDark() : theme === 'dark';
+  });
 
   constructor() {
+    systemDark().addEventListener('change', ({ matches }) => this.systemDark.set(matches));
+
     effect(() => {
       const theme = this.theme();
       const root = document.documentElement;

@@ -29,7 +29,7 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 1100; // Above Leaflet's controls (1000).
+  z-index: 1100; // Above the map's buttons (1000).
   // The border, in the background color, sets it apart from what passes beneath in its same color
   // (buttons, venue numbers).
   border-bottom: 1px solid var(--background);
@@ -150,7 +150,7 @@
 .scroll-top {
   position: fixed;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  z-index: 1050; // Above Leaflet's controls (1000); below the enlarged photo and the header.
+  z-index: 1050; // Above the map's buttons (1000); below the enlarged photo and the header.
   height: 3rem;
   border-color: var(--border);
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);

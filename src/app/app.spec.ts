@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import * as L from 'leaflet';
+import * as maplibre from 'maplibre-gl';
 
 import { stubIntersections } from '../testing/intersections';
 import { testTapa, testVenue, week } from '../testing/venue';
@@ -248,7 +248,7 @@ describe('App', () => {
 
   it('the map doesn’t move on marking a favorite or rating, and waits for typing to stop', async () => {
     // In jsdom the map has no size: only the number of times it frames gets counted.
-    const fitBounds = vi.spyOn(L.Map.prototype, 'fitBounds').mockReturnThis();
+    const fitBounds = vi.spyOn(maplibre.Map.prototype, 'fitBounds').mockReturnThis();
     const { fixture, el, press } = await start({
       ...DATA,
       venues: DATA.venues.map((v) => ({
@@ -256,7 +256,7 @@ describe('App', () => {
         location: { lat: 39.98 + v.number / 1000, lng: 0 },
       })),
     });
-    const markers = () => el.querySelectorAll('app-map .leaflet-marker-icon').length;
+    const markers = () => el.querySelectorAll('app-map .venue-marker').length;
     expect(markers()).toBe(2);
     expect(fitBounds).toHaveBeenCalledTimes(1);
 
@@ -312,28 +312,56 @@ describe('App', () => {
     expect(el.querySelectorAll('app-venue-card').length).toBe(1);
   });
 
-  it('only allows a time range with a day, and «Abierto ahora» fills in both', async () => {
-    const { fixture, el, press } = await start();
-    const select = (label: string) =>
-      [...el.querySelectorAll('.field')]
-        .find((f) => f.textContent!.includes(label))!
-        .querySelector('select')!;
+  it('filters by time without a day too, also into the following day', async () => {
+    const { fixture, el } = await start({
+      ...DATA,
+      venues: [
+        { ...DATA.venues[0], schedule: week([{ open: '12:00', close: '14:00' }]) },
+        { ...DATA.venues[1], schedule: week([{ open: '20:00', close: '22:00' }]) },
+      ],
+    });
+    const names = () => [...el.querySelectorAll('app-venue-card h2')].map((h) => h.textContent);
+    const shown = () => [...el.querySelectorAll('app-time-field span')].map((s) => s.textContent);
     const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
-    expect(from.disabled).toBe(true);
-    expect(to.disabled).toBe(true);
-
-    await press('.actions button', 'Abierto ahora');
-    expect(select('Día').value).not.toBe('');
-    expect(from.value).toBe(new Date().toTimeString().slice(0, 5));
-    expect(to.value).toBe(from.value);
+    const type = async (input: HTMLInputElement, time: string) => {
+      input.value = time;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+    };
     expect(from.disabled).toBe(false);
     expect(to.disabled).toBe(false);
 
+    await type(from, '21:00');
+    expect(shown()).toEqual(['00:00']);
+    expect(names()).toEqual(['CÚPULA']);
+
+    await type(to, '13:00');
+    expect(names()).toEqual(['ORIGEN', 'CÚPULA']);
+
+    await type(to, '11:00');
+    expect(names()).toEqual(['CÚPULA']);
+
+    await type(from, '');
+    expect(shown()).toEqual(['00:00']);
+    expect(names()).toEqual([]);
+  });
+
+  it('«Abierto ahora» fills in the day and both ends, and «Limpiar» empties them', async () => {
+    const { el, press } = await start();
+    const day = [...el.querySelectorAll('.field')]
+      .find((f) => f.textContent!.includes('Día'))!
+      .querySelector('select')!;
+    const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
+
+    await press('.actions button', 'Abierto ahora');
+    expect(day.value).not.toBe('');
+    expect(from.value).toBe(new Date().toTimeString().slice(0, 5));
+    expect(to.value).toBe(from.value);
+
     await press('.actions button', 'Limpiar');
-    expect(select('Día').value).toBe('');
+    expect(day.value).toBe('');
     expect(from.value).toBe('');
-    expect(from.disabled).toBe(true);
-    await fixture.whenStable();
+    expect(to.value).toBe('');
   });
 
   describe('with only one end of the time range', () => {
@@ -731,7 +759,7 @@ describe('App', () => {
       await pageStops();
       expect(returnButton()).not.toBeNull();
 
-      await press(`.leaflet-popup button[aria-label='Ver los detalles del local']`);
+      await press(`.maplibregl-popup button[aria-label='Ver los detalles del local']`);
       expect(el.querySelector('.back')).not.toBeNull();
       expect(el.querySelectorAll('app-venue-card').length).toBe(1);
       expect(returnButton()).toBeNull();

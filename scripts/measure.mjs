@@ -7,9 +7,9 @@
 //   pnpm measure --network    # on an average phone's network (Lighthouse's: 1.6 Mbps and 150 ms)
 //   pnpm measure --json       # the result as JSON
 //
-// It uses the browser in the CHROME variable or the first Chromium or Chrome it finds. Map tiles
-// aren't requested from OpenStreetMap: they get answered here with a gray image. Text files are
-// served compressed, as on GitHub Pages.
+// It uses the browser in the CHROME variable or the first Chromium or Chrome it finds. The map's style
+// isn't requested from OpenFreeMap: it gets answered here with an empty one, so only the markers and
+// popups count. Text files are served compressed, as on GitHub Pages.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
@@ -33,6 +33,7 @@ const SEARCH = 'queso';
 const TYPES = {
   '.html': 'text/html',
   '.js': 'text/javascript',
+  '.mjs': 'text/javascript',
   '.css': 'text/css',
   '.json': 'application/json',
   '.jpg': 'image/jpeg',
@@ -73,8 +74,10 @@ const chrome = spawn(browser, [
   `--window-size=${WIDTH},${HEIGHT}`,
   '--no-first-run',
   '--no-default-browser-check',
-  // In the container there are no user namespaces for the sandbox.
-  ...(process.platform === 'linux' ? ['--no-sandbox'] : []),
+  // In the container there are no user namespaces for the sandbox, and WebGL2 goes through its Mesa.
+  ...(process.platform === 'linux'
+    ? ['--no-sandbox', '--use-angle=gl-egl', '--ignore-gpu-blocklist', '--ozone-platform=headless']
+    : []),
 ]);
 
 try {
@@ -134,16 +137,19 @@ async function measure(cdp, url) {
   const cpu = Number(options.cpu);
   if (cpu > 1) await page('Emulation.setCPUThrottlingRate', { rate: cpu });
 
-  const tile = grayPng();
+  const style = JSON.stringify({ version: 8, sources: {}, layers: [] });
   cdp.onEvent('Fetch.requestPaused', ({ requestId }) =>
     page('Fetch.fulfillRequest', {
       requestId,
       responseCode: 200,
-      responseHeaders: [{ name: 'content-type', value: 'image/png' }],
-      body: tile,
+      responseHeaders: [
+        { name: 'content-type', value: 'application/json' },
+        { name: 'access-control-allow-origin', value: '*' },
+      ],
+      body: Buffer.from(style).toString('base64'),
     }),
   );
-  await page('Fetch.enable', { patterns: [{ urlPattern: '*tile.openstreetmap.org*' }] });
+  await page('Fetch.enable', { patterns: [{ urlPattern: '*tiles.openfreemap.org/styles/*' }] });
   if (options.network) {
     await page('Network.enable');
     await page('Network.emulateNetworkConditions', {
@@ -162,7 +168,7 @@ async function measure(cdp, url) {
   await page('Page.navigate', { url });
   await waitUntil(
     `document.querySelectorAll('app-venue-card').length > 0 &&
-     document.querySelectorAll('.leaflet-marker-icon').length > 0`,
+     document.querySelectorAll('.venue-marker').length > 0`,
   );
   await evaluate(`new Promise((resolve) => requestIdleCallback(resolve, { timeout: 3000 }))`);
   const startup = await evaluate(`({
@@ -175,8 +181,7 @@ async function measure(cdp, url) {
 
   const dom = await evaluate(`(${countDom})()`);
 
-  // So it doesn't mix with what's left of startup: map tiles may still be appearing.
-  await waitUntil(`!document.querySelector('.leaflet-tile:not(.leaflet-tile-loaded)')`);
+  // So it doesn't mix with what's left of startup.
   await pause(1000);
 
   // Scroll from top to bottom and back up with the wheel, over the list.
@@ -212,12 +217,12 @@ async function measure(cdp, url) {
   await evaluate(`scrollTo(0, 0)`);
   await pause(300);
   const marker = await evaluate(`(() => {
-    const icon = document.querySelector('.leaflet-marker-icon');
+    const icon = document.querySelector('.venue-marker');
     const { left, top, width, height } = icon.getBoundingClientRect();
     return { number: parseInt(icon.title), x: left + width / 2, y: top + height / 2 };
   })()`);
   await click(page, marker);
-  await waitUntil(`!!document.querySelector('.leaflet-popup')`);
+  await waitUntil(`!!document.querySelector('.maplibregl-popup')`);
   await pause(1200); // How long the list takes to reach its card.
   const mapView = `(${mapSignature})()`;
   const viewBefore = await evaluate(mapView);
@@ -227,7 +232,7 @@ async function measure(cdp, url) {
   await evaluate(heart);
   await pause(800);
   const favorite = {
-    popupStillOpen: await evaluate(`!!document.querySelector('.leaflet-popup')`),
+    popupStillOpen: await evaluate(`!!document.querySelector('.maplibregl-popup')`),
     mapStill: (await evaluate(mapView)) === viewBefore,
     markerChanges: await evaluate(`window.__markerChanges`),
     ...cost(before, await metrics()),
@@ -279,7 +284,7 @@ function observeStartup() {
     if (isNaN(measure.cards) && document.querySelector('app-venue-card')) {
       measure.cards = performance.now();
     }
-    if (!document.querySelector('.leaflet-marker-icon')) return;
+    if (!document.querySelector('.venue-marker')) return;
     measure.markers = performance.now();
     observer.disconnect();
   }).observe(document, { childList: true, subtree: true });
@@ -297,7 +302,7 @@ function photosSize() {
 function downloads() {
   return performance
     .getEntriesByType('resource')
-    .filter(({ name }) => /\.js$|venues\.json$/.test(name))
+    .filter(({ name }) => /\.m?js(\?|$)|venues\.json$/.test(name))
     .map(({ name, startTime, responseEnd }) => ({
       file: name.split('/').pop(),
       fromMs: Math.round(startTime),
@@ -347,23 +352,24 @@ function countFrames() {
   return { stop: () => ((running = false), { frames: total, slowFrames: slow }) };
 }
 
-/** Where the map is (offset and zoom) and which popup it has open. */
+/** Where the map is (where it leaves a marker) and which popup it has open. */
 function mapSignature() {
-  const style = (selector) => document.querySelector(selector)?.style.transform ?? '';
-  const popup = document.querySelector('.leaflet-popup strong')?.textContent ?? '';
-  return [style('.leaflet-map-pane'), style('.leaflet-proxy'), popup].join(' | ');
+  const marker = document.querySelector('.venue-marker')?.style.transform ?? '';
+  const popup = document.querySelector('.maplibregl-popup strong')?.textContent ?? '';
+  return [marker, popup].join(' | ');
 }
 
 /** Counts the times markers get removed or added. */
 function observeMap() {
   window.__markerChanges = 0;
   window.__mapObserver?.disconnect();
+  const isMarker = (node) => node.classList?.contains('venue-marker');
   window.__mapObserver = new MutationObserver((changes) => {
-    if (changes.some((c) => c.addedNodes.length || c.removedNodes.length)) {
+    if (changes.some((c) => [...c.addedNodes, ...c.removedNodes].some(isMarker))) {
       window.__markerChanges++;
     }
   });
-  window.__mapObserver.observe(document.querySelector('.leaflet-marker-pane'), {
+  window.__mapObserver.observe(document.querySelector('.maplibregl-canvas-container'), {
     childList: true,
   });
 }
@@ -483,24 +489,4 @@ function connect(address) {
     socket.onopen = () => resolve(client);
     socket.onerror = () => reject(new Error(`Can't connect to ${address}`));
   });
-}
-
-/** A 1×1 light gray PNG image, which Leaflet stretches to 256×256. */
-function grayPng() {
-  const chunk = (type, data) => {
-    const body = Buffer.concat([Buffer.from(type), data]);
-    const length = Buffer.alloc(4);
-    length.writeUInt32BE(data.length);
-    const crc = Buffer.alloc(4);
-    crc.writeUInt32BE(zlib.crc32(body));
-    return Buffer.concat([length, body, crc]);
-  };
-  // 1×1, 8 bits per channel, grayscale (color type 0).
-  const header = Buffer.from([0, 0, 0, 1, 0, 0, 0, 1, 8, 0, 0, 0, 0]);
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', header),
-    chunk('IDAT', zlib.deflateSync(Buffer.from([0, 0xe0]))),
-    chunk('IEND', Buffer.alloc(0)),
-  ]).toString('base64');
 }

@@ -24,13 +24,18 @@ node -e '
   const read = (file) => JSON.parse(fs.readFileSync(file, "utf8"));
   const write = (file, json) => fs.writeFileSync(file, JSON.stringify(json, null, 2) + "\n");
 
-  // Serves data/ (venues.json and photos) as static assets in /data and adds the Leaflet styles.
+  // Serves data/ (venues.json and photos) as static assets in /data, and MapLibre's worker and styles
+  // apart from the app (see map.ts).
   const ng = read("angular.json");
   const build = Object.values(ng.projects)[0].architect.build.options;
-  (build.assets ??= []).push({ glob: "**/*", input: "data", output: "data", ignore: ["geocode-*.json"] });
-  build.styles = ["node_modules/leaflet/dist/leaflet.css", ...(build.styles ?? [])];
-  // Leaflet 1.x is not ESM: avoids the CommonJS dependency warning on building.
-  (build.allowedCommonJsDependencies ??= []).push("leaflet");
+  (build.assets ??= []).push(
+    { glob: "**/*", input: "data", output: "data", ignore: ["geocode-*.json"] },
+    { glob: "maplibre-gl-worker.mjs", input: "node_modules/maplibre-gl/dist", output: "." },
+  );
+  build.styles = [
+    { input: "node_modules/maplibre-gl/dist/maplibre-gl.css", bundleName: "maplibre-gl", inject: false },
+    ...(build.styles ?? []),
+  ];
   write("angular.json", ng);
 
   // Listen on 0.0.0.0 so the port is reachable from outside the container.
@@ -48,6 +53,4 @@ allowBuilds:
   msgpackr-extract: true
 EOF
 
-# Leaflet 1.x, the version @types/leaflet describes.
-pnpm add leaflet@1
-pnpm add --save-dev @types/leaflet@1
+pnpm add maplibre-gl@6

@@ -36,20 +36,26 @@
                   "geocode-*.json",
                   "photos/*.jpg"
                 ]
+              },
+              {
+                "glob": "maplibre-gl-worker.mjs",
+                "input": "node_modules/maplibre-gl/dist",
+                "output": "."
               }
             ],
             "styles": [
-              "node_modules/leaflet/dist/leaflet.css",
+              {
+                "input": "node_modules/maplibre-gl/dist/maplibre-gl.css",
+                "bundleName": "maplibre-gl",
+                "inject": false
+              },
               "src/styles.scss"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src/styles"
               ]
-            },
-            "allowedCommonJsDependencies": [
-              "leaflet"
-            ]
+            }
           },
           "configurations": {
             "production": {

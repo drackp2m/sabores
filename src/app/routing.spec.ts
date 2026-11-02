@@ -3,9 +3,9 @@ import { distanceMeters } from './venues';
 
 describe('distanceToRoute', () => {
   const ROUTE: Route = [
-    [39.98, -0.04],
-    [39.99, -0.04],
-    [39.99, -0.03],
+    [-0.04, 39.98],
+    [-0.04, 39.99],
+    [-0.03, 39.99],
   ];
 
   it('is zero anywhere along a stretch, not only at its ends', () => {

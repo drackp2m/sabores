@@ -75,7 +75,7 @@ script warns so that it gets added there with its name and type.
 Open the folder in VS Code → *Dev Containers: Reopen in Container* (with OrbStack running).
 
 The first time, `.devcontainer/post-create.sh` generates the app with the latest Angular CLI (SCSS, no
-SSR, pnpm), installs Leaflet for the OpenStreetMap map and configures `angular.json` to serve `data/` at
+SSR, pnpm), installs MapLibre for the OpenStreetMap map and configures `angular.json` to serve `data/` at
 `/data` (e.g. `fetch('data/venues.json')`, `data/photos/01-1-500.webp`). Generated files don't overwrite
 existing ones, so the code in `src/` is kept. If `package.json` already exists, it just runs `pnpm install`.
 
@@ -108,8 +108,9 @@ configuration is in `.devcontainer/zsh/` (`ZDOTDIR`): that's where `.p10k.zsh` (
 `.aliases` and the history go. To install more packages: `sudo apk add …`.
 
 The app shows the venues in a list and on a map, with filters by text (venue, tapa, ingredient, street or
-drink), day and time range when they serve tapas («Abierto ahora» fills in day and time; with only one
-end of the range, the other is shown in grey: up to midnight, or from now on), gluten-free tapas (or «bajo petición»), drink type and the Castelló Ruta de Sabor seal. Each tapa's seals are icons
+drink), day and time range when they serve tapas (without a day, on any; ending before it starts, into the
+next day; «Abierto ahora» fills in day and time; with only one end of the range, the other is shown in
+grey: up to midnight, or from now on), gluten-free tapas (or «bajo petición»), drink type and the Castelló Ruta de Sabor seal. Each tapa's seals are icons
 (crossed-out wheat in green or amber and the route's logo, in `public/flavor-route.svg`) with a legend
 above the list. Descriptions are clamped to three lines with «Ver más» and, on clicking a photo, it
 enlarges from its place over the blurred background. Drinks, in the filter and on each card, go from most
@@ -146,7 +147,7 @@ src/app/
   animate-height.ts  height animation, for the schedule and «Ver más»
   venue-card/        a venue's card with its tapas, notices and schedule
   gallery/           the «Fotos» view
-  map/               Leaflet map with the filtered venues
+  map/               MapLibre map with the filtered venues
   filters/           the filters' form
   origin/            panel to choose the starting point
   schedule-status/   «cierra en… / abre en…» (in red if you can't get there in time)

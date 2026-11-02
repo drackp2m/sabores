@@ -1,0 +1,327 @@
+// What the app uses of MapLibre, for the tests: without WebGL2 the real one doesn't even start in jsdom
+// (setup.ts puts this one in its place). It keeps what the app relies on: the same DOM, with clicks
+// reaching the map through the element markers go in, and popups that toggle and close the same way.
+// Nothing moves: what the camera is asked to do gets checked with spies on these methods.
+import type { LngLatLike, StyleSpecification } from 'maplibre-gl';
+
+type Listener = (event: never) => void;
+
+class Evented {
+  private listeners: Record<string, Listener[]> = {};
+
+  on(type: string, listener: Listener): this {
+    (this.listeners[type] ??= []).push(listener);
+    return this;
+  }
+
+  off(type: string, listener: Listener): this {
+    this.listeners[type] = this.listeners[type]?.filter((other) => other !== listener);
+    return this;
+  }
+
+  protected fire(type: string, event: unknown = {}): void {
+    for (const listener of [...(this.listeners[type] ?? [])]) listener(event as never);
+  }
+}
+
+export class GPUInitializationError extends Error {}
+
+export class GeoJSONSource {
+  constructor(public data: unknown) {}
+
+  setData(data: unknown): void {
+    this.data = data;
+  }
+}
+
+export class LngLatBounds {
+  extend(_point: LngLatLike): this {
+    return this;
+  }
+}
+
+interface Options {
+  container: HTMLElement;
+  style: string;
+  zoom: number;
+  transformStyle(previous: undefined, next: StyleSpecification): StyleSpecification;
+}
+
+/** The part of a real style that the app touches. */
+const STYLE: StyleSpecification = {
+  version: 8,
+  sources: { openmaptiles: { type: 'vector', url: 'https://tiles' } },
+  layers: [
+    {
+      id: 'streets',
+      type: 'symbol',
+      source: 'openmaptiles',
+      layout: { 'text-field': ['coalesce', ['get', 'name_en'], ['get', 'name']] },
+    },
+  ],
+};
+
+class FakeMap extends Evented {
+  /** Whether there's WebGL2. */
+  static webgl2 = true;
+  private static readonly maps = new WeakMap<HTMLElement, FakeMap>();
+
+  /** The map of a VenueMap, by its element. */
+  static of(el: HTMLElement): FakeMap {
+    return FakeMap.maps.get(el.querySelector<HTMLElement>('.container')!)!;
+  }
+
+  readonly cooperativeGestures = {
+    enabled: false,
+    enable() {
+      this.enabled = true;
+    },
+    disable() {
+      this.enabled = false;
+    },
+    isEnabled() {
+      return this.enabled;
+    },
+  };
+  readonly doubleClickZoom = {
+    enabled: true,
+    enable() {
+      this.enabled = true;
+    },
+    disable() {
+      this.enabled = false;
+    },
+    isEnabled() {
+      return this.enabled;
+    },
+  };
+  readonly touchZoomRotate = { disableRotation() {} };
+  readonly keyboard = { disableRotation() {} };
+  private readonly canvasContainer = document.createElement('div');
+  private zoom: number;
+  private style!: StyleSpecification;
+  private readonly sources = new globalThis.Map<string, GeoJSONSource>();
+
+  constructor(private readonly options: Options) {
+    super();
+    if (!FakeMap.webgl2) throw new GPUInitializationError();
+    FakeMap.maps.set(options.container, this);
+    this.zoom = options.zoom;
+    this.canvasContainer.className = 'maplibregl-canvas-container';
+    this.canvasContainer.addEventListener('click', (originalEvent) =>
+      this.fire('click', { originalEvent }),
+    );
+    options.container.append(this.canvasContainer);
+    this.setStyle(options.style);
+  }
+
+  setStyle(url: string): this {
+    this.options.style = url;
+    this.style = this.options.transformStyle(undefined, STYLE);
+    this.sources.clear();
+    for (const [id, source] of Object.entries(this.style.sources)) {
+      if (source.type === 'geojson') this.sources.set(id, new GeoJSONSource(source.data));
+    }
+    return this;
+  }
+
+  getStyle(): StyleSpecification {
+    return this.style;
+  }
+
+  /** The style's address: in the real one, its contents say which one it is. */
+  get styleUrl(): string {
+    return this.options.style;
+  }
+
+  getLayer(id: string) {
+    return this.style.layers.find((layer) => layer.id === id);
+  }
+
+  getSource(id: string) {
+    return this.sources.get(id);
+  }
+
+  getContainer(): HTMLElement {
+    return this.options.container;
+  }
+
+  getCanvasContainer(): HTMLElement {
+    return this.canvasContainer;
+  }
+
+  getZoom(): number {
+    return this.zoom;
+  }
+
+  /** Flat, without Mercator: a degree is as long one way as the other, 512 pixels for the world at 0. */
+  private get pixelsPerDegree(): number {
+    return (512 * 2 ** this.zoom) / 360;
+  }
+
+  project([lng, lat]: [number, number]): { x: number; y: number } {
+    return { x: lng * this.pixelsPerDegree, y: -lat * this.pixelsPerDegree };
+  }
+
+  unproject([x, y]: [number, number]) {
+    const point: [number, number] = [x / this.pixelsPerDegree, -y / this.pixelsPerDegree];
+    return { toArray: () => point };
+  }
+
+  zoomTo(zoom: number): this {
+    this.zoom = zoom;
+    this.fire('zoomend');
+    return this;
+  }
+
+  easeTo(_options: { center: unknown; zoom: number; offset?: [number, number] }): this {
+    return this;
+  }
+
+  fitBounds(_bounds: LngLatBounds, _options: unknown): this {
+    return this;
+  }
+
+  resize(): this {
+    return this;
+  }
+
+  redraw(): this {
+    return this;
+  }
+
+  remove(): void {
+    this.fire('remove');
+    this.options.container.replaceChildren();
+  }
+}
+
+export class Popup extends Evented {
+  private map?: FakeMap;
+  private container?: HTMLElement;
+  private readonly content = document.createElement('div');
+  private maxWidth = '';
+
+  constructor(private readonly options: { className: string; closeOnClick?: boolean }) {
+    super();
+    this.content.className = 'maplibregl-popup-content';
+  }
+
+  isOpen(): boolean {
+    return !!this.map;
+  }
+
+  getElement(): HTMLElement {
+    return this.container!;
+  }
+
+  setLngLat(_point: LngLatLike): this {
+    return this;
+  }
+
+  setText(text: string): this {
+    this.content.textContent = text;
+    return this;
+  }
+
+  setDOMContent(node: Node): this {
+    this.content.replaceChildren(node);
+    return this;
+  }
+
+  setMaxWidth(width: string): this {
+    this.maxWidth = width;
+    if (this.container) this.container.style.maxWidth = width;
+    return this;
+  }
+
+  addTo(map: FakeMap): this {
+    this.remove();
+    this.map = map;
+    this.container = document.createElement('div');
+    this.container.className = `maplibregl-popup ${this.options.className}`;
+    this.container.style.maxWidth = this.maxWidth;
+    this.container.append(this.content);
+    map.getContainer().append(this.container);
+    map.on('remove', this.remove);
+    if (this.options.closeOnClick !== false) map.on('click', this.remove);
+    this.fire('open');
+    return this;
+  }
+
+  readonly remove = (): this => {
+    this.container?.remove();
+    this.map?.off('remove', this.remove).off('click', this.remove);
+    this.map = undefined;
+    return this;
+  };
+}
+
+export class Marker extends Evented {
+  private readonly element: HTMLElement;
+  private map?: FakeMap;
+  private popup?: Popup;
+  private point?: { lng: number; lat: number };
+
+  constructor({ element }: { element: HTMLElement }) {
+    super();
+    this.element = element;
+    element.classList.add('maplibregl-marker');
+    element.addEventListener('click', () => this.fire('click'));
+  }
+
+  getElement(): HTMLElement {
+    return this.element;
+  }
+
+  getLngLat() {
+    return this.point!;
+  }
+
+  setLngLat([lng, lat]: [number, number]): this {
+    this.point = { lng, lat };
+    return this;
+  }
+
+  getPopup(): Popup | undefined {
+    return this.popup;
+  }
+
+  setPopup(popup: Popup): this {
+    this.popup = popup;
+    return this;
+  }
+
+  togglePopup(): this {
+    if (this.popup?.isOpen()) this.popup.remove();
+    else this.popup?.addTo(this.map!);
+    return this;
+  }
+
+  addTo(map: FakeMap): this {
+    this.map = map;
+    map.getCanvasContainer().append(this.element);
+    map.on('click', this.onMapClick);
+    return this;
+  }
+
+  remove(): this {
+    this.map?.off('click', this.onMapClick);
+    this.map = undefined;
+    this.element.remove();
+    this.popup?.remove();
+    return this;
+  }
+
+  private readonly onMapClick = ({ originalEvent }: { originalEvent: MouseEvent }): void => {
+    if (this.element.contains(originalEvent.target as Node)) this.togglePopup();
+  };
+}
+
+export { FakeMap as Map };
+
+export function getVersion(): string {
+  return 'test';
+}
+
+export function setWorkerUrl(): void {}

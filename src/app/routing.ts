@@ -1,6 +1,6 @@
 import { Coordinates, TravelMode, distanceMeters } from './venues';
 
-/** The route's [lat, lng] points, the way Leaflet draws them. */
+/** The route's [lng, lat] points, the way GeoJSON has them. */
 export type Route = [number, number][];
 
 const PROFILES: Record<TravelMode, string> = {
@@ -26,10 +26,9 @@ export function findRoute(
   if (!route) {
     route = fetch(url)
       .then((response) => (response.ok ? response.json() : null))
-      .then((data: { routes?: { geometry: { coordinates: [number, number][] } }[] } | null) =>
-        data?.routes?.[0]
-          ? data.routes[0].geometry.coordinates.map(([lng, lat]): [number, number] => [lat, lng])
-          : null,
+      .then(
+        (data: { routes?: { geometry: { coordinates: Route } }[] } | null) =>
+          data?.routes?.[0]?.geometry.coordinates ?? null,
       )
       .catch(() => null);
     // If it fails, it can be retried later.
@@ -43,7 +42,7 @@ export function findRoute(
 export function distanceToRoute(point: Coordinates, route: Route): number {
   // Near the point the Earth is flat enough: each stretch, in meters from it.
   const metersPerDegree = (2 * Math.PI * 6_371_000) / 360;
-  const toMeters = ([lat, lng]: [number, number]) => ({
+  const toMeters = ([lng, lat]: [number, number]) => ({
     x: (lng - point.lng) * metersPerDegree * Math.cos((point.lat * Math.PI) / 180),
     y: (lat - point.lat) * metersPerDegree,
   });

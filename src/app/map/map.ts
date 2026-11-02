@@ -13,7 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import type * as L from 'leaflet';
+import type * as ml from 'maplibre-gl';
 
 import { createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
@@ -22,6 +22,7 @@ import { isTouch, remInPx } from '../media';
 import { Route, directionsLink, distanceToRoute, findRoute } from '../routing';
 import { ScrollPosition, WHOLE } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
+import { Themes } from '../theme';
 import { UserLocation } from '../user-location';
 import {
   Coordinates,
@@ -33,23 +34,58 @@ import {
   statusKind,
 } from '../venues';
 
-const CASTELLON: L.LatLngExpression = [39.986, -0.037];
+const CASTELLON: ml.LngLatLike = [-0.037, 39.986];
+
+const STYLE_LIGHT = 'https://tiles.openfreemap.org/styles/liberty';
+const STYLE_DARK = 'https://tiles.openfreemap.org/styles/dark';
+/** The one the tiles come with, in Spanish; each credit, in one piece (styles/_map.scss). */
+const ATTRIBUTION =
+  '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a>' +
+  '<a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a>' +
+  '<span>Datos de <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a></span>';
 
 /**
- * Leaflet, apart from the rest of the app: it's a third of the JS and viewing the photos doesn't need
+ * MapLibre, apart from the rest of the app: it's most of the JS and viewing the photos doesn't need
  * it. The browser downloads it only once, however many times it's requested.
  */
-export async function loadLeaflet(): Promise<typeof L> {
-  const module = await import('leaflet');
-  // It isn't an ES module: in the production build, what it exports arrives in default.
-  return (module as { default?: typeof L }).default ?? module;
+export async function loadMapLibre(): Promise<typeof ml> {
+  loadMapLibreStyles();
+  const maplibre = await import('maplibre-gl');
+  // Published on its own and copied to the root of the build (angular.json).
+  maplibre.setWorkerUrl(`maplibre-gl-worker.mjs?v=${maplibre.getVersion()}`);
+  return maplibre;
+}
+
+/**
+ * Its styles, also apart (angular.json): among the app's they would delay the first paint. Much
+ * lighter than the code, they get here first. Before the app's, which restyle it.
+ */
+function loadMapLibreStyles(): void {
+  if (document.getElementById('maplibre-styles')) return;
+  const link = document.createElement('link');
+  link.id = 'maplibre-styles';
+  link.rel = 'stylesheet';
+  link.href = 'maplibre-gl.css';
+  document.head.prepend(link);
 }
 
 /**
  * Touch screen (no mouse): one finger scrolls the page and the map moves with two, on pinching
- * (Leaflet moves the map with the midpoint between the fingers while it zooms).
+ * (it follows the midpoint between the fingers while it zooms).
  */
 const TOUCH = isTouch();
+
+const MIN_ZOOM = -1;
+const MAX_ZOOM = 18;
+
+/** How long the map takes to get where it's sent, in ms. */
+const MOVE_TIME = 250;
+
+const ROUTE_COLOR = '#2563eb';
+/** Of the line by car, and of the dots on foot. */
+const ROUTE_WIDTH = 5;
+/** On foot, from one dot to the next, in pixels. */
+const DOT_SPACING = 10;
 
 const STATUS_KINDS: StatusKind[] = ['open', 'soon', 'late', 'closed'];
 
@@ -59,7 +95,7 @@ const DRAG_THRESHOLD = 10;
 /** In meters: how far the starting point can get from the route drawn before asking for another. */
 const OFF_ROUTE = 40;
 
-/** How far the map's buttons (and Leaflet's zoom ones) are from its edges, and a popup from them. */
+/** How far the map's buttons are from its edges, and a popup from them. */
 const BUTTON_MARGIN = 10;
 /** Their width, in rem. */
 const BUTTON_WIDTH = 2.25;
@@ -69,19 +105,6 @@ const BUTTON_WIDTH = 2.25;
  * For the whole session, on both maps (list and venue).
  */
 let knowsHowToMoveIt = false;
-
-/**
- * A venue's marker: a small dot (styles/_leaflet.scss) in the middle of a 1.875rem area to click on.
- * In rem, like everything else; Leaflet wants it in pixels, so it's calculated on painting.
- */
-function venueIcon(leaflet: typeof L, rem: number): L.DivIcon {
-  const side = Math.round(1.875 * rem);
-  return new leaflet.DivIcon({
-    className: 'venue-marker',
-    iconSize: [side, side],
-    popupAnchor: [0, -Math.round(0.35 * rem)],
-  });
-}
 
 /** Whether they're the same venues, even if in another order or in another array. */
 function sameVenues(a: readonly Venue[], b: readonly Venue[]): boolean {
@@ -109,6 +132,30 @@ function sameKinds(
   template: `
     <div class="frame" [class.large]="large()">
       <div #container class="container"></div>
+      @if (map()) {
+        <div class="buttons zoom">
+          <button
+            type="button"
+            class="secondary icon"
+            title="Acercar"
+            aria-label="Acercar"
+            [disabled]="closest()"
+            (click)="zoomBy(1)"
+          >
+            <app-icon name="plus" />
+          </button>
+          <button
+            type="button"
+            class="secondary icon"
+            title="Alejar"
+            aria-label="Alejar"
+            [disabled]="farthest()"
+            (click)="zoomBy(-1)"
+          >
+            <app-icon name="minus" />
+          </button>
+        </div>
+      }
       <div class="buttons">
         <button
           type="button"
@@ -160,8 +207,8 @@ function sameKinds(
           position: fixed;
           inset: 0;
           z-index: 1150; // Above the header and the floating buttons.
-          // The map reaches the bottom edge; only the attribution keeps out of the home indicator's
-          // area (styles/_leaflet.scss: Leaflet paints it outside the component).
+          // The map reaches the bottom edge, and so does the credits' strip, with their text out of
+          // the home indicator's area (styles/_map.scss: MapLibre paints it outside the component).
           padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0
             env(safe-area-inset-left, 0px);
           --attribution-bottom: env(safe-area-inset-bottom, 0px);
@@ -181,7 +228,7 @@ function sameKinds(
       }
     }
 
-    // Top right, like Leaflet's controls (which are on the left): those are inside the map's border.
+    // Top right and, the zoom ones, top left: inside the map's border.
     .buttons {
       position: absolute;
       top: 11px;
@@ -194,6 +241,16 @@ function sameKinds(
       .large & {
         top: calc(10px + env(safe-area-inset-top, 0px));
         right: calc(10px + env(safe-area-inset-right, 0px));
+      }
+
+      &.zoom {
+        right: auto;
+        left: 11px;
+
+        .large & {
+          right: auto;
+          left: calc(10px + env(safe-area-inset-left, 0px));
+        }
       }
 
       .icon {
@@ -218,7 +275,7 @@ function sameKinds(
       }
     }
 
-    // Above Leaflet's controls, without catching touches.
+    // Above the buttons, without catching touches.
     .hint {
       position: absolute;
       inset: 0;
@@ -277,6 +334,7 @@ export class VenueMap {
   private readonly clock = inject(Clock);
   private readonly position = inject(ScrollPosition);
   private readonly location = inject(UserLocation);
+  private readonly themes = inject(Themes);
 
   /** Full screen. */
   protected readonly large = signal(false);
@@ -287,8 +345,6 @@ export class VenueMap {
    * its route; clicking outside again deselects it.
    */
   private readonly selected = signal<number | null>(null);
-  /** Whether a popup was open when the map was clicked (that click only closes it). */
-  private hadPopup = false;
   private readonly active = computed(() => this.routeTo() ?? this.selected());
   /**
    * Those with a marker. It only changes when which ones they are changes: the list arrives in a new
@@ -342,27 +398,28 @@ export class VenueMap {
   });
 
   private readonly container = viewChild.required<ElementRef<HTMLElement>>('container');
-  /** Once Leaflet has arrived (see createMap). */
-  private readonly map = signal<L.Map | undefined>(undefined);
-  /** Leaflet couldn't be downloaded. */
+  /** Once MapLibre has arrived (see createMap). */
+  protected readonly map = signal<ml.Map | undefined>(undefined);
+  /** MapLibre couldn't be downloaded, or there's no WebGL2 for it. */
   protected readonly noMap = signal(false);
   protected readonly hint = signal(false);
   private hideHint?: ReturnType<typeof setTimeout>;
-  /**
-   * Where a finger landed on the map, until it's known where it's going. It's cleared on lifting it:
-   * Leaflet's controls don't let touchstart through and the previous touch would remain.
-   */
+  private readonly zoom = signal(13);
+  protected readonly closest = computed(() => this.zoom() >= MAX_ZOOM);
+  protected readonly farthest = computed(() => this.zoom() <= MIN_ZOOM);
+  /** Where a finger landed on the map, until it's known where it's going. */
   private touchStart?: { x: number; y: number };
   // Created with the map: if there's a map, they're there.
-  private leaflet!: typeof L;
-  private layer!: L.FeatureGroup;
-  private routeLayer!: L.FeatureGroup;
-  private originMarker!: L.CircleMarker;
+  private maplibre!: typeof ml;
+  private originMarker!: ml.Marker;
+  private originTooltip!: ml.Popup;
+  /** The style showing: the theme's. */
+  private style = this.themeStyle();
   /** The route drawn, from the starting point itself: it may be some way off the street it begins on. */
   private route?: Route;
-  private readonly markers = new Map<number, L.Marker>();
+  private readonly markers = new Map<number, ml.Marker>();
   private resizeObserver?: ResizeObserver;
-  /** The venue asked to be focused before Leaflet arrived. */
+  /** The venue asked to be focused before MapLibre arrived. */
   private pendingFocus: number | null = null;
   private readonly destroyRef = inject(DestroyRef);
 
@@ -376,6 +433,9 @@ export class VenueMap {
       container.addEventListener('touchstart', (event) => this.startTouch(event), passive);
       container.addEventListener('touchmove', (event) => this.showHint(event), passive);
       container.addEventListener('touchend', () => (this.touchStart = undefined), passive);
+      // Before the map hears about it.
+      const before = { passive: true, capture: true };
+      container.addEventListener('touchstart', (event) => this.keepDoubleTap(event), before);
 
       this.watchSight(container);
       pendingTasks.run(() => this.createMap(container));
@@ -383,12 +443,21 @@ export class VenueMap {
 
     effect(() => this.location.mapInSight.set(this.large() || this.inSight()));
 
-    // Enlarged, it moves with one finger (there's no page to scroll).
+    // Enlarged, it moves with one finger (there's no page to scroll). Only on touch screens: with a
+    // mouse it would ask for Ctrl.
+    effect(() => {
+      const gestures = this.map()?.cooperativeGestures;
+      if (!gestures) return;
+      if (TOUCH && !this.large()) gestures.enable();
+      else gestures.disable();
+    });
+
     effect(() => {
       const map = this.map();
-      if (!map) return;
-      if (this.large() || !TOUCH) map.dragging.enable();
-      else map.dragging.disable();
+      const style = this.themeStyle();
+      if (!map || style === this.style) return;
+      this.style = style;
+      map.setStyle(style);
     });
 
     // Route along the streets to the venue, with the same mode (on foot or by car) as the arrival time.
@@ -399,32 +468,17 @@ export class VenueMap {
       const mode = this.routeMode();
       const fixed = this.routeTo() !== null;
       if (!map) return;
-      this.routeLayer.clearLayers();
       this.route = undefined;
+      this.drawRoute(map);
       if (!origin || !venue?.location || !mode) return;
       let current = true;
       onCleanup(() => (current = false));
       void findRoute(origin, venue.location, mode).then((route) => {
         if (!current || !route) return;
-        this.route = [[origin.lat, origin.lng], ...route];
-        const line = new this.leaflet.Polyline(route, {
-          pane: 'route',
-          color: '#2563eb',
-          weight: 5,
-          opacity: 0.85,
-          lineCap: 'round',
-          lineJoin: 'round',
-          // On foot, dotted; by car, solid.
-          dashArray: mode === 'walking' ? '1 9' : undefined,
-          interactive: false,
-        }).addTo(this.routeLayer);
+        this.route = [[origin.lng, origin.lat], ...route];
+        this.drawRoute(map);
         // In the venue view, show the whole route; with a popup open the map doesn't move.
-        if (fixed) {
-          map.fitBounds(line.getBounds().extend([origin.lat, origin.lng]), {
-            padding: [30, 30],
-            maxZoom: 17,
-          });
-        }
+        if (fixed) this.frame(map, this.route, 16);
       });
     });
 
@@ -435,7 +489,7 @@ export class VenueMap {
       const popup = venue && this.markers.get(venue.number)?.getPopup();
       if (!status || !popup?.isOpen()) return;
       popup
-        .getElement()!
+        .getElement()
         .querySelector('.popup-status')!
         .replaceChildren(...status);
     });
@@ -458,11 +512,9 @@ export class VenueMap {
       untracked(() => this.paint(map, venues));
       for (const [number, marker] of this.markers) {
         const kind = kinds.get(number);
-        const classes = marker.getElement()?.classList;
-        for (const other of STATUS_KINDS) classes?.toggle(other, other === kind);
-        classes?.toggle('active', number === active);
-        const above = number === active ? 1000 : 0;
-        if (marker.options.zIndexOffset !== above) marker.setZIndexOffset(above);
+        const classes = marker.getElement().classList;
+        for (const other of STATUS_KINDS) classes.toggle(other, other === kind);
+        classes.toggle('active', number === active);
       }
       const number = this.pendingFocus;
       this.pendingFocus = null;
@@ -474,9 +526,17 @@ export class VenueMap {
       const origin = this.origin();
       const lost = this.location.lost();
       if (!map) return;
-      if (origin) this.originMarker.setLatLng([origin.lat, origin.lng]).addTo(map);
-      else this.originMarker.remove();
-      this.originMarker.getElement()?.classList.toggle('lost', lost);
+      const point = this.originMarker.getElement();
+      if (origin) {
+        this.originTooltip.setLngLat([origin.lng, origin.lat]);
+        this.originMarker.setLngLat([origin.lng, origin.lat]);
+        // Adding it again would restart the flicker.
+        if (!point.isConnected) this.originMarker.addTo(map);
+      } else {
+        this.originTooltip.remove();
+        this.originMarker.remove();
+      }
+      point.classList.toggle('lost', lost);
     });
   }
 
@@ -491,89 +551,194 @@ export class VenueMap {
     if (!marker) return;
     this.container().nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     this.position.appScrolled();
-    const zoom = 17;
-    if (marker.getPopup()) {
-      marker.openPopup();
+    const zoom = 16;
+    const popup = marker.getPopup();
+    if (popup) {
+      if (!popup.isOpen()) marker.togglePopup();
       this.placePopup(marker, zoom);
     } else {
-      map.setView(marker.getLatLng(), zoom);
+      map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME });
     }
   }
 
-  /** As soon as Leaflet arrives, the map and its layers. */
+  protected zoomBy(levels: number): void {
+    const map = this.map()!;
+    map.zoomTo(map.getZoom() + levels, { duration: MOVE_TIME });
+  }
+
+  /** The theme's map. */
+  private themeStyle(): string {
+    return this.themes.dark() ? STYLE_DARK : STYLE_LIGHT;
+  }
+
+  /** As soon as MapLibre arrives, the map. Without WebGL2 it throws on creating it. */
   private async createMap(container: HTMLElement): Promise<void> {
-    let leaflet: typeof L;
+    let map: ml.Map;
     try {
-      leaflet = await loadLeaflet();
+      const maplibre = await loadMapLibre();
+      if (this.destroyRef.destroyed) return;
+      this.maplibre = maplibre;
+      map = new maplibre.Map({
+        container,
+        style: this.style,
+        transformStyle: (_, style) => this.ownStyle(style),
+        center: CASTELLON,
+        zoom: this.zoom(),
+        minZoom: MIN_ZOOM,
+        maxZoom: MAX_ZOOM,
+        // No wheel zoom: scrolling down the page, passing over the map doesn't move it.
+        scrollZoom: false,
+        // North stays up.
+        dragRotate: false,
+        touchPitch: false,
+        // See the observer below.
+        trackResize: false,
+        attributionControl: { compact: false },
+        locale: { 'Map.Title': 'Mapa' },
+      });
+      map.touchZoomRotate.disableRotation();
+      map.keyboard.disableRotation();
     } catch {
       this.noMap.set(true);
       return;
     }
-    if (this.destroyRef.destroyed) return;
-    this.leaflet = leaflet;
-    this.layer = new leaflet.FeatureGroup();
-    this.routeLayer = new leaflet.FeatureGroup();
-    this.originMarker = new leaflet.CircleMarker(CASTELLON, {
-      className: 'origin-marker',
-      radius: 7,
-      color: '#fff',
-      weight: 3,
-      fillColor: '#2563eb',
-      fillOpacity: 1,
-    }).bindTooltip('Punto de partida');
-
-    // No wheel zoom: scrolling down the page, passing over the map doesn't move it.
-    const map = new leaflet.Map(container, {
-      center: CASTELLON,
-      zoom: 14,
-      scrollWheelZoom: false,
-      dragging: !TOUCH,
-      zoomControl: false,
+    const origin = document.createElement('div');
+    origin.className = 'origin-marker';
+    this.originMarker = new this.maplibre.Marker({ element: origin });
+    // Like the venues' popups (styles/_popups.scss), pointing at it from above.
+    this.originTooltip = new this.maplibre.Popup({
+      anchor: 'bottom',
+      className: 'origin-tooltip',
+      closeButton: false,
+      closeOnClick: false,
+      focusAfterOpen: false,
+      offset: 7,
+    }).setText('Punto de partida');
+    origin.addEventListener('mouseenter', () => this.originTooltip.addTo(map));
+    origin.addEventListener('mouseleave', () => this.originTooltip.remove());
+    // The click that closes a popup leaves its venue selected; with none open, it deselects it (on a
+    // marker too: this goes first, and on opening its popup it gets selected).
+    map.on('click', ({ originalEvent }) => {
+      if (!this.openPopup) this.selected.set(null);
+      // On touch screens there's no hovering: touching it shows the tooltip, and elsewhere hides it.
+      if (originalEvent.target === origin) this.originTooltip.addTo(map);
+      else this.originTooltip.remove();
     });
-    // The zoom buttons, with our icons (like those on the right, see styles/_leaflet.scss).
-    new leaflet.Control.Zoom({
-      zoomInText: createIcon('plus').outerHTML,
-      zoomInTitle: 'Acercar',
-      zoomOutText: createIcon('minus').outerHTML,
-      zoomOutTitle: 'Alejar',
-    }).addTo(map);
-    new leaflet.TileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
-    // The route, under the markers.
-    map.createPane('route').style.zIndex = '350';
-    // Before the popup closes with the same click (also on preclick, but registered afterwards).
-    map.on(
-      'preclick',
-      () => (this.hadPopup = !!map.getContainer().querySelector('.leaflet-popup')),
-    );
-    map.on('click', () => {
-      if (!this.hadPopup) this.selected.set(null);
+    map.on('zoomend', () => {
+      this.zoom.set(map.getZoom());
+      if (this.route) this.drawDots(map);
     });
-    // Leaflet keeps what starts on a popup away from the map: without that, dragging it moves the map.
-    // Clicks are still only the popup's.
-    map.on('popupopen', ({ popup }) =>
-      leaflet.DomEvent.off(
-        popup.getElement()!,
-        'mousedown touchstart',
-        leaflet.DomEvent.stopPropagation,
-      ),
-    );
-    this.routeLayer.addTo(map);
-    this.layer.addTo(map);
-    // Every time its size changes (on enlarging or reducing it, when the scrollbar comes or goes…),
-    // Leaflet has to measure again and the open popup, if any, to fit again.
+    // Every time its size changes (on enlarging or reducing it, when the scrollbar comes or goes…), the
+    // map has to measure again and paint at once (resizing clears it), and the open popup, if any, to
+    // fit again. By hand and not with MapLibre's trackResize, which would do it too late for the popup.
     this.resizeObserver = new ResizeObserver(() => {
-      map.invalidateSize();
-      const marker = this.markers.get(this.selected()!);
-      if (marker?.isPopupOpen()) {
-        marker.getPopup()!.update();
-        this.placePopup(marker);
+      map.resize().redraw();
+      const popup = this.openPopup;
+      if (popup) {
+        this.fitPopup(popup);
+        this.placePopup(this.markers.get(this.selected()!)!);
       }
     });
     this.resizeObserver.observe(container);
     this.map.set(map);
+  }
+
+  /**
+   * What the app adds to the theme's style, each time one arrives: the names as they are on the street
+   * signs (it prefers the English ones), the credits and the route, on top of it all.
+   */
+  private ownStyle(style: ml.StyleSpecification): ml.StyleSpecification {
+    const own: ml.StyleSpecification = JSON.parse(
+      JSON.stringify(style).replaceAll('"name_en"', '"name"'),
+    );
+    const tiles = own.sources['openmaptiles'];
+    if (tiles?.type === 'vector') tiles.attribution = ATTRIBUTION;
+    own.sources['route'] = { type: 'geojson', data: this.routeLine() };
+    own.sources['route-dots'] = { type: 'geojson', data: this.routeDots() };
+    own.layers.push(
+      {
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': ROUTE_COLOR, 'line-width': ROUTE_WIDTH, 'line-opacity': 0.85 },
+      },
+      {
+        id: 'route-dots',
+        type: 'circle',
+        source: 'route-dots',
+        paint: {
+          'circle-color': ROUTE_COLOR,
+          'circle-radius': ROUTE_WIDTH / 2,
+          'circle-opacity': 0.85,
+        },
+      },
+    );
+    return own;
+  }
+
+  /** By car, a solid line. */
+  private routeLine(): ml.GeoJSONSourceSpecification['data'] {
+    const route = this.routeMode() === 'walking' ? undefined : this.route;
+    return {
+      type: 'FeatureCollection',
+      features: route
+        ? [
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: { type: 'LineString', coordinates: route.slice(1) },
+            },
+          ]
+        : [],
+    };
+  }
+
+  /**
+   * On foot, dots: round and DOT_SPACING apart at the zoom of the moment (a dashed line stretches its
+   * dots on zooming in, until the next whole level). On zooming they're placed again (createMap).
+   */
+  private routeDots(): ml.GeoJSONSourceSpecification['data'] {
+    const map = this.map();
+    const dots: [number, number][] = [];
+    if (map && this.route && this.routeMode() === 'walking') {
+      const points = this.route.slice(1).map((point) => map.project(point));
+      let next = 0; // Where the next dot goes, in pixels from the start of the stretch.
+      for (let i = 1; i < points.length; i++) {
+        const [a, b] = [points[i - 1], points[i]];
+        const length = Math.hypot(b.x - a.x, b.y - a.y);
+        for (; next < length; next += DOT_SPACING) {
+          const t = next / length;
+          dots.push(map.unproject([a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)]).toArray());
+        }
+        next -= length;
+      }
+    }
+    return {
+      type: 'FeatureCollection',
+      features: dots.length
+        ? [{ type: 'Feature', properties: {}, geometry: { type: 'MultiPoint', coordinates: dots } }]
+        : [],
+    };
+  }
+
+  /** Until its style arrives there's nothing to draw it on: it will come with it (ownStyle). */
+  private drawRoute(map: ml.Map): void {
+    if (!map.getLayer('route')) return;
+    map.getSource<ml.GeoJSONSource>('route')!.setData(this.routeLine());
+    this.drawDots(map);
+  }
+
+  private drawDots(map: ml.Map): void {
+    map.getSource<ml.GeoJSONSource>('route-dots')?.setData(this.routeDots());
+  }
+
+  private frame(map: ml.Map, points: ml.LngLatLike[], maxZoom: number, animate = true): void {
+    const bounds = points.reduce(
+      (all, point) => all.extend(point),
+      new this.maplibre.LngLatBounds(),
+    );
+    map.fitBounds(bounds, { padding: 30, maxZoom, linear: true, duration: MOVE_TIME, animate });
   }
 
   /** Only with the whole map in sight: half of it, with the list below, doesn't count. */
@@ -585,6 +750,13 @@ export class VenueMap {
     );
     observer.observe(container);
     this.destroyRef.onDestroy(() => observer.disconnect());
+  }
+
+  /** A double tap stays on the popup, like clicks: the map doesn't zoom. */
+  private keepDoubleTap({ target }: TouchEvent): void {
+    const zoom = this.map()?.doubleClickZoom;
+    if ((target as Element).closest('.venue-popup')) zoom?.disable();
+    else zoom?.enable();
   }
 
   private startTouch(event: TouchEvent): void {
@@ -615,66 +787,85 @@ export class VenueMap {
 
   /**
    * Removes the markers of those no longer there and adds those of the new ones (the others, with
-   * their popup open if they have one, stay as they are). If anything changed, it frames those left.
+   * their popup open if they have one, stay as they are). If anything changed, it frames those left:
+   * at once if there was nothing to come from.
    */
-  private paint(map: L.Map, venues: readonly Venue[]): void {
+  private paint(map: ml.Map, venues: readonly Venue[]): void {
     const numbers = new Set(venues.map((venue) => venue.number));
     const removed = [...this.markers.keys()].filter((number) => !numbers.has(number));
     for (const number of removed) {
-      this.layer.removeLayer(this.markers.get(number)!);
+      this.markers.get(number)!.remove();
       this.markers.delete(number);
     }
     // If the selected one is no longer among the filtered ones, it stops being selected.
     const selected = this.selected();
     if (selected !== null && !numbers.has(selected)) this.selected.set(null);
     const added = venues.filter((venue) => !this.markers.has(venue.number));
-    if (added.length) this.addMarkers(added);
+    const animate = this.markers.size > 0;
+    if (added.length) this.addMarkers(map, added);
     if ((removed.length || added.length) && this.markers.size) {
-      map.fitBounds(this.layer.getBounds(), { padding: [30, 30], maxZoom: 16 });
+      const points = [...this.markers.values()].map((marker) => marker.getLngLat());
+      this.frame(map, points, 15, animate);
     }
   }
 
-  private addMarkers(venues: readonly Venue[]): void {
+  private addMarkers(map: ml.Map, venues: readonly Venue[]): void {
     // Reading the font size forces a style recalculation: only when one has to be created.
-    const rem = remInPx();
-    const icon = venueIcon(this.leaflet, rem);
-    // A popup leaves this much on each side: the map's buttons, with their margin on both sides.
-    const side = 2 * BUTTON_MARGIN + Math.round(BUTTON_WIDTH * rem);
+    const offset = Math.round(0.35 * remInPx());
     const popups = this.routeTo() === null;
     for (const venue of venues) {
       if (!venue.location) continue;
-      const marker = new this.leaflet.Marker([venue.location.lat, venue.location.lng], {
-        icon,
-        title: `${venue.number}. ${venue.name}`,
-        riseOnHover: true,
-        interactive: popups,
-        keyboard: popups,
-      })
-        .on('click', () => this.venueSelect.emit(venue.number))
-        .on('popupopen', () => {
-          this.selected.set(venue.number);
-          this.placePopup(marker);
-        });
-      // The content is generated just before measuring it, on opening and when the map changes size:
-      // with the schedule status and the width of that moment.
+      // A small dot (styles/_map.scss) in the middle of an area to click on.
+      const element = document.createElement('div');
+      element.className = 'venue-marker';
+      element.title = `${venue.number}. ${venue.name}`;
+      const marker = new this.maplibre.Marker({ element });
+      marker.setLngLat([venue.location.lng, venue.location.lat]);
       if (popups) {
-        marker.bindPopup(
-          () => {
-            this.fitPopup(marker.getPopup()!, side);
-            return this.popup(venue);
-          },
-          { closeButton: false, autoPan: false }, // The map moves in placePopup.
-        );
+        element.role = 'button';
+        const popup = new this.maplibre.Popup({
+          anchor: 'bottom',
+          offset,
+          className: 'map-popup',
+          maxWidth: 'none', // See fitPopup.
+          closeButton: false,
+          focusAfterOpen: false,
+        });
+        popup.on('open', () => this.showPopup(venue, marker));
+        marker.setPopup(popup).on('click', () => this.venueSelect.emit(venue.number));
+      } else {
+        element.classList.add('static');
       }
-      marker.addTo(this.layer);
+      marker.addTo(map);
       this.markers.set(venue.number, marker);
     }
   }
 
-  /** As wide as the map allows, between its buttons. Leaflet adds 1px to these widths. */
-  private fitPopup(popup: L.Popup, side: number): void {
-    const width = this.map()!.getSize().x - 2 * side - 1;
-    popup.options.minWidth = popup.options.maxWidth = width;
+  /** The only one open: the selected venue's, if it hasn't been closed. */
+  private get openPopup(): ml.Popup | undefined {
+    const popup = this.markers.get(this.selected()!)?.getPopup();
+    return popup?.isOpen() ? popup : undefined;
+  }
+
+  /**
+   * The content is generated just before measuring it, with the schedule status of that moment. The
+   * popup goes among the markers so that what starts on it reaches the map: dragging it moves the map
+   * (which also keeps the button from being clicked on letting go). Clicks are still only its own.
+   */
+  private showPopup(venue: Venue, marker: ml.Marker): void {
+    const popup = marker.getPopup()!;
+    if (this.openPopup !== popup) this.openPopup?.remove();
+    this.selected.set(venue.number);
+    this.fitPopup(popup);
+    popup.setDOMContent(this.popup(venue));
+    this.map()!.getCanvasContainer().append(popup.getElement());
+    this.placePopup(marker);
+  }
+
+  /** As wide as the map allows, between its buttons with their margin on both sides. */
+  private fitPopup(popup: ml.Popup): void {
+    const side = 2 * BUTTON_MARGIN + Math.round(BUTTON_WIDTH * remInPx());
+    popup.setMaxWidth(`${this.map()!.getContainer().clientWidth - 2 * side}px`);
   }
 
   /**
@@ -683,25 +874,32 @@ export class VenueMap {
    * third of the way down, or lower if the popup doesn't fit above; otherwise, with the popup as high
    * as it goes, as far from the top as the buttons.
    */
-  private placePopup(marker: L.Marker, zoom = this.map()!.getZoom()): void {
+  private placePopup(marker: ml.Marker, zoom = this.map()!.getZoom()): void {
     const map = this.map()!;
-    const icon = marker.getElement()!.getBoundingClientRect();
-    const popup = marker.getPopup()!.getElement()!.getBoundingClientRect();
+    const icon = marker.getElement().getBoundingClientRect();
+    const popup = marker.getPopup()!.getElement().getBoundingClientRect();
     const highest = icon.top + icon.height / 2 - popup.top + BUTTON_MARGIN;
-    const { y: height } = map.getSize();
+    const { clientHeight: height } = map.getContainer();
     const y = this.large() ? Math.max(height / 3, highest) : highest;
-    const center = map.project(marker.getLatLng(), zoom).add([0, height / 2 - y]);
-    map.setView(map.unproject(center, zoom), zoom);
+    map.easeTo({
+      center: marker.getLngLat(),
+      zoom,
+      offset: [0, y - height / 2],
+      duration: MOVE_TIME,
+    });
   }
 
   /**
    * Laid out like a card: number, name and address, with a button to the venue on the right. Below,
-   * arrival time, schedule status and tapa photos (styles in styles/_popups.scss: Leaflet paints it
+   * arrival time, schedule status and tapa photos (styles in styles/_popups.scss: MapLibre paints it
    * outside the component).
    */
   private popup(venue: Venue): HTMLElement {
     const div = document.createElement('div');
     div.className = 'venue-popup';
+    for (const type of ['click', 'dblclick']) {
+      div.addEventListener(type, (event) => event.stopPropagation());
+    }
     const header = document.createElement('div');
     header.className = 'popup-header';
     const number = document.createElement('span');
@@ -761,11 +959,7 @@ export class VenueMap {
     button.title = 'Ver los detalles del local';
     button.setAttribute('aria-label', button.title);
     button.append(createIcon('list'));
-    button.addEventListener('click', () => {
-      // With the mouse, letting go after dragging the map from the button also clicks it.
-      const dragging = this.map()!.dragging as L.Handler & { moved(): boolean };
-      if (!dragging.moved()) this.venueOpen.emit(venue.number);
-    });
+    button.addEventListener('click', () => this.venueOpen.emit(venue.number));
     return button;
   }
 }

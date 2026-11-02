@@ -1,7 +1,7 @@
-// In this order: each part relies on the ones before it (and leaflet.css, in angular.json, goes first).
+// In this order: each part relies on the ones before it (and maplibre-gl.css, loaded with the map, goes first).
 @use 'styles/theme';
 @use 'styles/base';
 @use 'styles/controls';
 @use 'styles/badges';
-@use 'styles/leaflet';
+@use 'styles/map';
 @use 'styles/popups';

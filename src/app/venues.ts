@@ -78,8 +78,9 @@ export interface Filters {
   text: string;
   day: Weekday | '';
   /**
-   * 'HH:MM' range; only used when there is a day. With only one end, timeRange() gives the other;
-   * with the same time in both, that exact time counts.
+   * 'HH:MM' range, on that day or, without one, on any. With only one end, timeRange() gives the
+   * other; with the same time in both, that exact time counts; with "to" before "from", it goes on
+   * into the following day.
    */
   from: string;
   to: string;
@@ -146,7 +147,7 @@ export function filterVenues(
       (!favorites || marks.favorites.has(venue.number)) &&
       (!tried || matchesTried(venue, tried, marks.ratings)) &&
       (!text || (number !== null ? venue.number === number : searchTextOf(venue).includes(text))) &&
-      (!day || openBetween(venue.schedule[day], from, to)) &&
+      (!(day || from || to) || openBetween(venue.schedule, day, from, to)) &&
       (!glutenFree ||
         venue.tapas.some(
           (t) =>
@@ -176,20 +177,38 @@ function matchesTried(
 }
 
 /**
- * Does it serve tapas at some point between "from" and "to"? With the same time in both, at that
- * exact time. Without "from" it starts with the day, and without "to" it ends with it. Without
- * either, any slot that day is enough.
+ * Does it serve tapas at some point between "from" and "to" that day, or on any day without one?
+ * With the same time in both, at that exact time. Without "from" it starts with the day, and without
+ * "to" (or with 00:00) it ends with it. With "to" before "from", from that night until that time on
+ * the following day. Without either, any slot that day is enough.
  */
-export function openBetween(slots: readonly TimeSlot[], from: string, to: string): boolean {
-  if (!from && !to) return slots.length > 0;
+export function openBetween(
+  schedule: Record<Weekday, TimeSlot[]>,
+  day: Weekday | '',
+  from: string,
+  to: string,
+): boolean {
   const start = from ? toMinutes(from) : 0;
-  let end = to ? toMinutes(to) : END_OF_DAY;
-  // 00:00 or "to" before "from": the range goes past midnight, but slots only count up to 24:00.
-  if (end < start || !end) end = END_OF_DAY;
+  let end = to && to !== MIDNIGHT ? toMinutes(to) : END_OF_DAY;
+  if (end === start) end++; // That very minute.
+  const days = day ? [day] : WEEKDAYS.map((d) => d.id);
+  return days.some((d) =>
+    start < end
+      ? overlaps(schedule[d], start, end)
+      : overlaps(schedule[d], start, END_OF_DAY) || overlaps(schedule[nextDay(d)], 0, end),
+  );
+}
+
+/** Whether some slot overlaps the range, in minutes since midnight (only touching it isn't enough). */
+function overlaps(slots: readonly TimeSlot[], start: number, end: number): boolean {
   return slots.some((slot) => {
     const [opens, closes] = bounds(slot);
-    return start === end ? opens <= start && start < closes : opens < end && start < closes;
+    return opens < end && start < closes;
   });
+}
+
+function nextDay(day: Weekday): Weekday {
+  return WEEKDAYS[(WEEKDAYS.findIndex((d) => d.id === day) + 1) % WEEKDAYS.length].id;
 }
 
 /**
@@ -197,7 +216,7 @@ export function openBetween(slots: readonly TimeSlot[], from: string, to: string
  * Without "from", from now on if it's for today and "to" is still to come; if not, since the day began.
  */
 export function timeRange({ day, from, to }: Filters, now: Date): TimeRange {
-  if (!day || !from === !to) return { from, to };
+  if (!from === !to) return { from, to };
   if (from) return { from, to: MIDNIGHT };
   const time = timeOf(now);
   const toCome = to === MIDNIGHT || time < to;

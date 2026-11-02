@@ -16,7 +16,7 @@ import { FiltersPanel } from './filters/filters';
 import { Gallery } from './gallery/gallery';
 import { Icon, IconName } from './icon/icon';
 import { legacyView } from './legacy-storage';
-import { VenueMap, loadLeaflet } from './map/map';
+import { VenueMap, loadMapLibre } from './map/map';
 import { isDesktop, isTouch, reducedMotion, remInPx } from './media';
 import { OriginPanel } from './origin/origin';
 import { ScrollPosition } from './scroll-position';
@@ -149,7 +149,7 @@ export class App {
   constructor() {
     // In «Detalles» it will be needed: download it along with the data, without waiting for it. If
     // it fails, the map will say so.
-    if (this.view() === 'details') loadLeaflet().catch(() => {});
+    if (this.view() === 'details') loadMapLibre().catch(() => {});
 
     effect(() => this.store.saveSetting('filters', this.filters()));
     effect((onCleanup) => {

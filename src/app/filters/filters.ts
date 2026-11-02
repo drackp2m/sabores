@@ -1,5 +1,5 @@
 import { Component, computed, inject, input, model } from '@angular/core';
-import { FormField, disabled, form } from '@angular/forms/signals';
+import { FormField, form } from '@angular/forms/signals';
 
 import { Icon } from '../icon/icon';
 import { Seal } from '../seal/seal';
@@ -185,11 +185,7 @@ export class FiltersPanel {
   protected readonly noFilters = NO_FILTERS;
   protected readonly drinks = computed(() => drinkTypes(this.tapasRoute.venues()));
 
-  /** The time range only counts with a day. */
-  protected readonly form = form(this.filters, (filter) => {
-    disabled(filter.from, ({ valueOf }) => !valueOf(filter.day));
-    disabled(filter.to, ({ valueOf }) => !valueOf(filter.day));
-  });
+  protected readonly form = form(this.filters);
 
   /** Venues serving tapas right now: the same time in both ends. */
   protected openNow(): void {

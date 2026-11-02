@@ -14,6 +14,11 @@ export function reducedMotion(): boolean {
   return matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+/** The system's theme (the app's, in theme.ts). */
+export function systemDark(): MediaQueryList {
+  return matchMedia('(prefers-color-scheme: dark)');
+}
+
 /** Pixels in 1rem (fewer on narrow screens, see styles/_base.scss). */
 export function remInPx(): number {
   return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;

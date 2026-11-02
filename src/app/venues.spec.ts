@@ -54,45 +54,85 @@ describe('openBetween', () => {
     { open: '12:00', close: '16:00' },
     { open: '20:00', close: null },
   ];
+  /** On Mondays only, with those slots. */
+  const onMonday = (slots: TimeSlot[], from: string, to: string) =>
+    openBetween({ ...week(), monday: slots }, 'monday', from, to);
 
   it('without times, serving tapas that day is enough', () => {
-    expect(openBetween(slots, '', '')).toBe(true);
-    expect(openBetween([], '', '')).toBe(false);
+    expect(onMonday(slots, '', '')).toBe(true);
+    expect(onMonday([], '', '')).toBe(false);
   });
 
   it('with only "from", goes up to the end of the day', () => {
     const lunch = slots.slice(0, 1);
-    expect(openBetween(lunch, '12:00', '')).toBe(true);
-    expect(openBetween(lunch, '16:00', '')).toBe(false);
-    expect(openBetween(slots, '16:00', '')).toBe(true); // It opens again at 20:00.
-    expect(openBetween(slots, '23:30', '')).toBe(true); // "until closing time"
+    expect(onMonday(lunch, '12:00', '')).toBe(true);
+    expect(onMonday(lunch, '16:00', '')).toBe(false);
+    expect(onMonday(slots, '16:00', '')).toBe(true); // It opens again at 20:00.
+    expect(onMonday(slots, '23:30', '')).toBe(true); // "until closing time"
   });
 
   it('with the same time in both, checks that exact time', () => {
-    expect(openBetween(slots, '12:00', '12:00')).toBe(true);
-    expect(openBetween(slots, '16:00', '16:00')).toBe(false);
-    expect(openBetween(slots, '23:30', '23:30')).toBe(true);
+    expect(onMonday(slots, '12:00', '12:00')).toBe(true);
+    expect(onMonday(slots, '15:59', '15:59')).toBe(true);
+    expect(onMonday(slots, '16:00', '16:00')).toBe(false);
+    expect(onMonday(slots, '23:30', '23:30')).toBe(true);
   });
 
   it('takes 00:00 as the end of the day', () => {
     const lunch = slots.slice(0, 1);
-    expect(openBetween(lunch, '', '00:00')).toBe(true);
-    expect(openBetween(lunch, '00:00', '00:00')).toBe(true);
-    expect(openBetween(lunch, '17:00', '00:00')).toBe(false);
-    expect(openBetween(slots, '17:00', '00:00')).toBe(true);
+    expect(onMonday(lunch, '', '00:00')).toBe(true);
+    expect(onMonday(lunch, '00:00', '00:00')).toBe(true);
+    expect(onMonday(lunch, '17:00', '00:00')).toBe(false);
+    expect(onMonday(slots, '17:00', '00:00')).toBe(true);
   });
 
   it('with a range, any overlapping slot counts', () => {
-    expect(openBetween(slots, '17:00', '19:00')).toBe(false);
-    expect(openBetween(slots, '17:00', '20:30')).toBe(true);
-    expect(openBetween(slots, '15:30', '18:00')).toBe(true);
-    expect(openBetween(slots, '16:00', '20:00')).toBe(false); // They only touch.
-    expect(openBetween(slots, '', '12:30')).toBe(true);
+    expect(onMonday(slots, '17:00', '19:00')).toBe(false);
+    expect(onMonday(slots, '17:00', '20:30')).toBe(true);
+    expect(onMonday(slots, '15:30', '18:00')).toBe(true);
+    expect(onMonday(slots, '16:00', '20:00')).toBe(false); // They only touch.
+    expect(onMonday(slots, '', '12:30')).toBe(true);
   });
 
-  it('accepts slots and ranges past midnight', () => {
-    expect(openBetween([{ open: '21:00', close: '01:00' }], '23:00', '')).toBe(true);
-    expect(openBetween([{ open: '21:00', close: '23:00' }], '22:00', '01:00')).toBe(true);
+  it('accepts slots past midnight, up to 24:00', () => {
+    expect(onMonday([{ open: '21:00', close: '01:00' }], '23:00', '')).toBe(true);
+    expect(onMonday([{ open: '21:00', close: '01:00' }], '23:59', '23:59')).toBe(true);
+  });
+
+  it('with "to" before "from", goes on until that time the following day', () => {
+    const night = [{ open: '21:00', close: '23:00' }];
+    const breakfast = [{ open: '07:00', close: '13:00' }];
+    const schedule = (days: Partial<Record<Weekday, TimeSlot[]>>) => ({ ...week(), ...days });
+    // That night.
+    expect(openBetween(schedule({ friday: night }), 'friday', '22:00', '01:00')).toBe(true);
+    expect(openBetween(schedule({ friday: night }), 'friday', '23:00', '06:00')).toBe(false);
+    // The following morning, not that day's.
+    expect(openBetween(schedule({ saturday: breakfast }), 'friday', '22:00', '08:00')).toBe(true);
+    expect(openBetween(schedule({ friday: breakfast }), 'friday', '22:00', '08:00')).toBe(false);
+    expect(openBetween(schedule({ saturday: breakfast }), 'friday', '22:00', '07:00')).toBe(false);
+    // From Sunday into Monday.
+    expect(openBetween(schedule({ monday: breakfast }), 'sunday', '22:00', '08:00')).toBe(true);
+  });
+
+  describe('without a day', () => {
+    const friday = { ...week(), friday: [{ open: '17:00', close: '20:00' }] };
+
+    it('any day counts', () => {
+      expect(openBetween(friday, '', '', '')).toBe(true);
+      expect(openBetween(week(), '', '', '')).toBe(false);
+      expect(openBetween(friday, '', '18:00', '19:00')).toBe(true);
+      expect(openBetween(friday, '', '19:30', '19:30')).toBe(true);
+      expect(openBetween(friday, '', '20:00', '')).toBe(false);
+      expect(openBetween(friday, 'monday', '18:00', '19:00')).toBe(false);
+    });
+
+    it('with "to" before "from", any night with the following morning', () => {
+      const saturday = { ...week(), saturday: [{ open: '07:00', close: '13:00' }] };
+      expect(openBetween(saturday, '', '22:00', '08:00')).toBe(true);
+      expect(openBetween(saturday, '', '22:00', '07:00')).toBe(false);
+      expect(openBetween(friday, '', '19:00', '02:00')).toBe(true);
+      expect(openBetween(friday, '', '21:00', '02:00')).toBe(false);
+    });
   });
 });
 
@@ -101,16 +141,17 @@ describe('timeRange', () => {
   const range = (day: Weekday | '', from: string, to: string) =>
     timeRange({ ...NO_FILTERS, day, from, to }, sundayEvening);
 
-  it('has nothing to fill in with both ends, with neither or without a day', () => {
+  it('has nothing to fill in with both ends or with neither', () => {
     expect(range('sunday', '12:00', '14:00')).toEqual({ from: '12:00', to: '14:00' });
+    expect(range('sunday', '22:00', '02:00')).toEqual({ from: '22:00', to: '02:00' });
     expect(range('sunday', '', '')).toEqual({ from: '', to: '' });
-    expect(range('', '12:00', '')).toEqual({ from: '12:00', to: '' });
-    expect(range('', '', '20:00')).toEqual({ from: '', to: '20:00' });
+    expect(range('', '', '')).toEqual({ from: '', to: '' });
   });
 
   it('without "to", goes up to midnight', () => {
     expect(range('sunday', '12:00', '')).toEqual({ from: '12:00', to: '00:00' });
     expect(range('monday', '12:00', '')).toEqual({ from: '12:00', to: '00:00' });
+    expect(range('', '12:00', '')).toEqual({ from: '12:00', to: '00:00' });
   });
 
   it('without "from", starts now if it is for today and "to" is still to come', () => {
@@ -122,6 +163,8 @@ describe('timeRange', () => {
     expect(range('sunday', '', '14:00')).toEqual({ from: '00:00', to: '14:00' });
     expect(range('sunday', '', '18:30')).toEqual({ from: '00:00', to: '18:30' });
     expect(range('monday', '', '20:00')).toEqual({ from: '00:00', to: '20:00' });
+    // Without a day it isn't for today.
+    expect(range('', '', '20:00')).toEqual({ from: '00:00', to: '20:00' });
   });
 });
 
@@ -175,6 +218,18 @@ describe('filterVenues', () => {
     expect(names({ day: 'monday', from: '13:00' })).toEqual(['CÚPULA', 'ORIGEN']);
     expect(names({ day: 'monday', from: '13:00', to: '13:00' })).toEqual(['ORIGEN']);
     expect(names({ day: 'monday', from: '15:00', to: '20:30' })).toEqual(['CÚPULA', 'ORIGEN']);
+  });
+
+  it('filters by time range without a day, on any', () => {
+    expect(names({ from: '17:00', to: '17:00' })).toEqual(['DOS EN VERDE']);
+    expect(names({ from: '19:00', to: '20:30' })).toEqual(['CÚPULA', 'DOS EN VERDE']);
+    expect(names({ from: '19:00', to: '20:30', day: 'friday' })).toEqual(['DOS EN VERDE']);
+  });
+
+  it('filters by a time range that goes on into the following day', () => {
+    expect(names({ day: 'sunday', from: '21:00', to: '13:00' })).toEqual(['ORIGEN']);
+    expect(names({ day: 'monday', from: '21:00', to: '13:00' })).toEqual(['CÚPULA']);
+    expect(names({ from: '21:00', to: '13:00' })).toEqual(['CÚPULA', 'ORIGEN']);
   });
 
   it('filters by gluten-free tapas', () => {

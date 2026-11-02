@@ -14,7 +14,7 @@ html {
   }
 
   // When bringing something into view (card, map), it stays below the sticky header, which also takes
-  // up the top safe area (status bar). The same in app-root, if that's what scrolls.
+  // up the top safe area (status bar). If app-root is what scrolls, it has its own (see app.scss).
   scroll-padding-top: calc(var(--header-bottom) + 1rem);
   // No page zoom (pinch or double tap); the map and its gestures go separately.
   touch-action: pan-x pan-y;

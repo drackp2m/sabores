@@ -12,14 +12,16 @@
   --map-height: 22.3rem;
 }
 
-// On touch screens the app scrolls instead of the document (see styles/_base.scss).
+// On touch screens the app scrolls instead of the document (see styles/_base.scss), only below the
+// header: inside it, the scroll bar would pass behind it.
 @include media.touch {
   :host {
     position: relative; // The enlarged photo scrolls with the page (viewer.ts).
-    height: 100%;
+    height: calc(100% - var(--header-bottom));
+    margin-top: var(--header-bottom);
     overflow: hidden auto;
     overscroll-behavior: none;
-    scroll-padding-top: calc(var(--header-bottom) + 1rem);
+    scroll-padding-top: 1rem;
   }
 }
 
@@ -34,6 +36,12 @@
   background: var(--brand);
   color: #fff;
   padding: env(safe-area-inset-top, 0px) var(--gutter-right) 0 var(--gutter-left);
+
+  // Out of what scrolls, in the place left for it above.
+  @include media.touch {
+    position: fixed;
+    inset-inline: 0;
+  }
 
   .content {
     position: relative;
@@ -334,6 +342,11 @@ main {
   .detail .map {
     position: sticky;
     top: calc(var(--header-bottom) + 1rem);
+
+    // What scrolls already starts below the header.
+    @include media.touch {
+      top: 1rem;
+    }
   }
 }
 

@@ -143,6 +143,8 @@ export class App {
 
   /** Gallery scroll when opening a venue, to leave it the same on the way back. */
   private galleryScroll = 0;
+  /** The menu is leaving a venue: whatever the view, it opens on that venue. */
+  private leavingFromMenu = false;
 
   constructor() {
     // In «Detalles» it will be needed: download it along with the data, without waiting for it. If
@@ -182,7 +184,7 @@ export class App {
       const venues = this.visible();
       if (!this.scrollTopMark()) return;
       const marks = [...this.host.querySelectorAll('.venue-mark')];
-      onCleanup(this.position.follow(venues, marks, this.headerHeight, this.root));
+      onCleanup(this.position.follow(venues, marks, this.headerOverlap, this.root));
     });
 
     // What decides on the venue to return to, only while there is one.
@@ -190,7 +192,7 @@ export class App {
       const card = this.card(this.returnVenue());
       if (!card) return;
       const cards = this.visible().flatMap((v) => this.card(v.number) ?? []);
-      onCleanup(this.position.watchReturn(card, cards, this.headerHeight, this.root));
+      onCleanup(this.position.watchReturn(card, cards, this.headerOverlap, this.root));
     });
 
     // Clicking outside the menu closes it; it only listens while open: otherwise, every click
@@ -233,6 +235,11 @@ export class App {
     return this.host.querySelector<HTMLElement>('.header')!.offsetHeight;
   }
 
+  /** What the header hides of what scrolls: nothing on touch screens, where it starts below it. */
+  private get headerOverlap(): number {
+    return isTouch() ? 0 : this.headerHeight;
+  }
+
   /** A venue's card or, in the photo view, its place in the gallery. */
   private card(number: number | null): HTMLElement | null {
     return document.getElementById(`venue-${number}`);
@@ -265,8 +272,10 @@ export class App {
 
   protected changeView(view: View): void {
     this.menuOpen.set(false);
-    if (this.detail() !== null) history.back();
-    else if (view !== this.view()) {
+    if (this.detail() !== null) {
+      this.leavingFromMenu = true;
+      history.back();
+    } else if (view !== this.view()) {
       this.position.returnTo.set(null);
       this.landOn(this.position.current());
     }
@@ -347,9 +356,11 @@ export class App {
   protected onNavigate(event: PopStateEvent): void {
     const number = (event.state as { venue?: number } | null)?.venue ?? null;
     const opened = this.detail();
+    const land = this.leavingFromMenu || this.view() === 'details';
+    this.leavingFromMenu = false;
     this.detail.set(number);
-    // From a venue to «Detalles», the list opens on that same venue.
-    if (number === null && this.view() === 'details') {
+    // From a venue to «Detalles», or to any view from the menu, it opens on that same venue.
+    if (number === null && land) {
       this.landOn(opened);
       return;
     }

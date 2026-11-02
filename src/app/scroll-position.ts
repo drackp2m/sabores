@@ -151,8 +151,11 @@ export class ScrollPosition {
     const watchSide = (lost: Set<string>, rootMargin: string) => {
       const observer = new IntersectionObserver(
         (entries) => {
-          const screenEnd = (root ?? document.documentElement).clientHeight;
-          const inSight = (edge: number) => edge >= header - SNAP && edge <= screenEnd + SNAP;
+          // Edges are told from the top of the screen, where the root doesn't always start.
+          const rootTop = root?.getBoundingClientRect().top ?? 0;
+          const screenEnd = rootTop + (root ?? document.documentElement).clientHeight;
+          const inSight = (edge: number) =>
+            edge >= rootTop + header - SNAP && edge <= screenEnd + SNAP;
           for (const { target, isIntersecting, boundingClientRect } of entries) {
             if (inSight(boundingClientRect.top)) tops.add(target);
             if (inSight(boundingClientRect.bottom)) bottoms.add(target);

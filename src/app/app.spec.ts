@@ -478,10 +478,25 @@ describe('App', () => {
         await new Promise((r) => setTimeout(r));
         await fixture.whenStable();
       };
+      /** The browser goes back a page. */
+      const browserBack = async () => {
+        window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
+        await new Promise((r) => setTimeout(r));
+        await fixture.whenStable();
+      };
+      /** Chooses a view in the menu with a venue open: going back is up to the browser. */
+      const leaveVenueTo = async (view: string) => {
+        vi.spyOn(history, 'back').mockImplementation(() => {});
+        await press('.menu-button');
+        await press('.menu button', view);
+        await browserBack();
+      };
       return {
         ...started,
         scrollTo,
         switchTo,
+        browserBack,
+        leaveVenueTo,
         position: TestBed.inject(ScrollPosition),
         locate: (number: number) => press(`#venue-${number} button[aria-label='Ver en el mapa']`),
         /** A scroll started by the app gets under way. */
@@ -551,20 +566,50 @@ describe('App', () => {
     });
 
     it('from a venue opened in the gallery, «Detalles» lands on it', async () => {
-      const { fixture, press, scrollTo, switchTo, position } = await startFollowing();
+      const { press, scrollTo, switchTo, leaveVenueTo, position } = await startFollowing();
       await switchTo('Fotos');
       await scrollTo(2);
       await press('app-gallery li button', 'LOCAL 5');
       expect(position.current()).toBe(2);
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
-      vi.spyOn(history, 'back').mockImplementation(() => {});
-      await press('.menu-button');
-      await press('.menu button', 'Detalles');
-      window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
-      await new Promise((r) => setTimeout(r));
-      await fixture.whenStable();
+      await leaveVenueTo('Detalles');
       expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
+    });
+
+    it('from a venue opened in the list, «Fotos» lands on it', async () => {
+      const { el, fixture, leaveVenueTo } = await startFollowing();
+      fixture.componentInstance['openVenue'](5);
+      await fixture.whenStable();
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      await leaveVenueTo('Fotos');
+      expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
+      expect(el.querySelector('#venue-5')!.tagName).toBe('LI');
+    });
+
+    it('from a venue opened in the gallery, «Fotos» lands on it too', async () => {
+      const { press, scrollTo, switchTo, leaveVenueTo } = await startFollowing();
+      await switchTo('Fotos');
+      await scrollTo(2);
+      await press('app-gallery li button', 'LOCAL 5');
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      await leaveVenueTo('Fotos');
+      expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
+    });
+
+    it('from a venue opened in the gallery, going back leaves it where it was', async () => {
+      const { press, scrollTo, switchTo, browserBack } = await startFollowing();
+      await switchTo('Fotos');
+      await scrollTo(2);
+      await press('app-gallery li button', 'LOCAL 5');
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      const top = vi.spyOn(Element.prototype, 'scrollTo');
+      await browserBack();
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      expect(top).toHaveBeenCalledWith({ top: 0 }); // What's saved: nothing scrolls in the tests.
     });
 
     it('«Volver al local» appears once the trip to the map stops and returns to it', async () => {

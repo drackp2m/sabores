@@ -64,11 +64,11 @@ describe('ScrollPosition', () => {
     beforeEach(() => vi.useFakeTimers());
     afterEach(() => vi.useRealTimers());
 
-    function watch() {
+    function watch(root: Element | null = null) {
       const report = stubIntersections();
       const position = TestBed.inject(ScrollPosition);
       position.leaveFrom(1);
-      const stop = position.watchReturn(target, cards, 60, null);
+      const stop = position.watchReturn(target, cards, root ? 0 : 60, root);
       /**
        * What the browser would say: the cards gone on each side, those whole on the screen, those
        * with just one edge in sight, and whether the target is whole.
@@ -247,6 +247,15 @@ describe('ScrollPosition', () => {
         offered();
         page({ top: ['b', 'c', 'd'] });
         page({ bottom: ['b', 'c', 'd'] });
+        page({ above: ['b', 'c', 'd'] });
+        expect(position.returnTo()).toBeNull();
+      });
+
+      it('measuring the screen from where what scrolls starts, below the header', () => {
+        const root = document.createElement('div');
+        vi.spyOn(root, 'getBoundingClientRect').mockReturnValue({ top: 300 } as DOMRect);
+        const { position, page, offered } = watch(root);
+        offered(); // At 1000 they'd be below an 800px screen, but this one goes on to 1100.
         page({ above: ['b', 'c', 'd'] });
         expect(position.returnTo()).toBeNull();
       });

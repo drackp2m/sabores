@@ -12,6 +12,13 @@
   }
 }
 
+// Leaflet adds the tiles together to hide their joins (mix-blend-mode: plus-lighter), but where two
+// overlap the sum turns white, and in dark mode the filter above turns that into a black line.
+// Without it, a join shows the background, about the map's color in both themes.
+.leaflet-container img.leaflet-tile {
+  mix-blend-mode: normal;
+}
+
 // The zoom buttons, like those on the right of the map (secondary icon buttons, in map.ts): separate
 // and not joined in a bar. With .leaflet-container in front to beat Leaflet's on touch screens
 // (.leaflet-touch .leaflet-bar a:last-child…).
@@ -54,6 +61,7 @@
 }
 
 .leaflet-container .leaflet-control-attribution {
+  margin-bottom: var(--attribution-bottom, 0px); // Enlarged on a phone (see map.ts).
   background: color-mix(in srgb, var(--surface) 80%, transparent);
   color: var(--muted);
 

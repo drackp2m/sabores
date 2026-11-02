@@ -143,8 +143,11 @@ function sameKinds(
           position: fixed;
           inset: 0;
           z-index: 1150; // Above the header and the floating buttons.
-          padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
-            env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+          // The map reaches the bottom edge; only the attribution keeps out of the home indicator's
+          // area (styles/_leaflet.scss: Leaflet paints it outside the component).
+          padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0
+            env(safe-area-inset-left, 0px);
+          --attribution-bottom: env(safe-area-inset-bottom, 0px);
           background: var(--background);
 
           .container {

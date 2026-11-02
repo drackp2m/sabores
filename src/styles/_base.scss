@@ -21,9 +21,8 @@ html {
   // With scrollbars that take up space (Windows, Linux, macOS with «show always»), the gap stays even
   // if the page fits on the screen: on filtering, the page doesn't move sideways.
   scrollbar-gutter: stable;
-  // No bounce at the top or bottom (Safari and Chrome on Mac): it would drag the header and the map,
-  // which are sticky.
-  overscroll-behavior-y: none;
+  // No overscroll-behavior: with it, Safari doesn't scroll the page with the mouse over the map, which
+  // listens to the wheel (to zoom with Ctrl or ⌘).
 }
 
 body {

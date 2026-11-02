@@ -614,6 +614,11 @@ export class VenueMap {
       });
       map.touchZoomRotate.disableRotation();
       map.keyboard.disableRotation();
+      // The dark style's woods ask for a pattern its sprite doesn't have ("wood-pattern"), and without
+      // it they aren't drawn: a blank one leaves them as they are, without the console's warning.
+      map.setMissingStyleImageResolver((id) => {
+        map.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
+      });
     } catch {
       this.noMap.set(true);
       return;

@@ -190,6 +190,10 @@ class FakeMap extends Evented {
     return this;
   }
 
+  setMissingStyleImageResolver(_resolver: (id: string) => void): this {
+    return this;
+  }
+
   remove(): void {
     this.fire('remove');
     this.options.container.replaceChildren();

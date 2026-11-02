@@ -254,8 +254,10 @@ footer {
   }
 }
 
-// In the corner, even with no phone or Instagram; without adding height to the row.
+// In the corner, even with no phone or Instagram; without adding height to the row. At this size the
+// usual line looks heavy: this one measures the same on screen as the large stars' (viewer.ts).
 app-favorite {
+  --icon-stroke: 1.68;
   margin: -0.5rem -0.2rem -0.2rem auto;
   font-size: 1.4rem;
 }

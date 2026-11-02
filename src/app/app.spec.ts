@@ -527,6 +527,29 @@ describe('App', () => {
       expect(top).toHaveBeenCalledWith({ top: 0 });
     });
 
+    it('the list makes up for the part of a pixel the scroll leaves a card off its place', async () => {
+      const { el, scrollTo, switchTo } = await startFollowing();
+      await scrollTo(4);
+      await switchTo('Fotos');
+      // With no header in the tests, its place is 1rem (16px) from the top.
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+        top: 16.25,
+      } as DOMRect);
+      await switchTo('Detalles');
+      expect(el.querySelector<HTMLElement>('.list')!.style.marginTop).toBe('-0.25px');
+    });
+
+    it('leaves the list alone if the card can’t get to its place', async () => {
+      const { el, scrollTo, switchTo } = await startFollowing();
+      await scrollTo(4);
+      await switchTo('Fotos');
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
+        top: 300,
+      } as DOMRect);
+      await switchTo('Detalles');
+      expect(el.querySelector<HTMLElement>('.list')!.style.marginTop).toBe('');
+    });
+
     it('from a venue opened in the gallery, «Detalles» lands on it', async () => {
       const { fixture, press, scrollTo, switchTo, position } = await startFollowing();
       await switchTo('Fotos');

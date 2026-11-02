@@ -17,7 +17,7 @@ import { Gallery } from './gallery/gallery';
 import { Icon, IconName } from './icon/icon';
 import { legacyView } from './legacy-storage';
 import { VenueMap, loadLeaflet } from './map/map';
-import { isDesktop, isTouch, reducedMotion } from './media';
+import { isDesktop, isTouch, reducedMotion, remInPx } from './media';
 import { OriginPanel } from './origin/origin';
 import { ScrollPosition } from './scroll-position';
 import { Seal } from './seal/seal';
@@ -282,12 +282,24 @@ export class App {
   private landOn(number: number | null): void {
     const land = () => {
       const card = number === this.visible()[0]?.number ? null : this.card(number);
-      if (card) card.scrollIntoView({ block: 'start' });
+      if (card) this.landExactlyOn(card);
       else this.scroller.scrollTo({ top: 0 });
     };
     afterNextRender(() => afterNextRender(land, { injector: this.injector }), {
       injector: this.injector,
     });
+  }
+
+  /**
+   * Where the card is in the venue view. Cards can start between two pixels and the browser only
+   * scrolls whole ones: what's left over would round each line its own way, moving them on coming
+   * back from the venue. The list makes up for it. The last cards, which can't get that high, are
+   * left as they are.
+   */
+  private landExactlyOn(card: HTMLElement): void {
+    card.scrollIntoView({ block: 'start' });
+    const rest = this.headerHeight + remInPx() - card.getBoundingClientRect().top;
+    if (Math.abs(rest) < 1) card.parentElement!.style.marginTop = `${rest}px`;
   }
 
   /** Shows a venue of the list on the map, remembering it to be able to return. */

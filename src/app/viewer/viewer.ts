@@ -50,9 +50,12 @@ export class Viewer {
 const DURATION = 420;
 /** Corner radius of the large photo. */
 const RADIUS = 12;
-/** Line of the stars: that of the thumbnails (tapa-photo.ts) and, thinner, that of the large ones. */
+/**
+ * Line of the stars: that of the thumbnails (tapa-photo.ts) and, thinner, that of the large ones,
+ * which on screen measures the same as the cards' heart (venue-card.scss): 1.8px.
+ */
 const STROKE = 1.5;
-const LARGE_STROKE = 1.1;
+const LARGE_STROKE = 1.29;
 
 /**
  * Enlarged photo: it grows from its thumbnail to the center of the space under the header (which

@@ -651,6 +651,7 @@ describe('App', () => {
       expect(returnButton()).toBeNull();
       await pageStops();
       expect(returnButton()!.textContent).toContain('Volver al local 6');
+      expect(returnButton()!.querySelector('use')!.getAttribute('href')).toBe('#icon-down');
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
       await press('.return');
@@ -686,6 +687,7 @@ describe('App', () => {
       await scrollTo(7);
       await pageStops();
       expect(returnButton()!.textContent).toContain('Volver al local 1');
+      expect(returnButton()!.querySelector('use')!.getAttribute('href')).toBe('#icon-up');
     });
 
     it('forgets the venue after losing sight of three others', async () => {

@@ -163,7 +163,7 @@
     animate.leave="leaving"
     (click)="returnToVenue(number)"
   >
-    <app-icon name="down" />Volver al local {{ number }}
+    <app-icon [name]="returnUp() ? 'up' : 'down'" />Volver al local {{ number }}
   </button>
 }
 

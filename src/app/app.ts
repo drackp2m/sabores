@@ -140,6 +140,15 @@ export class App {
   protected readonly returnButton = computed(() =>
     this.position.canReturn() ? this.returnVenue() : null,
   );
+  /**
+   * Whether it's above the venue the scroll is on: on desktop, a marker can take the list either way
+   * (on phones the map is above the list, and coming back is always down).
+   */
+  protected readonly returnUp = computed(() => {
+    const venues = this.visible();
+    const at = (number: number | null) => venues.findIndex((v) => v.number === number);
+    return at(this.returnVenue()) < at(this.position.current());
+  });
 
   /** Gallery scroll when opening a venue, to leave it the same on the way back. */
   private galleryScroll = 0;

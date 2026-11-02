@@ -18,7 +18,7 @@ import type * as ml from 'maplibre-gl';
 import { createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
-import { isTouch, remInPx } from '../media';
+import { desktop, isTouch, remInPx } from '../media';
 import { Route, directionsLink, distanceToRoute, findRoute } from '../routing';
 import { ScrollPosition, WHOLE } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
@@ -322,7 +322,7 @@ export class VenueMap {
   readonly origin = input<Coordinates | null>(null);
   /**
    * Venue to always draw the route to (in the venue view, which has no popups: its data is already on
-   * the page); otherwise, the open popup's.
+   * the page); otherwise, the one selected on the map.
    */
   readonly routeTo = input<number | null>(null);
   /** Number of the venue whose marker was clicked. */
@@ -338,11 +338,19 @@ export class VenueMap {
 
   /** Full screen. */
   protected readonly large = signal(false);
+  private readonly desktopQuery = desktop();
+  private readonly desktop = signal(this.desktopQuery.matches);
+  /**
+   * Only in the list (the venue view has its data on the page), and not on desktop: there the list is
+   * next to the map, and clicking a marker takes it to its card.
+   */
+  private readonly popups = computed(() => this.routeTo() === null && !this.desktop());
   /** The whole map on screen, below the header. */
   private readonly inSight = signal(false);
   /**
-   * Venue selected on opening its popup. When closed (by clicking outside) it stays selected, with
-   * its route; clicking outside again deselects it.
+   * Venue selected on opening its popup (or, without popups, on clicking its marker or going to it).
+   * When closed (by clicking outside) it stays selected, with its route; clicking outside again
+   * deselects it.
    */
   private readonly selected = signal<number | null>(null);
   private readonly active = computed(() => this.routeTo() ?? this.selected());
@@ -494,7 +502,11 @@ export class VenueMap {
         .replaceChildren(...status);
     });
 
+    const onDesktop = ({ matches }: MediaQueryListEvent) => this.desktop.set(matches);
+    this.desktopQuery.addEventListener('change', onDesktop);
+
     this.destroyRef.onDestroy(() => {
+      this.desktopQuery.removeEventListener('change', onDesktop);
       this.resizeObserver?.disconnect();
       this.map()?.remove();
       clearTimeout(this.hideHint);
@@ -508,8 +520,12 @@ export class VenueMap {
       const venues = this.placed();
       const active = this.active();
       const kinds = this.kinds();
+      const popups = this.popups();
       if (!map) return;
-      untracked(() => this.paint(map, venues));
+      untracked(() => {
+        this.paint(map, venues);
+        this.setPopups(venues, popups);
+      });
       for (const [number, marker] of this.markers) {
         const kind = kinds.get(number);
         const classes = marker.getElement().classList;
@@ -557,6 +573,7 @@ export class VenueMap {
       if (!popup.isOpen()) marker.togglePopup();
       this.placePopup(marker, zoom);
     } else {
+      this.selected.set(number);
       map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME });
     }
   }
@@ -616,10 +633,11 @@ export class VenueMap {
     }).setText('Punto de partida');
     origin.addEventListener('mouseenter', () => this.originTooltip.addTo(map));
     origin.addEventListener('mouseleave', () => this.originTooltip.remove());
-    // The click that closes a popup leaves its venue selected; with none open, it deselects it (on a
-    // marker too: this goes first, and on opening its popup it gets selected).
+    // The click that closes a popup leaves its venue selected; with none open, it deselects it. Not on
+    // a marker: that one gets selected, on opening its popup or, without one, on clicking it.
     map.on('click', ({ originalEvent }) => {
-      if (!this.openPopup) this.selected.set(null);
+      const target = originalEvent.target as Element;
+      if (!this.openPopup && !target.closest('.venue-marker')) this.selected.set(null);
       // On touch screens there's no hovering: touching it shows the tooltip, and elsewhere hides it.
       if (originalEvent.target === origin) this.originTooltip.addTo(map);
       else this.originTooltip.remove();
@@ -810,9 +828,7 @@ export class VenueMap {
   }
 
   private addMarkers(map: ml.Map, venues: readonly Venue[]): void {
-    // Reading the font size forces a style recalculation: only when one has to be created.
-    const offset = Math.round(0.35 * remInPx());
-    const popups = this.routeTo() === null;
+    const clickable = this.routeTo() === null;
     for (const venue of venues) {
       if (!venue.location) continue;
       // A small dot (styles/_map.scss) in the middle of an area to click on.
@@ -821,23 +837,42 @@ export class VenueMap {
       element.title = `${venue.number}. ${venue.name}`;
       const marker = new this.maplibre.Marker({ element });
       marker.setLngLat([venue.location.lng, venue.location.lat]);
-      if (popups) {
+      if (clickable) {
         element.role = 'button';
-        const popup = new this.maplibre.Popup({
-          anchor: 'bottom',
-          offset,
-          className: 'map-popup',
-          maxWidth: 'none', // See fitPopup.
-          closeButton: false,
-          focusAfterOpen: false,
+        marker.on('click', () => {
+          if (!marker.getPopup()) this.selected.set(venue.number);
+          this.venueSelect.emit(venue.number);
         });
-        popup.on('open', () => this.showPopup(venue, marker));
-        marker.setPopup(popup).on('click', () => this.venueSelect.emit(venue.number));
       } else {
         element.classList.add('static');
       }
       marker.addTo(map);
       this.markers.set(venue.number, marker);
+    }
+  }
+
+  /** Gives the markers their popup, or takes it away, as the layout changes (see popups). */
+  private setPopups(venues: readonly Venue[], popups: boolean): void {
+    let offset: number | undefined;
+    for (const venue of venues) {
+      const marker = this.markers.get(venue.number);
+      if (!marker || !!marker.getPopup() === popups) continue;
+      if (!popups) {
+        marker.setPopup(null);
+        continue;
+      }
+      // Reading the font size forces a style recalculation: only when one has to be created.
+      offset ??= Math.round(0.35 * remInPx());
+      const popup = new this.maplibre.Popup({
+        anchor: 'bottom',
+        offset,
+        className: 'map-popup',
+        maxWidth: 'none', // See fitPopup.
+        closeButton: false,
+        focusAfterOpen: false,
+      });
+      popup.on('open', () => this.showPopup(venue, marker));
+      marker.setPopup(popup);
     }
   }
 

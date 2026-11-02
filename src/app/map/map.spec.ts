@@ -247,6 +247,33 @@ describe('VenueMap', () => {
       expect(marker(2)!.classList).toContain('active');
     });
 
+    it('not on desktop, next to the list: its marker selects the venue', async () => {
+      const desktop = vi.spyOn(window, 'matchMedia').mockReturnValue({
+        matches: true,
+        addEventListener() {},
+        removeEventListener() {},
+      } as unknown as MediaQueryList);
+      const { fixture, el, marker } = await create([ONE, TWO]);
+      const select = vi.fn();
+      fixture.componentInstance.venueSelect.subscribe(select);
+
+      marker(2)!.click();
+      await fixture.whenStable();
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+      expect(marker(2)!.classList).toContain('active');
+      expect(select).toHaveBeenCalledExactlyOnceWith(2);
+
+      fixture.componentInstance.focus(1);
+      await fixture.whenStable();
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+      expect(marker(1)!.classList).toContain('active');
+
+      el.querySelector<HTMLElement>('.maplibregl-canvas-container')!.click();
+      await fixture.whenStable();
+      expect(el.querySelector('.venue-marker.active')).toBeNull();
+      desktop.mockRestore();
+    });
+
     it('only one is open: another venue’s replaces it', async () => {
       const { fixture, el, marker } = await openPopup();
 

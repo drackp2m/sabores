@@ -246,7 +246,7 @@ export class App {
   }
 
   protected scrollToTop(): void {
-    this.scroller.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    this.scroller.scrollTo({ top: 0, behavior: this.scrollBehavior });
   }
 
   /** Opening the menu closes any enlarged photo (the header stays above it). */
@@ -319,19 +319,33 @@ export class App {
 
   protected returnToVenue(number: number): void {
     this.position.returnTo.set(null);
-    this.goToCard(number);
+    this.card(number)?.scrollIntoView({ behavior: this.scrollBehavior, block: 'start' });
+    this.highlight(number);
   }
 
-  /** On desktop, clicking a marker takes the list to its card. */
+  /**
+   * On desktop, clicking a marker takes the list to its card, but no lower than where the list ends
+   * next to the map: any further, the footer would come in and push the map up. The last cards stay
+   * lower on the screen, still in sight.
+   */
   protected showInList(number: number): void {
-    if (isDesktop()) this.goToCard(number);
+    const card = this.card(number);
+    const results = this.host.querySelector('.results');
+    const map = results?.querySelector<HTMLElement>('.map');
+    if (!isDesktop() || !card || !map) return;
+    // Where the card would stay, and the map stays: below the header (scroll-padding-top).
+    const top = this.headerHeight + remInPx();
+    const lowest = results!.getBoundingClientRect().bottom - (top + map.offsetHeight);
+    const by = Math.min(card.getBoundingClientRect().top - top, lowest);
+    this.scroller.scrollBy({ top: by, behavior: this.scrollBehavior });
+    this.highlight(number);
   }
 
-  private goToCard(number: number): void {
-    this.card(number)?.scrollIntoView({
-      behavior: reducedMotion() ? 'auto' : 'smooth',
-      block: 'start',
-    });
+  private get scrollBehavior(): ScrollBehavior {
+    return reducedMotion() ? 'auto' : 'smooth';
+  }
+
+  private highlight(number: number): void {
     this.position.appScrolled();
     this.highlighted.set(number);
     setTimeout(() => this.highlighted.update((n) => (n === number ? null : n)), 1600);

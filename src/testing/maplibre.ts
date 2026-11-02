@@ -287,8 +287,9 @@ export class Marker extends Evented {
     return this.popup;
   }
 
-  setPopup(popup: Popup): this {
-    this.popup = popup;
+  setPopup(popup?: Popup | null): this {
+    this.popup?.remove();
+    this.popup = popup ?? undefined;
     return this;
   }
 

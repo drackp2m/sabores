@@ -2,7 +2,12 @@
 
 /** List on the left and map on the right. */
 export function isDesktop(): boolean {
-  return matchMedia('(min-width: 960px)').matches;
+  return desktop().matches;
+}
+
+/** The same, to hear when it changes (on turning an iPad). */
+export function desktop(): MediaQueryList {
+  return matchMedia('(min-width: 960px)');
 }
 
 /** No mouse: app-root scrolls instead of the document, and the map moves with two fingers. */

@@ -410,6 +410,16 @@ describe('VenueMap', () => {
     expect(tooltip()).toBeUndefined();
   });
 
+  it('lets the page scroll over it, except enlarged', async () => {
+    const { fixture, el } = await create([ONE]);
+    const gestures = FakeMap.of(el).cooperativeGestures;
+    expect(gestures.isEnabled()).toBe(true);
+
+    el.querySelector<HTMLElement>('.expand')!.click();
+    await fixture.whenStable();
+    expect(gestures.isEnabled()).toBe(false);
+  });
+
   it('says whether it’s on screen: whole or enlarged, until it’s gone', async () => {
     let report!: (entries: { intersectionRatio: number }[]) => void;
     vi.stubGlobal(

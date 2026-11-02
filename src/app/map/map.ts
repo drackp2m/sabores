@@ -451,13 +451,14 @@ export class VenueMap {
 
     effect(() => this.location.mapInSight.set(this.large() || this.inSight()));
 
-    // Enlarged, it moves with one finger (there's no page to scroll). Only on touch screens: with a
-    // mouse it would ask for Ctrl.
+    // Over the map, the page still scrolls: with one finger (the map moves with two) and with the
+    // mouse wheel (it zooms the map with Ctrl, ⌘ on Mac, or pinching on a trackpad, as in Google
+    // Maps). Enlarged there's no page to scroll: it moves with one finger and zooms with the wheel.
     effect(() => {
       const gestures = this.map()?.cooperativeGestures;
       if (!gestures) return;
-      if (TOUCH && !this.large()) gestures.enable();
-      else gestures.disable();
+      if (this.large()) gestures.disable();
+      else gestures.enable();
     });
 
     effect(() => {
@@ -603,8 +604,6 @@ export class VenueMap {
         zoom: this.zoom(),
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
-        // No wheel zoom: scrolling down the page, passing over the map doesn't move it.
-        scrollZoom: false,
         // North stays up.
         dragRotate: false,
         touchPitch: false,

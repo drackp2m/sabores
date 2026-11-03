@@ -84,6 +84,8 @@ export interface Filters {
    */
   from: string;
   to: string;
+  /** «Abierto ahora»: the day and both ends follow the clock (nextHour()) until one is changed. */
+  openNow: boolean;
   /** 'yes': some gluten-free tapa; 'optional': "gluten-free on request" counts too. */
   glutenFree: '' | 'yes' | 'optional';
   /** Drink type (Drink.type). */
@@ -108,6 +110,7 @@ export const NO_FILTERS: Filters = {
   day: '',
   from: '',
   to: '',
+  openNow: false,
   glutenFree: '',
   drink: '',
   flavorRoute: false,
@@ -221,6 +224,12 @@ export function timeRange({ day, from, to }: Filters, now: Date): TimeRange {
   const time = timeOf(now);
   const toCome = to === MIDNIGHT || time < to;
   return { from: day === weekdayOf(now) && toCome ? time : MIDNIGHT, to };
+}
+
+/** Today, from this minute until an hour later: from 23:00 on, it ends on the following day. */
+export function nextHour(now: Date): Pick<Filters, 'day' | 'from' | 'to'> {
+  const later = new Date(now.getTime() + 60 * 60_000);
+  return { day: weekdayOf(now), from: timeOf(now), to: timeOf(later) };
 }
 
 export function formatSlots(slots: readonly TimeSlot[]): string {

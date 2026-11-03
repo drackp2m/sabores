@@ -33,6 +33,7 @@ import {
   Venue,
   closingKey,
   filterVenues,
+  nextHour,
   sortBy,
   timeRange,
 } from './venues';
@@ -161,6 +162,11 @@ export class App {
     if (this.view() === 'details') loadMapLibre().catch(() => {});
 
     effect(() => this.store.saveSetting('filters', this.filters()));
+    // «Abierto ahora» goes on with the clock: every minute, and on opening the app or coming back.
+    effect(() => {
+      const hour = nextHour(this.clock.now());
+      this.filters.update((filters) => (filters.openNow ? { ...filters, ...hour } : filters));
+    });
     effect((onCleanup) => {
       const text = this.searchText();
       // With the search empty («Limpiar», say) there's no more typing to wait for.

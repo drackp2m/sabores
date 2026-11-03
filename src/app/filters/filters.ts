@@ -4,7 +4,7 @@ import { FormField, form } from '@angular/forms/signals';
 import { Icon } from '../icon/icon';
 import { Seal } from '../seal/seal';
 import { TapasRoute } from '../tapas-route';
-import { Filters, NO_FILTERS, TimeRange, WEEKDAYS, drinkTypes, timeOf, weekdayOf } from '../venues';
+import { Filters, NO_FILTERS, TimeRange, WEEKDAYS, drinkTypes, nextHour } from '../venues';
 import { TimeField } from './time-field';
 
 /** The filters' form. App keeps their values: this goes away in the venue view, and they stay. */
@@ -25,7 +25,7 @@ import { TimeField } from './time-field';
 
         <label class="field">
           <span>Día</span>
-          <select [formField]="form.day">
+          <select [formField]="form.day" (input)="leaveOpenNow()">
             <option value="">Cualquiera</option>
             @for (d of weekdays; track d.id) {
               <option [value]="d.id">{{ d.name }}</option>
@@ -36,9 +36,19 @@ import { TimeField } from './time-field';
         <div class="field time" role="group" aria-labelledby="time-label">
           <span id="time-label">Hora</span>
           <div class="range">
-            <app-time-field label="Desde" [placeholder]="range().from" [formField]="form.from" />
+            <app-time-field
+              label="Desde"
+              [placeholder]="range().from"
+              [formField]="form.from"
+              (valueChange)="leaveOpenNow()"
+            />
             <span aria-hidden="true">–</span>
-            <app-time-field label="Hasta" [placeholder]="range().to" [formField]="form.to" />
+            <app-time-field
+              label="Hasta"
+              [placeholder]="range().to"
+              [formField]="form.to"
+              (valueChange)="leaveOpenNow()"
+            />
           </div>
         </div>
 
@@ -187,15 +197,13 @@ export class FiltersPanel {
 
   protected readonly form = form(this.filters);
 
-  /** Venues serving tapas right now: the same time in both ends. */
+  /** Venues serving tapas within the next hour, which goes on with the clock (App). */
   protected openNow(): void {
-    const date = new Date();
-    const time = timeOf(date);
-    this.filters.update((filters) => ({
-      ...filters,
-      day: weekdayOf(date),
-      from: time,
-      to: time,
-    }));
+    this.filters.update((filters) => ({ ...filters, ...nextHour(new Date()), openNow: true }));
+  }
+
+  /** Changing the day or the time by hand: the clock would undo it at the next minute. */
+  protected leaveOpenNow(): void {
+    this.filters.update((filters) => ({ ...filters, openNow: false }));
   }
 }

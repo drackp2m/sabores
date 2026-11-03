@@ -10,7 +10,7 @@ import { App } from './app';
 import { Clock } from './clock';
 import { ScrollPosition } from './scroll-position';
 import { Store } from './store';
-import { NO_FILTERS, RouteData, TimeSlot, Venue } from './venues';
+import { Filters, NO_FILTERS, RouteData, TimeSlot, Venue } from './venues';
 
 function venue(number: number, name: string, drinks: [string, string][]): Venue {
   return testVenue({
@@ -346,7 +346,7 @@ describe('App', () => {
     expect(names()).toEqual([]);
   });
 
-  it('«Abierto ahora» fills in the day and both ends, and «Limpiar» empties them', async () => {
+  it('«Abierto ahora» fills in the day and the next hour, and «Limpiar» empties them', async () => {
     const { el, press } = await start();
     const day = [...el.querySelectorAll('.field')]
       .find((f) => f.textContent!.includes('Día'))!
@@ -354,14 +354,72 @@ describe('App', () => {
     const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
 
     await press('.actions button', 'Abierto ahora');
+    const now = new Date();
     expect(day.value).not.toBe('');
-    expect(from.value).toBe(new Date().toTimeString().slice(0, 5));
-    expect(to.value).toBe(from.value);
+    expect(from.value).toBe(now.toTimeString().slice(0, 5));
+    expect(to.value).toBe(new Date(now.getTime() + 3_600_000).toTimeString().slice(0, 5));
 
     await press('.actions button', 'Limpiar');
     expect(day.value).toBe('');
     expect(from.value).toBe('');
     expect(to.value).toBe('');
+  });
+
+  describe('with «Abierto ahora» on', () => {
+    const now = signal(new Date(2026, 10, 1, 23, 30)); // A Sunday.
+
+    async function startAt(date: Date, saved?: Partial<Filters>) {
+      now.set(date);
+      TestBed.overrideProvider(Clock, { useValue: { now } });
+      if (saved) TestBed.inject(Store).saveSetting('filters', { ...NO_FILTERS, ...saved });
+      const { fixture, el, press } = await start();
+      const day = [...el.querySelectorAll('.field')]
+        .find((f) => f.textContent!.includes('Día'))!
+        .querySelector('select')!;
+      const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
+      return {
+        press,
+        tick: async (date: Date) => {
+          now.set(date);
+          await fixture.whenStable();
+        },
+        type: async (input: HTMLInputElement, time: string) => {
+          input.value = time;
+          input.dispatchEvent(new Event('input'));
+          await fixture.whenStable();
+        },
+        to,
+        shown: () => [day.value, from.value, to.value],
+      };
+    }
+
+    it('starts on the current time when the app opens', async () => {
+      const saved = { openNow: true, day: 'friday', from: '13:00', to: '14:00' } as const;
+      const { shown } = await startAt(new Date(2026, 10, 1, 23, 30), saved);
+      expect(shown()).toEqual(['sunday', '23:30', '00:30']);
+    });
+
+    it('goes on with the clock, also past midnight', async () => {
+      const { press, tick, shown } = await startAt(new Date(2026, 10, 1, 22, 59));
+      await press('.actions button', 'Abierto ahora');
+
+      await tick(new Date(2026, 10, 1, 23, 0));
+      expect(shown()).toEqual(['sunday', '23:00', '00:00']);
+      await tick(new Date(2026, 10, 1, 23, 59));
+      expect(shown()).toEqual(['sunday', '23:59', '00:59']);
+      await tick(new Date(2026, 10, 2, 0, 0));
+      expect(shown()).toEqual(['monday', '00:00', '01:00']);
+    });
+
+    it('stays as it is once the time is changed by hand', async () => {
+      const { press, tick, type, to, shown } = await startAt(new Date(2026, 10, 1, 20, 0));
+      await press('.actions button', 'Abierto ahora');
+      await tick(new Date(2026, 10, 1, 20, 1));
+
+      await type(to, '22:00');
+      await tick(new Date(2026, 10, 1, 20, 2));
+      expect(shown()).toEqual(['sunday', '20:01', '22:00']);
+    });
   });
 
   describe('with only one end of the time range', () => {

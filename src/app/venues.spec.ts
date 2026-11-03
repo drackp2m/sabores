@@ -13,6 +13,7 @@ import {
   filterVenues,
   formatDistance,
   formatDuration,
+  nextHour,
   openBetween,
   photoUrl,
   scheduleStatus,
@@ -165,6 +166,15 @@ describe('timeRange', () => {
     expect(range('monday', '', '20:00')).toEqual({ from: '00:00', to: '20:00' });
     // Without a day it isn't for today.
     expect(range('', '', '20:00')).toEqual({ from: '00:00', to: '20:00' });
+  });
+});
+
+describe('nextHour', () => {
+  it('goes from now until an hour later, past midnight from 23:00 on', () => {
+    const at = (hour: number, minute: number) => nextHour(new Date(2026, 10, 1, hour, minute));
+    expect(at(18, 30)).toEqual({ day: 'sunday', from: '18:30', to: '19:30' });
+    expect(at(23, 0)).toEqual({ day: 'sunday', from: '23:00', to: '00:00' });
+    expect(at(23, 45)).toEqual({ day: 'sunday', from: '23:45', to: '00:45' });
   });
 });
 

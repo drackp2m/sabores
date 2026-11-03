@@ -43,6 +43,13 @@ const ATTRIBUTION =
   '<a href="https://openfreemap.org" target="_blank">OpenFreeMap</a>' +
   '<a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a>' +
   '<span>Datos de <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a></span>';
+/**
+ * Our own, at double size, for some of what OpenFreeMap's sprite lacks (see createMap): the dark
+ * style's woods, with the hatching of Dark Matter, the style it comes from (public/map/LICENSE.md).
+ */
+const OWN_IMAGES: Readonly<Record<string, string>> = {
+  'wood-pattern': 'map/wood-pattern@2x.png',
+};
 
 /**
  * MapLibre, apart from the rest of the app: it's most of the JS and viewing the photos doesn't need
@@ -616,9 +623,14 @@ export class VenueMap {
       map.keyboard.disableRotation();
       // OpenFreeMap's sprite lacks images its styles ask for: in the dark one, the woods' pattern and
       // the towns' dot (below zoom 9); in both, some icons of places (offices, sports centres…).
-      // Without them they aren't drawn: a blank one leaves them so, with no warning in the console.
-      map.setMissingStyleImageResolver((id) => {
-        map.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
+      // Without them they aren't drawn: ours if there is one (OWN_IMAGES); otherwise a blank one,
+      // which leaves them so with no warning in the console. Each tile asks: only the first adds it.
+      map.setMissingStyleImageResolver(async (id) => {
+        const url = OWN_IMAGES[id];
+        const image = url
+          ? (await map.loadImage(url)).data
+          : { width: 1, height: 1, data: new Uint8Array(4) };
+        if (!map.hasImage(id)) map.addImage(id, image, { pixelRatio: url ? 2 : 1 });
       });
     } catch {
       this.noMap.set(true);

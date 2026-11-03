@@ -42,7 +42,9 @@ const ICONS = {
   ],
   close: ['M6 6l12 12', 'M18 6L6 18'],
   menu: ['M4 6h16', 'M4 12h16', 'M4 18h16'],
-  north: ['M12 3.5l6 17-6-4-6 4z'],
+  // A compass needle: with --icon-fill, only its north half gets filled (the other has no area).
+  north: ['M12 2.5L16 12H8z', 'M8 12l4 9.5', 'M16 12l-4 9.5'],
+  guide: ['M20 4L4 11l7 2 2 7z'],
   up: ['M12 19V5', 'M5 12l7-7 7 7'],
   down: ['M12 5v14', 'M19 12l-7 7-7-7'],
   sun: [

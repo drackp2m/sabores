@@ -27,6 +27,7 @@ describe('VenueMap', () => {
   const arrivals = signal<ReadonlyMap<number, Arrival>>(new Map());
   const lost = signal(false);
   const mapInSight = signal(false);
+  const live = signal(false);
   beforeEach(() => {
     fitBounds = vi.spyOn(maplibre.Map.prototype, 'fitBounds').mockReturnThis();
     statuses.set(new Map());
@@ -34,7 +35,7 @@ describe('VenueMap', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: TapasRoute, useValue: { statuses, arrivals } },
-        { provide: UserLocation, useValue: { lost, mapInSight } },
+        { provide: UserLocation, useValue: { lost, mapInSight, live } },
       ],
     });
   });
@@ -314,10 +315,12 @@ describe('VenueMap', () => {
     expect(document.head.firstElementChild).toBe(links[0]);
   });
 
-  it('adds its own to the style: the local names, the credits in Spanish and the route', async () => {
+  it('adds its own to the style: names and credits in Spanish, and the route', async () => {
     const { el } = await create([ONE]);
     const style = FakeMap.of(el).getStyle();
-    expect(JSON.stringify(style)).not.toContain('name_en');
+    expect(style.layers[0].layout).toEqual({
+      'text-field': ['coalesce', ['get', 'name:es'], ['get', 'name']],
+    });
     expect(style.sources['openmaptiles']).toMatchObject({
       attribution: expect.stringContaining('Datos de'),
     });
@@ -376,6 +379,24 @@ describe('VenueMap', () => {
     await fixture.whenStable();
     expect(FakeMap.of(el).getBearing()).toBe(0);
     expect(button()).toBeNull();
+  });
+
+  it('the north button goes away on pressing it, and comes back on turning it again', async () => {
+    const { fixture, el } = await create([ONE]);
+    const map = FakeMap.of(el);
+    vi.spyOn(map, 'resetNorth').mockReturnThis(); // Still on its way.
+    const button = () => el.querySelector<HTMLElement>('[aria-label="Orientar el mapa al norte"]');
+    map.rotateTo(30);
+    await fixture.whenStable();
+
+    button()!.click();
+    await fixture.whenStable();
+    expect(button()).toBeNull();
+
+    map.rotateTo(40);
+    map.endGesture();
+    await fixture.whenStable();
+    expect(button()).not.toBeNull();
   });
 
   it('a turn that ends near north goes back to it smoothly, once it stops', async () => {
@@ -613,6 +634,96 @@ describe('VenueMap', () => {
       arrivals.set(new Map([[1, { ...walking(12), mode: 'driving' }]]));
       await fixture.whenStable();
       expect(request).toHaveBeenCalledTimes(2);
+    });
+
+    describe('guided', () => {
+      const guideButton = (el: HTMLElement) =>
+        el.querySelector<HTMLElement>('[aria-label="Guiarme hasta el local"]');
+      let easeTo: ReturnType<typeof vi.spyOn>;
+      beforeEach(() => {
+        live.set(true);
+        easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      });
+      afterEach(() => {
+        live.set(false);
+        easeTo.mockRestore();
+      });
+
+      /** Guiding along the route, from a different start. */
+      async function guiding(lng: number) {
+        const created = await withRoute(lng);
+        guideButton(created.el)!.click();
+        await created.fixture.whenStable();
+        return created;
+      }
+
+      it('is offered with a live location and a venue to go to', async () => {
+        live.set(false);
+        const { fixture, el, change, marker } = await create([ONE, TWO]);
+        await change('origin', { lat: 39.98, lng: -0.05 });
+        expect(guideButton(el)).toBeNull();
+
+        live.set(true);
+        await fixture.whenStable();
+        expect(guideButton(el)).toBeNull();
+
+        marker(2)!.click();
+        await fixture.whenStable();
+        expect(guideButton(el)).not.toBeNull();
+      });
+
+      it('keeps up with the user close up, low on the map, looking along the route', async () => {
+        const height = vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(800);
+        const { el, change } = await guiding(-0.0531);
+        expect(guideButton(el)).toBeNull();
+        // Along the street to the east.
+        const [first] = easeTo.mock.lastCall!;
+        expect(first).toMatchObject({ center: [-0.0531, 39.98], zoom: 17, offset: [0, 800 / 4] });
+        expect(first.bearing).toBeCloseTo(90);
+
+        // On the stretch going up, with no other route.
+        await change('origin', { lat: 39.9805, lng: -0.04 });
+        const [next] = easeTo.mock.lastCall!;
+        expect(next.center).toEqual([-0.04, 39.9805]);
+        expect(next.bearing).toBeCloseTo(0);
+        expect(request).toHaveBeenCalledOnce();
+        height.mockRestore();
+      });
+
+      it('on leaving the route, it doesn’t frame the new one: it keeps up with the user', async () => {
+        const { change } = await guiding(-0.0541);
+
+        await change('origin', { lat: 39.995, lng: -0.046 });
+        await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+        await vi.waitFor(() => expect(easeTo).toHaveBeenCalledTimes(3));
+        expect(fitBounds).toHaveBeenCalledTimes(2);
+      });
+
+      it('says how long is left at the top, by what’s left of the route', async () => {
+        const { el, change } = await guiding(-0.0571);
+        const arrival = () => el.querySelector('.guided-arrival')?.textContent?.trim();
+        // Some 1,460 m along the street and 110 m up.
+        expect(arrival()).toBe('20 min · 1,6 km');
+
+        await change('origin', { lat: 39.9805, lng: -0.04 });
+        expect(arrival()).toBe('1 min · 60 m');
+
+        FakeMap.of(el).startGesture();
+        await change('origin', { lat: 39.9806, lng: -0.04 });
+        expect(arrival()).toBeUndefined();
+      });
+
+      it('moving the map by hand stops it and brings the button back', async () => {
+        const { fixture, el, change } = await guiding(-0.0591);
+
+        FakeMap.of(el).startGesture();
+        await fixture.whenStable();
+        expect(guideButton(el)).not.toBeNull();
+
+        easeTo.mockClear();
+        await change('origin', { lat: 39.98, lng: -0.045 });
+        expect(easeTo).not.toHaveBeenCalled();
+      });
     });
   });
 

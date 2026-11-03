@@ -189,6 +189,11 @@ class FakeMap extends Evented {
     return this.rotateTo(0);
   }
 
+  /** Starting to move the map by hand. */
+  startGesture(): void {
+    this.fire('movestart', { originalEvent: new Event('touchstart') });
+  }
+
   /** Letting go of the map, once what the gesture left moving stops. */
   endGesture(): void {
     this.fire('moveend', { originalEvent: new Event('touchend') });

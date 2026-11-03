@@ -412,15 +412,15 @@ export function distanceMeters(a: Coordinates, b: Coordinates): number {
 export type TravelMode = 'walking' | 'driving';
 
 export interface Arrival {
-  /** In a straight line. */
+  /** In a straight line (guided on the map, what's left of the route). */
   meters: number;
   minutes: number;
   mode: TravelMode;
 }
 
 /**
- * Rough arrival time on foot (4.8 km/h) or by car (25 km/h in town). With no mode, on foot up to
- * 2.5 km in a straight line and by car beyond that. Streets make the journey 30–40 % longer.
+ * Rough arrival time on foot or by car. With no mode, on foot up to 2.5 km in a straight line and by
+ * car beyond that. Streets make the journey 30–40 % longer.
  */
 export function arrivalFrom(
   origin: Coordinates,
@@ -430,8 +430,13 @@ export function arrivalFrom(
   const meters = distanceMeters(origin, destination);
   const mode = travelMode ?? (meters <= 2500 ? 'walking' : 'driving');
   const journey = meters * (mode === 'walking' ? 1.3 : 1.4);
+  return { meters, mode, minutes: journeyMinutes(journey, mode) };
+}
+
+/** How long it takes to go so many meters along the streets: on foot at 4.8 km/h, by car at 25. */
+export function journeyMinutes(meters: number, mode: TravelMode): number {
   const metersPerMinute = mode === 'walking' ? 80 : 417;
-  return { meters, mode, minutes: Math.max(1, Math.round(journey / metersPerMinute)) };
+  return Math.max(1, Math.round(meters / metersPerMinute));
 }
 
 export function formatDistance(meters: number): string {

@@ -82,6 +82,8 @@ export class UserLocation {
   readonly lost = signal(false);
   /** The current location is the starting point, or is about to be. */
   private readonly following = signal(false);
+  /** The starting point is the current location, and moves with the phone. */
+  readonly live = computed(() => this.following() && this.origin()?.label === MY_LOCATION);
   /** With no map in sight, only until the first reading: the list needs it to work out distances. */
   private readonly watching = computed(
     () => this.following() && (this.mapInSight() || this.searching()),

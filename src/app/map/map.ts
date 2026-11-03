@@ -8,6 +8,7 @@ import {
   effect,
   inject,
   input,
+  linkedSignal,
   output,
   signal,
   untracked,
@@ -15,20 +16,29 @@ import {
 } from '@angular/core';
 import type * as ml from 'maplibre-gl';
 
-import { createArrivalTime } from '../arrival-time/arrival-time';
+import { ArrivalTime, createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
 import { desktop, isTouch, remInPx } from '../media';
-import { Route, directionsLink, distanceToRoute, findRoute } from '../routing';
+import {
+  Route,
+  directionsLink,
+  distanceAlongRoute,
+  distanceToRoute,
+  findRoute,
+  routeBearing,
+} from '../routing';
 import { ScrollPosition, WHOLE } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
 import { Themes } from '../theme';
 import { UserLocation } from '../user-location';
 import {
+  Arrival,
   Coordinates,
   StatusKind,
   Venue,
   distanceMeters,
+  journeyMinutes,
   photoUrl,
   statusBadge,
   statusKind,
@@ -88,6 +98,11 @@ const MAX_ZOOM = 18;
 /** How long the map takes to get where it's sent, in ms. */
 const MOVE_TIME = 250;
 
+/** Guided, how close up it goes. */
+const GUIDE_ZOOM = 17;
+/** And how long it takes to keep up with each step, slower: it turns at the corners. */
+const GUIDE_TIME = 1000;
+
 const ROUTE_COLOR = '#2563eb';
 /** Of the line by car, and of the dots on foot. */
 const ROUTE_WIDTH = 5;
@@ -138,7 +153,7 @@ function sameKinds(
  */
 @Component({
   selector: 'app-map',
-  imports: [Icon],
+  imports: [ArrivalTime, Icon],
   template: `
     <div class="frame" [class.large]="large()">
       <div #container class="container"></div>
@@ -189,8 +204,22 @@ function sameKinds(
           </a>
         }
       </div>
-      @if (rotated()) {
-        <div class="buttons north" [style.--credits-height.px]="creditsHeight()">
+      @if (guidedArrival(); as arrival) {
+        <app-arrival-time class="guided-arrival" [arrival]="arrival" distance />
+      }
+      <div class="buttons bottom" [style.--credits-height.px]="creditsHeight()">
+        @if (canGuide() && !guiding()) {
+          <button
+            type="button"
+            class="secondary icon"
+            title="Guiarme hasta el local"
+            aria-label="Guiarme hasta el local"
+            (click)="startGuiding()"
+          >
+            <app-icon name="guide" />
+          </button>
+        }
+        @if (rotated()) {
           <button
             type="button"
             class="secondary icon"
@@ -198,10 +227,10 @@ function sameKinds(
             aria-label="Orientar el mapa al norte"
             (click)="resetNorth()"
           >
-            <app-icon name="north" [style.rotate.deg]="-bearing()" />
+            <app-icon name="north" class="needle" [style.rotate.deg]="-bearing()" />
           </button>
-        </div>
-      }
+        }
+      </div>
       <p class="hint" [class.visible]="hint()" aria-hidden="true">
         Usa dos dedos para mover el mapa
       </p>
@@ -251,8 +280,9 @@ function sameKinds(
       }
     }
 
-    // Top right and, the zoom ones, top left: inside the map's border. The north one, bottom right:
-    // as far from the credits (see createMap) as the others from the edges.
+    // Top right and, the zoom ones, top left: inside the map's border. The guide and north ones, bottom
+    // right: as far from the credits (see createMap) as the others from the edges. The north one, at
+    // the bottom: on guiding, it takes the place of the guide one.
     .buttons {
       position: absolute;
       top: 11px;
@@ -277,7 +307,7 @@ function sameKinds(
         }
       }
 
-      &.north {
+      &.bottom {
         top: auto;
         bottom: calc(var(--credits-height) + 11px);
 
@@ -293,6 +323,10 @@ function sameKinds(
         box-shadow: 0 1px 5px rgb(0 0 0 / 0.25);
       }
 
+      .needle {
+        --icon-fill: currentColor;
+      }
+
       a {
         display: inline-flex;
         align-items: center;
@@ -306,6 +340,26 @@ function sameKinds(
         &:hover {
           background: var(--accent-soft);
         }
+      }
+    }
+
+    // Top center, between the buttons and as tall as them.
+    .guided-arrival {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      z-index: 1000;
+      height: 2.25rem;
+      padding: 0 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: var(--surface);
+      box-shadow: 0 1px 5px rgb(0 0 0 / 0.25);
+      white-space: nowrap;
+      translate: -50%;
+
+      .large & {
+        top: calc(10px + env(safe-area-inset-top, 0px));
       }
     }
 
@@ -423,7 +477,8 @@ export class VenueMap {
   private readonly routeStart = computed(() => this.origin(), {
     equal: (a, b) => {
       if (!a || !b) return a === b;
-      return (this.route ? distanceToRoute(b, this.route) : distanceMeters(a, b)) < OFF_ROUTE;
+      const route = this.route();
+      return (route ? distanceToRoute(b, route) : distanceMeters(a, b)) < OFF_ROUTE;
     },
   });
   /** On foot or by car: the arrival itself changes with every step, but this rarely does. */
@@ -451,9 +506,32 @@ export class VenueMap {
   protected readonly farthest = computed(() => this.zoom() <= MIN_ZOOM);
   /** Which way is up, in degrees clockwise from north. */
   protected readonly bearing = signal(0);
-  protected readonly rotated = computed(() => this.bearing() !== 0);
+  /** On its way back to the north (see resetNorth): until it gets there or is moved otherwise. */
+  private readonly northBound = signal(false);
+  /** The north button goes away as soon as it's pressed, not on getting there. */
+  protected readonly rotated = computed(() => this.bearing() !== 0 && !this.northBound());
   /** Of the strip with the credits, the north button's floor. */
   protected readonly creditsHeight = signal(0);
+  /** With the starting point moving with the phone and a venue to go to. */
+  protected readonly canGuide = computed(
+    () => !!this.map() && this.location.live() && !!this.destination(),
+  );
+  /**
+   * The map keeps up with the user (see guide). Until it's moved by hand, and off whenever guiding
+   * becomes possible or stops being so.
+   */
+  protected readonly guiding = linkedSignal({ source: this.canGuide, computation: () => false });
+  /** Guided, how long to the venue: by what's left of the route (until it arrives, as in the list). */
+  protected readonly guidedArrival = computed((): Arrival | undefined => {
+    const origin = this.origin();
+    const venue = this.destination();
+    const route = this.route();
+    if (!this.guiding() || !origin || !venue) return undefined;
+    const arrival = this.tapasRoute.arrivals().get(venue.number);
+    if (!arrival || !route) return arrival;
+    const meters = distanceAlongRoute(origin, route);
+    return { meters, mode: arrival.mode, minutes: journeyMinutes(meters, arrival.mode) };
+  });
   /** Where a finger landed on the map, until it's known where it's going. */
   private touchStart?: { x: number; y: number };
   // Created with the map: if there's a map, they're there.
@@ -463,7 +541,7 @@ export class VenueMap {
   /** The style showing: the theme's. */
   private style = this.themeStyle();
   /** The route drawn, from the starting point itself: it may be some way off the street it begins on. */
-  private route?: Route;
+  private readonly route = signal<Route | undefined>(undefined);
   private readonly markers = new Map<number, ml.Marker>();
   private resizeObserver?: ResizeObserver;
   /** The venue asked to be focused before MapLibre arrived. */
@@ -516,17 +594,39 @@ export class VenueMap {
       const mode = this.routeMode();
       const fixed = this.routeTo() !== null;
       if (!map) return;
-      this.route = undefined;
-      this.drawRoute(map);
+      this.route.set(undefined);
+      untracked(() => this.drawRoute(map));
       if (!origin || !venue?.location || !mode) return;
       let current = true;
       onCleanup(() => (current = false));
       void findRoute(origin, venue.location, mode).then((route) => {
         if (!current || !route) return;
-        this.route = [[origin.lng, origin.lat], ...route];
+        this.route.set([[origin.lng, origin.lat], ...route]);
         this.drawRoute(map);
-        // In the venue view, show the whole route; with a popup open the map doesn't move.
-        if (fixed) this.frame(map, this.route, 16);
+        // In the venue view, show the whole route; with a popup open the map doesn't move. Guided, it
+        // looks along it (see the effect below).
+        if (fixed) this.frame(map, this.route()!, 16);
+      });
+    });
+
+    // Guided, the map keeps up with every step and with the route, when it arrives (guide reads them).
+    effect(() => {
+      const map = this.map();
+      if (map) this.guide(map);
+    });
+
+    // Guided, the screen stays on. Hiding the app lets go of it: it's asked for again on coming back.
+    effect((onCleanup) => {
+      if (!this.guiding() || !('wakeLock' in navigator)) return;
+      let lock: Promise<WakeLockSentinel | void> | undefined;
+      const request = () => {
+        if (!document.hidden) lock = navigator.wakeLock.request('screen').catch(() => {});
+      };
+      request();
+      document.addEventListener('visibilitychange', request);
+      onCleanup(() => {
+        document.removeEventListener('visibilitychange', request);
+        void lock?.then((sentinel) => sentinel?.release());
       });
     });
 
@@ -605,6 +705,7 @@ export class VenueMap {
     }
     const marker = this.markers.get(number);
     if (!marker) return;
+    this.guiding.set(false);
     this.container().nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     this.position.appScrolled();
     const zoom = 16;
@@ -618,12 +719,23 @@ export class VenueMap {
     }
   }
 
+  /** Its popup would hide the way ahead: it gets closed, and its venue stays selected. */
+  protected startGuiding(): void {
+    this.openPopup?.remove();
+    this.guiding.set(true);
+  }
+
+  // These buttons move the map by hand too, and stop guiding.
+
   protected zoomBy(levels: number): void {
     const map = this.map()!;
+    this.guiding.set(false);
     map.zoomTo(map.getZoom() + levels, { duration: MOVE_TIME });
   }
 
   protected resetNorth(): void {
+    this.guiding.set(false);
+    this.northBound.set(true);
     this.map()!.resetNorth({ duration: MOVE_TIME });
   }
 
@@ -698,14 +810,21 @@ export class VenueMap {
     });
     map.on('zoomend', () => {
       this.zoom.set(map.getZoom());
-      if (this.route) this.drawDots(map);
+      if (this.route()) this.drawDots(map);
     });
     map.on('rotate', () => this.bearing.set(map.getBearing()));
+    // Moved by hand (with the fingers, the mouse or the keyboard), it stops guiding. When the app
+    // moves it, there's no original event.
+    map.on('movestart', ({ originalEvent }) => {
+      if (originalEvent) this.guiding.set(false);
+    });
     // A turn that ends near north goes back to it. MapLibre does it within the momentum the fingers or
     // the mouse leave on letting go, as long as that lasts: after a slow turn, a few hundredths of a
     // second, and it jumps. Here, once it has stopped, at the pace of the north button. Only after a
-    // gesture: when the app moves the map there's no original event.
+    // gesture: when the app moves the map there's no original event. Any move, on ending (even cut short
+    // by another), ends the way back to the north.
     map.on('moveend', ({ originalEvent }) => {
+      this.northBound.set(false);
       const bearing = map.getBearing();
       if (originalEvent && bearing !== 0 && Math.abs(bearing) < NORTH_SNAP) this.resetNorth();
     });
@@ -717,10 +836,12 @@ export class VenueMap {
     creditsObserver.observe(credits);
     this.destroyRef.onDestroy(() => creditsObserver.disconnect());
     // Every time its size changes (on enlarging or reducing it, when the scrollbar comes or goes…), the
-    // map has to measure again and paint at once (resizing clears it), and the open popup, if any, to
-    // fit again. By hand and not with MapLibre's trackResize, which would do it too late for the popup.
+    // map has to measure again and paint at once (resizing clears it), the open popup, if any, to fit
+    // again and, guided, the user's point to go back to its place. By hand and not with MapLibre's
+    // trackResize, which would do it too late for the popup.
     this.resizeObserver = new ResizeObserver(() => {
       map.resize().redraw();
+      this.guide(map, 0);
       const popup = this.openPopup;
       if (popup) {
         this.fitPopup(popup);
@@ -732,12 +853,13 @@ export class VenueMap {
   }
 
   /**
-   * What the app adds to the theme's style, each time one arrives: the names as they are on the street
-   * signs (it prefers the English ones), the credits and the route, on top of it all.
+   * What the app adds to the theme's style, each time one arrives: the names in Spanish (it prefers
+   * the English ones), or as they are on the street signs where OpenStreetMap has no Spanish one, the
+   * credits and the route, on top of it all.
    */
   private ownStyle(style: ml.StyleSpecification): ml.StyleSpecification {
     const own: ml.StyleSpecification = JSON.parse(
-      JSON.stringify(style).replaceAll('"name_en"', '"name"'),
+      JSON.stringify(style).replaceAll('"name_en"', '"name:es"'),
     );
     const tiles = own.sources['openmaptiles'];
     if (tiles?.type === 'vector') tiles.attribution = ATTRIBUTION;
@@ -767,7 +889,7 @@ export class VenueMap {
 
   /** By car, a solid line. */
   private routeLine(): ml.GeoJSONSourceSpecification['data'] {
-    const route = this.routeMode() === 'walking' ? undefined : this.route;
+    const route = this.routeMode() === 'walking' ? undefined : this.route();
     return {
       type: 'FeatureCollection',
       features: route
@@ -789,8 +911,9 @@ export class VenueMap {
   private routeDots(): ml.GeoJSONSourceSpecification['data'] {
     const map = this.map();
     const dots: [number, number][] = [];
-    if (map && this.route && this.routeMode() === 'walking') {
-      const points = this.route.slice(1).map((point) => map.project(point));
+    const route = this.route();
+    if (map && route && this.routeMode() === 'walking') {
+      const points = route.slice(1).map((point) => map.project(point));
       let next = 0; // Where the next dot goes, in pixels from the start of the stretch.
       for (let i = 1; i < points.length; i++) {
         const [a, b] = [points[i - 1], points[i]];
@@ -821,8 +944,30 @@ export class VenueMap {
     map.getSource<ml.GeoJSONSource>('route-dots')?.setData(this.routeDots());
   }
 
-  /** Without turning it back to the north, as it would by default. */
+  /**
+   * Guided: the user's point a quarter of the way up from the bottom, close up, with the route ahead
+   * pointing up (until it arrives, the venue). Nothing if not guiding.
+   */
+  private guide(map: ml.Map, duration = GUIDE_TIME): void {
+    const origin = this.origin();
+    const destination = this.destination()?.location;
+    if (!this.guiding() || !origin || !destination) return;
+    const route = this.route() ?? [
+      [origin.lng, origin.lat],
+      [destination.lng, destination.lat],
+    ];
+    map.easeTo({
+      center: [origin.lng, origin.lat],
+      zoom: GUIDE_ZOOM,
+      bearing: routeBearing(origin, route) ?? map.getBearing(),
+      offset: [0, map.getContainer().clientHeight / 4],
+      duration,
+    });
+  }
+
+  /** Without turning it back to the north, as it would by default. Not while guiding (see guide). */
   private frame(map: ml.Map, points: ml.LngLatLike[], maxZoom: number, animate = true): void {
+    if (this.guiding()) return;
     const bounds = points.reduce(
       (all, point) => all.extend(point),
       new this.maplibre.LngLatBounds(),
@@ -968,6 +1113,7 @@ export class VenueMap {
   private showPopup(venue: Venue, marker: ml.Marker): void {
     const popup = marker.getPopup()!;
     if (this.openPopup !== popup) this.openPopup?.remove();
+    this.guiding.set(false); // It moves the map to make room for it.
     this.selected.set(venue.number);
     this.fitPopup(popup);
     popup.setDOMContent(this.popup(venue));

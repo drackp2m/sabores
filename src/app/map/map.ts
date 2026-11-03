@@ -614,8 +614,9 @@ export class VenueMap {
       });
       map.touchZoomRotate.disableRotation();
       map.keyboard.disableRotation();
-      // The dark style's woods ask for a pattern its sprite doesn't have ("wood-pattern"), and without
-      // it they aren't drawn: a blank one leaves them as they are, without the console's warning.
+      // OpenFreeMap's sprite lacks images its styles ask for: in the dark one, the woods' pattern and
+      // the towns' dot (below zoom 9); in both, some icons of places (offices, sports centres…).
+      // Without them they aren't drawn: a blank one leaves them so, with no warning in the console.
       map.setMissingStyleImageResolver((id) => {
         map.addImage(id, { width: 1, height: 1, data: new Uint8Array(4) });
       });

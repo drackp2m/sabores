@@ -208,6 +208,17 @@ function sameKinds(
         <app-arrival-time class="guided-arrival" [arrival]="arrival" distance />
       }
       <div class="buttons bottom" [style.--credits-height.px]="creditsHeight()">
+        @if (originButton(); as label) {
+          <button
+            type="button"
+            class="secondary icon"
+            [title]="label"
+            [attr.aria-label]="label"
+            (click)="goToOrigin()"
+          >
+            <app-icon name="location" />
+          </button>
+        }
         @if (canGuide() && !guiding()) {
           <button
             type="button"
@@ -280,9 +291,9 @@ function sameKinds(
       }
     }
 
-    // Top right and, the zoom ones, top left: inside the map's border. The guide and north ones, bottom
-    // right: as far from the credits (see createMap) as the others from the edges. The north one, at
-    // the bottom: on guiding, it takes the place of the guide one.
+    // Top right and, the zoom ones, top left: inside the map's border. Those to go to the user's point,
+    // to guide and to face north, bottom right: as far from the credits (see createMap) as the others
+    // from the edges. The north one, at the bottom: on guiding, it takes the place of the others.
     .buttons {
       position: absolute;
       top: 11px;
@@ -512,6 +523,11 @@ export class VenueMap {
   protected readonly rotated = computed(() => this.bearing() !== 0 && !this.northBound());
   /** Of the strip with the credits, the north button's floor. */
   protected readonly creditsHeight = signal(0);
+  /** The button to go to the user's point, by what it is. Not while guiding: the map is on it. */
+  protected readonly originButton = computed(() => {
+    if (!this.map() || !this.origin() || this.guiding()) return null;
+    return this.location.live() ? 'Ir a mi ubicación' : 'Ir al punto de partida';
+  });
   /** With the starting point moving with the phone and a venue to go to. */
   protected readonly canGuide = computed(
     () => !!this.map() && this.location.live() && !!this.destination(),
@@ -717,6 +733,13 @@ export class VenueMap {
       this.selected.set(number);
       map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME });
     }
+  }
+
+  /** As close as on going to a venue (see focus), or closer if it already was. Without turning it. */
+  protected goToOrigin(): void {
+    const map = this.map()!;
+    const { lng, lat } = this.origin()!;
+    map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16), duration: MOVE_TIME });
   }
 
   /** Its popup would hide the way ahead: it gets closed, and its venue stays selected. */

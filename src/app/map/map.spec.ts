@@ -422,6 +422,24 @@ describe('VenueMap', () => {
     expect(fitBounds.mock.lastCall![1]).toMatchObject({ bearing: 30 });
   });
 
+  it('goes to the user’s point, named by what it is, without turning the map', async () => {
+    const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+    const { fixture, el, change } = await create([ONE]);
+    const button = () => el.querySelector<HTMLElement>('.buttons.bottom button');
+    expect(button()).toBeNull();
+
+    await change('origin', { lat: 39.98, lng: -0.04 });
+    expect(button()!.getAttribute('aria-label')).toBe('Ir al punto de partida');
+    live.set(true);
+    await fixture.whenStable();
+    expect(button()!.getAttribute('aria-label')).toBe('Ir a mi ubicación');
+
+    button()!.click();
+    expect(easeTo).toHaveBeenLastCalledWith({ center: [-0.04, 39.98], zoom: 16, duration: 250 });
+    live.set(false);
+    easeTo.mockRestore();
+  });
+
   it('marks the user’s point while the location is lost', async () => {
     const { fixture, el, change } = await create([ONE]);
     await change('origin', { lat: 39.98, lng: -0.04 });

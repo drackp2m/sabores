@@ -30,8 +30,10 @@ export class ScrollPosition {
   private readonly inView = signal<boolean | null>(null);
   /** The app has moved the list and left it out of sight: if the user does it, they know the way. */
   private readonly away = signal(false);
+  /** The app is moving the list, and knew from the start that it would leave it out of sight. */
+  private readonly leaving = signal(false);
   /** Whether to offer going back to it. */
-  readonly canReturn = computed(() => this.away() && this.inView() === false);
+  readonly canReturn = computed(() => this.leaving() || (this.away() && this.inView() === false));
   /** The different venues the user has lost sight of since then, on each side of the screen. */
   private readonly lost = { above: new Set<string>(), below: new Set<string>() };
   /** Only while a scroll started by the app lasts. */
@@ -39,13 +41,21 @@ export class ScrollPosition {
   /** That scroll has really moved something (on desktop, going to the map doesn't move the list). */
   private moved = false;
 
-  leaveFrom(number: number): void {
+  /**
+   * The app is about to take the list away from that venue. If it already knows that the venue will
+   * be out of sight where the page stops, going back is offered at once, while it moves: once it
+   * stops, what's on the screen decides, as when it isn't known.
+   */
+  leaveFrom(number: number, outOfSight = false): void {
     this.returnTo.set(number);
     this.inView.set(null);
     this.away.set(false);
     this.lost.above.clear();
     this.lost.below.clear();
     this.moved = false;
+    this.leaving.set(outOfSight);
+    // If the page didn't move after all, it would stay offered: this way it expires.
+    if (outOfSight) this.appScrolled();
   }
 
   /**
@@ -71,6 +81,7 @@ export class ScrollPosition {
       document.removeEventListener('scroll', this.onScroll, ANY_SCROLL);
       if (this.moved && this.inView() === false) this.away.set(true);
       this.moved = false;
+      this.leaving.set(false);
     }, SCROLL_END);
   }
 

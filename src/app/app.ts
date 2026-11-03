@@ -322,8 +322,27 @@ export class App {
 
   /** Shows a venue of the list on the map, remembering it to be able to return. */
   protected locate(map: VenueMap, number: number): void {
-    this.position.leaveFrom(number);
+    this.position.leaveFrom(number, this.outOfSightAtMap(number));
     map.focus(number);
+  }
+
+  /**
+   * Whether the venue's card will be out of sight once the page gets to the map. It goes as little as
+   * it takes to show it whole below the header (focus, in map.ts), and no higher than the top. The
+   * card has to be whole, with its margins, as ScrollPosition sees it.
+   */
+  private outOfSightAtMap(number: number): boolean {
+    const card = this.card(number)?.getBoundingClientRect();
+    const map = this.host.querySelector('.results .map')?.getBoundingClientRect();
+    if (!card || !map) return false;
+    const top = this.headerHeight + remInPx();
+    const rootTop = this.root?.getBoundingClientRect().top ?? 0;
+    const bottom = rootTop + (this.root ?? document.documentElement).clientHeight;
+    let by = 0;
+    if (map.top < top) by = Math.max(map.top - top, -this.scroller.scrollTop);
+    else if (map.bottom > bottom) by = Math.min(map.bottom - bottom, map.top - top);
+    // A pixel either way: the browser rounds where the page stops.
+    return by !== 0 && (card.top - by < top - 1 || card.bottom - by > bottom - remInPx() + 1);
   }
 
   protected returnToVenue(number: number): void {

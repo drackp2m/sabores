@@ -660,6 +660,26 @@ describe('App', () => {
       expect(position.returnTo()).toBeNull();
     });
 
+    it('offers it at once if the trip to the map is going to leave the venue out of sight', async () => {
+      const { el, scrollTo, locate, pageMoves, pageStops, returnButton } = await startFollowing();
+      await scrollTo(6);
+      // The map above the screen, and the card 516 px further down once there: below the screen.
+      const rect = (top: number, height: number) => ({ top, bottom: top + height }) as DOMRect;
+      const at = (selector: string, box: DOMRect) =>
+        vi.spyOn(el.querySelector(selector)!, 'getBoundingClientRect').mockReturnValue(box);
+      at('.results .map', rect(-500, 357));
+      at('#venue-6', rect(300, 300));
+      vi.spyOn(Element.prototype, 'scrollTop', 'get').mockReturnValue(2000);
+      vi.spyOn(Element.prototype, 'clientHeight', 'get').mockReturnValue(800);
+      await locate(6);
+      expect(returnButton()!.textContent).toContain('Volver al local 6');
+
+      pageMoves();
+      await scrollTo(1);
+      await pageStops();
+      expect(returnButton()!.textContent).toContain('Volver al local 6');
+    });
+
     it('doesn’t offer going back if going to the map hasn’t moved the list', async () => {
       const { scrollTo, locate, pageStops, returnButton, position } = await startFollowing();
       await scrollTo(1);

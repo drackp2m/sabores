@@ -95,10 +95,9 @@ class FakeMap extends Evented {
       return this.enabled;
     },
   };
-  readonly touchZoomRotate = { disableRotation() {} };
-  readonly keyboard = { disableRotation() {} };
   private readonly canvasContainer = document.createElement('div');
   private zoom: number;
+  private bearing = 0;
   private style!: StyleSpecification;
   private readonly sources = new globalThis.Map<string, GeoJSONSource>();
 
@@ -111,7 +110,9 @@ class FakeMap extends Evented {
     this.canvasContainer.addEventListener('click', (originalEvent) =>
       this.fire('click', { originalEvent }),
     );
-    options.container.append(this.canvasContainer);
+    const credits = document.createElement('div');
+    credits.className = 'maplibregl-ctrl-attrib';
+    options.container.append(this.canvasContainer, credits);
     this.setStyle(options.style);
   }
 
@@ -172,6 +173,25 @@ class FakeMap extends Evented {
     this.zoom = zoom;
     this.fire('zoomend');
     return this;
+  }
+
+  getBearing(): number {
+    return this.bearing;
+  }
+
+  rotateTo(bearing: number): this {
+    this.bearing = bearing;
+    this.fire('rotate');
+    return this;
+  }
+
+  resetNorth(_options?: unknown): this {
+    return this.rotateTo(0);
+  }
+
+  /** Letting go of the map, once what the gesture left moving stops. */
+  endGesture(): void {
+    this.fire('moveend', { originalEvent: new Event('touchend') });
   }
 
   easeTo(_options: { center: unknown; zoom: number; offset?: [number, number] }): this {

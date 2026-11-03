@@ -99,6 +99,9 @@ const STATUS_KINDS: StatusKind[] = ['open', 'soon', 'late', 'closed'];
 /** How far a finger must move to know where it's going (fingers tremble a little on touching). */
 const DRAG_THRESHOLD = 10;
 
+/** In degrees: how near north a turn can end to go back to it (as MapLibre's bearingSnap). */
+const NORTH_SNAP = 7;
+
 /** In meters: how far the starting point can get from the route drawn before asking for another. */
 const OFF_ROUTE = 40;
 
@@ -186,6 +189,19 @@ function sameKinds(
           </a>
         }
       </div>
+      @if (rotated()) {
+        <div class="buttons north" [style.--credits-height.px]="creditsHeight()">
+          <button
+            type="button"
+            class="secondary icon"
+            title="Orientar el mapa al norte"
+            aria-label="Orientar el mapa al norte"
+            (click)="resetNorth()"
+          >
+            <app-icon name="north" [style.rotate.deg]="-bearing()" />
+          </button>
+        </div>
+      }
       <p class="hint" [class.visible]="hint()" aria-hidden="true">
         Usa dos dedos para mover el mapa
       </p>
@@ -235,7 +251,8 @@ function sameKinds(
       }
     }
 
-    // Top right and, the zoom ones, top left: inside the map's border.
+    // Top right and, the zoom ones, top left: inside the map's border. The north one, bottom right:
+    // as far from the credits (see createMap) as the others from the edges.
     .buttons {
       position: absolute;
       top: 11px;
@@ -257,6 +274,16 @@ function sameKinds(
         .large & {
           right: auto;
           left: calc(10px + env(safe-area-inset-left, 0px));
+        }
+      }
+
+      &.north {
+        top: auto;
+        bottom: calc(var(--credits-height) + 11px);
+
+        .large & {
+          top: auto;
+          bottom: calc(var(--credits-height) + 10px);
         }
       }
 
@@ -422,6 +449,11 @@ export class VenueMap {
   private readonly zoom = signal(13);
   protected readonly closest = computed(() => this.zoom() >= MAX_ZOOM);
   protected readonly farthest = computed(() => this.zoom() <= MIN_ZOOM);
+  /** Which way is up, in degrees clockwise from north. */
+  protected readonly bearing = signal(0);
+  protected readonly rotated = computed(() => this.bearing() !== 0);
+  /** Of the strip with the credits, the north button's floor. */
+  protected readonly creditsHeight = signal(0);
   /** Where a finger landed on the map, until it's known where it's going. */
   private touchStart?: { x: number; y: number };
   // Created with the map: if there's a map, they're there.
@@ -591,6 +623,10 @@ export class VenueMap {
     map.zoomTo(map.getZoom() + levels, { duration: MOVE_TIME });
   }
 
+  protected resetNorth(): void {
+    this.map()!.resetNorth({ duration: MOVE_TIME });
+  }
+
   /** The theme's map. */
   private themeStyle(): string {
     return this.themes.dark() ? STYLE_DARK : STYLE_LIGHT;
@@ -611,16 +647,17 @@ export class VenueMap {
         zoom: this.zoom(),
         minZoom: MIN_ZOOM,
         maxZoom: MAX_ZOOM,
-        // North stays up.
-        dragRotate: false,
+        // It turns (twisting two fingers; with the right button, or Ctrl, and the mouse; with Shift
+        // and the arrows), but stays flat: two fingers going up together move it.
+        maxPitch: 0,
         touchPitch: false,
+        // Ours, smooth (see NORTH_SNAP below).
+        bearingSnap: 0,
         // See the observer below.
         trackResize: false,
         attributionControl: { compact: false },
         locale: { 'Map.Title': 'Mapa' },
       });
-      map.touchZoomRotate.disableRotation();
-      map.keyboard.disableRotation();
       // OpenFreeMap's sprite lacks images its styles ask for: in the dark one, the woods' pattern and
       // the towns' dot (below zoom 9); in both, some icons of places (offices, sports centres…).
       // Without them they aren't drawn: ours if there is one (OWN_IMAGES); otherwise a blank one,
@@ -663,6 +700,22 @@ export class VenueMap {
       this.zoom.set(map.getZoom());
       if (this.route) this.drawDots(map);
     });
+    map.on('rotate', () => this.bearing.set(map.getBearing()));
+    // A turn that ends near north goes back to it. MapLibre does it within the momentum the fingers or
+    // the mouse leave on letting go, as long as that lasts: after a slow turn, a few hundredths of a
+    // second, and it jumps. Here, once it has stopped, at the pace of the north button. Only after a
+    // gesture: when the app moves the map there's no original event.
+    map.on('moveend', ({ originalEvent }) => {
+      const bearing = map.getBearing();
+      if (originalEvent && bearing !== 0 && Math.abs(bearing) < NORTH_SNAP) this.resetNorth();
+    });
+    // One line or two, with the width of the map, and empty until the style arrives.
+    const credits = container.querySelector('.maplibregl-ctrl-attrib')!;
+    const creditsObserver = new ResizeObserver(([entry]) =>
+      this.creditsHeight.set(entry.borderBoxSize[0].blockSize),
+    );
+    creditsObserver.observe(credits);
+    this.destroyRef.onDestroy(() => creditsObserver.disconnect());
     // Every time its size changes (on enlarging or reducing it, when the scrollbar comes or goes…), the
     // map has to measure again and paint at once (resizing clears it), and the open popup, if any, to
     // fit again. By hand and not with MapLibre's trackResize, which would do it too late for the popup.
@@ -768,12 +821,20 @@ export class VenueMap {
     map.getSource<ml.GeoJSONSource>('route-dots')?.setData(this.routeDots());
   }
 
+  /** Without turning it back to the north, as it would by default. */
   private frame(map: ml.Map, points: ml.LngLatLike[], maxZoom: number, animate = true): void {
     const bounds = points.reduce(
       (all, point) => all.extend(point),
       new this.maplibre.LngLatBounds(),
     );
-    map.fitBounds(bounds, { padding: 30, maxZoom, linear: true, duration: MOVE_TIME, animate });
+    map.fitBounds(bounds, {
+      padding: 30,
+      maxZoom,
+      bearing: map.getBearing(),
+      linear: true,
+      duration: MOVE_TIME,
+      animate,
+    });
   }
 
   /** Only with the whole map in sight: half of it, with the list below, doesn't count. */

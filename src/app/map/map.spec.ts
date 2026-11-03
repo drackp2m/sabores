@@ -363,6 +363,44 @@ describe('VenueMap', () => {
     expect(button('Alejar').disabled).toBe(false);
   });
 
+  it('once turned, a button pointing north turns it back', async () => {
+    const { fixture, el } = await create([ONE]);
+    const button = () => el.querySelector<HTMLElement>('[aria-label="Orientar el mapa al norte"]');
+    expect(button()).toBeNull();
+
+    FakeMap.of(el).rotateTo(30);
+    await fixture.whenStable();
+    expect(button()!.querySelector<HTMLElement>('app-icon')!.style.rotate).toBe('-30deg');
+
+    button()!.click();
+    await fixture.whenStable();
+    expect(FakeMap.of(el).getBearing()).toBe(0);
+    expect(button()).toBeNull();
+  });
+
+  it('a turn that ends near north goes back to it smoothly, once it stops', async () => {
+    const { el } = await create([ONE]);
+    const map = FakeMap.of(el);
+    const resetNorth = vi.spyOn(map, 'resetNorth');
+
+    map.rotateTo(20);
+    map.endGesture();
+    expect(resetNorth).not.toHaveBeenCalled();
+
+    map.rotateTo(-5);
+    map.endGesture();
+    expect(resetNorth).toHaveBeenCalledExactlyOnceWith({ duration: 250 });
+    expect(map.getBearing()).toBe(0);
+  });
+
+  it('frames the venues again without turning it back to the north', async () => {
+    const { el, change } = await create([ONE]);
+    FakeMap.of(el).rotateTo(30);
+
+    await change('venues', [ONE, TWO]);
+    expect(fitBounds.mock.lastCall![1]).toMatchObject({ bearing: 30 });
+  });
+
   it('marks the user’s point while the location is lost', async () => {
     const { fixture, el, change } = await create([ONE]);
     await change('origin', { lat: 39.98, lng: -0.04 });

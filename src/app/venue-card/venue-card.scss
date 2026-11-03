@@ -30,7 +30,7 @@ article {
   border-radius: var(--radius);
 }
 
-// Number and map button, centered with the name and the address.
+// The number, centered with the name and the address; the map button, at the top on the right.
 header {
   display: flex;
   align-items: center;
@@ -38,6 +38,7 @@ header {
 
   button {
     flex: none;
+    align-self: flex-start;
   }
 }
 

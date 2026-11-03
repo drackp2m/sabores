@@ -43,6 +43,7 @@ export class LngLatBounds {
 interface Options {
   container: HTMLElement;
   style: string;
+  center: [number, number];
   zoom: number;
   transformStyle(previous: undefined, next: StyleSpecification): StyleSpecification;
 }
@@ -160,8 +161,21 @@ class FakeMap extends Evented {
     return (512 * 2 ** this.zoom) / 360;
   }
 
-  project([lng, lat]: [number, number]): { x: number; y: number } {
-    return { x: lng * this.pixelsPerDegree, y: -lat * this.pixelsPerDegree };
+  project(point: [number, number] | { lng: number; lat: number }): {
+    x: number;
+    y: number;
+    dist(other: { x: number; y: number }): number;
+  } {
+    const [lng, lat] = Array.isArray(point) ? point : [point.lng, point.lat];
+    const x = lng * this.pixelsPerDegree;
+    const y = -lat * this.pixelsPerDegree;
+    return { x, y, dist: (other) => Math.hypot(other.x - x, other.y - y) };
+  }
+
+  /** Where it was created: nothing moves. */
+  getCenter(): { lng: number; lat: number } {
+    const [lng, lat] = this.options.center;
+    return { lng, lat };
   }
 
   unproject([x, y]: [number, number]) {

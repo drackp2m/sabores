@@ -155,10 +155,10 @@ function sameKinds(
   selector: 'app-map',
   imports: [ArrivalTime, Icon],
   template: `
-    <div class="frame" [class.large]="large()">
+    <div class="frame" [class.large]="large()" [style.--credits-height.px]="creditsHeight()">
       <div #container class="container"></div>
       @if (map()) {
-        <div class="buttons zoom">
+        <div class="buttons left">
           <button
             type="button"
             class="secondary icon"
@@ -207,7 +207,7 @@ function sameKinds(
       @if (guidedArrival(); as arrival) {
         <app-arrival-time class="guided-arrival" [arrival]="arrival" distance />
       }
-      <div class="buttons bottom" [style.--credits-height.px]="creditsHeight()">
+      <div class="buttons bottom left">
         @if (originButton(); as label) {
           <button
             type="button"
@@ -230,6 +230,8 @@ function sameKinds(
             <app-icon name="guide" />
           </button>
         }
+      </div>
+      <div class="buttons bottom">
         @if (rotated()) {
           <button
             type="button"
@@ -291,9 +293,9 @@ function sameKinds(
       }
     }
 
-    // Top right and, the zoom ones, top left: inside the map's border. Those to go to the user's point,
-    // to guide and to face north, bottom right: as far from the credits (see createMap) as the others
-    // from the edges. The north one, at the bottom: on guiding, it takes the place of the others.
+    // Top right and, the zoom ones, top left: inside the map's border. At the bottom, as far from the
+    // credits (see createMap) as the others from the edges: on the left, from the bottom up, those to
+    // guide and to go to the user's point; on the right, the one to face north.
     .buttons {
       position: absolute;
       top: 11px;
@@ -308,7 +310,7 @@ function sameKinds(
         right: calc(10px + env(safe-area-inset-right, 0px));
       }
 
-      &.zoom {
+      &.left {
         right: auto;
         left: 11px;
 
@@ -328,10 +330,18 @@ function sameKinds(
         }
       }
 
+      // See-through like the credits' strip (styles/_map.scss); on hover, like the other buttons.
       .icon {
         width: 2.25rem;
         height: 2.25rem;
+        background: color-mix(in srgb, var(--surface) 80%, transparent);
         box-shadow: 0 1px 5px rgb(0 0 0 / 0.25);
+
+        @media (hover: hover) {
+          &:hover:not(:disabled) {
+            background: var(--accent-soft);
+          }
+        }
       }
 
       .needle {
@@ -344,15 +354,8 @@ function sameKinds(
         justify-content: center;
         border: 1px solid var(--brand);
         border-radius: 0.5rem;
-        background: var(--surface);
         color: var(--brand);
         font-size: 1.1rem;
-
-        @media (hover: hover) {
-          &:hover {
-            background: var(--accent-soft);
-          }
-        }
       }
     }
 
@@ -515,19 +518,33 @@ export class VenueMap {
   protected readonly hint = signal(false);
   private hideHint?: ReturnType<typeof setTimeout>;
   private readonly zoom = signal(13);
+  /**
+   * As far as it goes: MapLibre doesn't let the world (512 pixels high at zoom 0) get shorter than the
+   * map, which in most maps comes before MIN_ZOOM. Measured with the map (see createMap).
+   */
+  private readonly farthestZoom = signal(MIN_ZOOM);
   protected readonly closest = computed(() => this.zoom() >= MAX_ZOOM);
-  protected readonly farthest = computed(() => this.zoom() <= MIN_ZOOM);
+  /** Give or take a rounding: MapLibre gets there by its own sums. */
+  protected readonly farthest = computed(() => this.zoom() <= this.farthestZoom() + 1e-6);
   /** Which way is up, in degrees clockwise from north. */
   protected readonly bearing = signal(0);
   /** On its way back to the north (see resetNorth): until it gets there or is moved otherwise. */
   private readonly northBound = signal(false);
   /** The north button goes away as soon as it's pressed, not on getting there. */
   protected readonly rotated = computed(() => this.bearing() !== 0 && !this.northBound());
-  /** Of the strip with the credits, the north button's floor. */
+  /** Of the strip with the credits, the bottom buttons' floor. */
   protected readonly creditsHeight = signal(0);
-  /** The button to go to the user's point, by what it is. Not while guiding: the map is on it. */
+  /**
+   * The map is on the user's point, or on its way there (see goToOrigin): until it's moved off it
+   * (see createMap), or the point moves.
+   */
+  private readonly onOrigin = linkedSignal({ source: this.origin, computation: () => false });
+  /**
+   * The button to go to the user's point, by what it is. Not while guiding, nor once pressed: the map
+   * is on it. Like the north one, it goes away as soon as it's pressed, not on getting there.
+   */
   protected readonly originButton = computed(() => {
-    if (!this.map() || !this.origin() || this.guiding()) return null;
+    if (!this.map() || !this.origin() || this.guiding() || this.onOrigin()) return null;
     return this.location.live() ? 'Ir a mi ubicación' : 'Ir al punto de partida';
   });
   /** With the starting point moving with the phone and a venue to go to. */
@@ -737,11 +754,15 @@ export class VenueMap {
     }
   }
 
-  /** As close as on going to a venue (see focus), or closer if it already was. Without turning it. */
+  /**
+   * As close as on going to a venue (see focus), or closer if it already was. Without turning it. On
+   * the point once on its way: easeTo first ends the move under way, and that one didn't get there.
+   */
   protected goToOrigin(): void {
     const map = this.map()!;
     const { lng, lat } = this.origin()!;
     map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16), duration: MOVE_TIME });
+    this.onOrigin.set(true);
   }
 
   /** Its popup would hide the way ahead: it gets closed, and its venue stays selected. */
@@ -847,9 +868,15 @@ export class VenueMap {
     // the mouse leave on letting go, as long as that lasts: after a slow turn, a few hundredths of a
     // second, and it jumps. Here, once it has stopped, at the pace of the north button. Only after a
     // gesture: when the app moves the map there's no original event. Any move, on ending (even cut short
-    // by another), ends the way back to the north.
+    // by another), ends the way back to the north, and the way to the user's point if it isn't in the
+    // center (under a pixel away: zooming or turning around it leaves it there).
     map.on('moveend', ({ originalEvent }) => {
       this.northBound.set(false);
+      const origin = this.origin();
+      const center = map.project(map.getCenter());
+      if (origin && center.dist(map.project([origin.lng, origin.lat])) >= 1) {
+        this.onOrigin.set(false);
+      }
       const bearing = map.getBearing();
       if (originalEvent && bearing !== 0 && Math.abs(bearing) < NORTH_SNAP) this.resetNorth();
     });
@@ -863,9 +890,12 @@ export class VenueMap {
     // Every time its size changes (on enlarging or reducing it, when the scrollbar comes or goes…), the
     // map has to measure again and paint at once (resizing clears it), the open popup, if any, to fit
     // again and, guided, the user's point to go back to its place. By hand and not with MapLibre's
-    // trackResize, which would do it too late for the popup.
+    // trackResize, which would do it too late for the popup. Taller, it can't go as far out: if it
+    // was, it gets closer.
     this.resizeObserver = new ResizeObserver(() => {
+      this.farthestZoom.set(Math.max(MIN_ZOOM, Math.log2(container.clientHeight / 512)));
       map.resize().redraw();
+      this.zoom.set(map.getZoom());
       this.guide(map, 0);
       const popup = this.openPopup;
       if (popup) {

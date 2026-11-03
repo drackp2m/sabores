@@ -364,6 +364,11 @@ describe('VenueMap', () => {
     await fixture.whenStable();
     expect(button('Acercar').disabled).toBe(true);
     expect(button('Alejar').disabled).toBe(false);
+
+    FakeMap.of(el).zoomTo(-1);
+    await fixture.whenStable();
+    expect(button('Acercar').disabled).toBe(false);
+    expect(button('Alejar').disabled).toBe(true);
   });
 
   it('once turned, a button pointing north turns it back', async () => {
@@ -425,7 +430,7 @@ describe('VenueMap', () => {
   it('goes to the user’s point, named by what it is, without turning the map', async () => {
     const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
     const { fixture, el, change } = await create([ONE]);
-    const button = () => el.querySelector<HTMLElement>('.buttons.bottom button');
+    const button = () => el.querySelector<HTMLElement>('.buttons.bottom.left button');
     expect(button()).toBeNull();
 
     await change('origin', { lat: 39.98, lng: -0.04 });
@@ -438,6 +443,24 @@ describe('VenueMap', () => {
     expect(easeTo).toHaveBeenLastCalledWith({ center: [-0.04, 39.98], zoom: 16, duration: 250 });
     live.set(false);
     easeTo.mockRestore();
+  });
+
+  it('hides the button to the user’s point once pressed, until the map leaves it or it moves', async () => {
+    const { fixture, el, change } = await create([ONE]);
+    const button = () => el.querySelector<HTMLElement>('[aria-label="Ir al punto de partida"]');
+    await change('origin', { lat: 39.98, lng: -0.04 });
+
+    button()!.click();
+    await fixture.whenStable();
+    expect(button()).toBeNull();
+    // The fake map stays where it was created, away from the point.
+    FakeMap.of(el).endGesture();
+    await fixture.whenStable();
+    expect(button()).not.toBeNull();
+
+    button()!.click();
+    await change('origin', { lat: 39.981, lng: -0.04 });
+    expect(button()).not.toBeNull();
   });
 
   it('marks the user’s point while the location is lost', async () => {

@@ -82,9 +82,11 @@
   background: transparent;
   font-size: 1.4rem;
 
-  &:hover:not(:disabled) {
-    border-color: transparent;
-    background: rgb(255 255 255 / 0.15);
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      border-color: transparent;
+      background: rgb(255 255 255 / 0.15);
+    }
   }
 }
 

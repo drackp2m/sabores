@@ -18,6 +18,10 @@ html {
   scroll-padding-top: calc(var(--header-bottom) + 1rem);
   // No page zoom (pinch or double tap); the map and its gestures go separately.
   touch-action: pan-x pan-y;
+  // Without the shade that iOS and Android paint over what's touched (a card, a button), which also
+  // flickers on scrolling with the finger on it. The hovers are only for a mouse or pen, for the
+  // same reason: on a touch screen they stay on after tapping.
+  -webkit-tap-highlight-color: transparent;
   // With scrollbars that take up space (Windows, Linux, macOS with «show always»), the gap stays even
   // if the page fits on the screen: on filtering, the page doesn't move sideways.
   scrollbar-gutter: stable;

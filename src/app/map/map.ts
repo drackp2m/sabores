@@ -348,8 +348,10 @@ function sameKinds(
         color: var(--brand);
         font-size: 1.1rem;
 
-        &:hover {
-          background: var(--accent-soft);
+        @media (hover: hover) {
+          &:hover {
+            background: var(--accent-soft);
+          }
         }
       }
     }

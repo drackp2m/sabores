@@ -88,8 +88,10 @@ import { Venue } from '../venues';
       background: var(--surface);
       transition: border-color 0.15s;
 
-      &:hover {
-        border-color: var(--control-border);
+      @media (hover: hover) {
+        &:hover {
+          border-color: var(--control-border);
+        }
       }
     }
 

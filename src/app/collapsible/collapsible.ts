@@ -104,8 +104,10 @@ function wrappedLines(paragraph: HTMLElement): string[] {
       font-size: 0.8rem;
     }
 
-    button:hover:not(:disabled) {
-      text-decoration: underline;
+    @media (hover: hover) {
+      button:hover:not(:disabled) {
+        text-decoration: underline;
+      }
     }
   `,
 })

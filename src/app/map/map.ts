@@ -434,6 +434,7 @@ export class VenueMap {
   /** Number of the venue to open, from the button on its popup. */
   readonly venueOpen = output<number>();
 
+  private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
   private readonly position = inject(ScrollPosition);
@@ -741,7 +742,8 @@ export class VenueMap {
     const marker = this.markers.get(number);
     if (!marker) return;
     this.guiding.set(false);
-    this.container().nativeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // The component, not its container: the page gives it its scroll-margin-top (app.scss).
+    this.host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     this.position.appScrolled();
     const zoom = 16;
     const popup = marker.getPopup();

@@ -274,6 +274,11 @@ main {
 
 .map {
   height: var(--map-height);
+  // «Ver en el mapa» brings it below the header as far as scroll-padding-top says (focus, in map.ts),
+  // the same as the gap above it. The browser scrolls whole pixels and the map can start between two:
+  // the bottom edge of what's above (starting point panel, venue card) would peek out under the
+  // header. A pixel higher, it stays hidden.
+  scroll-margin-top: -1px;
 }
 
 // «Subir» appears when its end goes under the header (app.ts). In the list, it is as tall as the map

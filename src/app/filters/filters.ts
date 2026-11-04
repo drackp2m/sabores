@@ -18,7 +18,7 @@ import { TimeField } from './time-field';
           <span>Buscar</span>
           <input
             type="search"
-            placeholder="Nº, local, tapa, ingrediente, calle…"
+            placeholder="Nº, local, tapa, ingrediente, etc."
             [formField]="form.text"
           />
         </label>
@@ -95,11 +95,19 @@ import { TimeField } from './time-field';
               <app-seal kind="flavor-route" aria-hidden="true" />
               Ruta de Sabor
             </label>
+            <label class="control">
+              <input
+                #openNow
+                type="checkbox"
+                [formField]="form.openNow"
+                (change)="changeOpenNow(openNow.checked)"
+              />
+              Abierto ahora
+            </label>
           </div>
         </div>
 
         <div class="actions">
-          <button type="button" (click)="openNow()">Abierto ahora</button>
           <button type="button" class="secondary" (click)="filters.set(noFilters)">Limpiar</button>
         </div>
       </div>
@@ -149,8 +157,8 @@ import { TimeField } from './time-field';
       }
     }
 
-    // Both checkboxes, on the same row if they fit, sharing the width (on desktop, up to 15rem); if
-    // not, each on its own.
+    // The checkboxes, on the same row as long as they fit, sharing the width (on desktop, up to 15rem);
+    // the rest, on the next one.
     .checkboxes {
       display: flex;
       flex-wrap: wrap;
@@ -197,9 +205,13 @@ export class FiltersPanel {
 
   protected readonly form = form(this.filters);
 
-  /** Venues serving tapas within the next hour, which goes on with the clock (App). */
-  protected openNow(): void {
-    this.filters.update((filters) => ({ ...filters, ...nextHour(new Date()), openNow: true }));
+  /**
+   * Venues serving tapas within the next hour, which goes on with the clock (App). Unchecked, it goes
+   * back to any day and time. The checkbox itself is in the form.
+   */
+  protected changeOpenNow(on: boolean): void {
+    const range = on ? nextHour(new Date()) : { day: '' as const, from: '', to: '' };
+    this.filters.update((filters) => ({ ...filters, ...range }));
   }
 
   /** Changing the day or the time by hand: the clock would undo it at the next minute. */

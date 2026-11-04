@@ -34,6 +34,12 @@ select,
   }
 }
 
+// Safari and Chrome keep the room for the clear button (×) while the search box is empty, cutting the
+// placeholder short: it only takes it once there's something to clear.
+input[type='search']:placeholder-shown::-webkit-search-cancel-button {
+  display: none;
+}
+
 select {
   appearance: none;
   padding-right: 2.25rem;

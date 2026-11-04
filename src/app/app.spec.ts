@@ -346,23 +346,46 @@ describe('App', () => {
     expect(names()).toEqual([]);
   });
 
+  /** «Abierto ahora», among the «Mostrar solo» checkboxes. */
+  const openNowBox = (el: HTMLElement) =>
+    [...el.querySelectorAll('.only label')]
+      .find((l) => l.textContent!.includes('Abierto ahora'))!
+      .querySelector('input')!;
+
   it('«Abierto ahora» fills in the day and the next hour, and «Limpiar» empties them', async () => {
     const { el, press } = await start();
     const day = [...el.querySelectorAll('.field')]
       .find((f) => f.textContent!.includes('Día'))!
       .querySelector('select')!;
     const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
+    const openNow = openNowBox(el);
+    expect(openNow.checked).toBe(false);
 
-    await press('.actions button', 'Abierto ahora');
+    await press('.only label', 'Abierto ahora');
     const now = new Date();
+    expect(openNow.checked).toBe(true);
     expect(day.value).not.toBe('');
     expect(from.value).toBe(now.toTimeString().slice(0, 5));
     expect(to.value).toBe(new Date(now.getTime() + 3_600_000).toTimeString().slice(0, 5));
 
     await press('.actions button', 'Limpiar');
+    expect(openNow.checked).toBe(false);
     expect(day.value).toBe('');
     expect(from.value).toBe('');
     expect(to.value).toBe('');
+  });
+
+  it('«Abierto ahora» unchecked goes back to any day and time', async () => {
+    const { el, press } = await start();
+    const day = [...el.querySelectorAll('.field')]
+      .find((f) => f.textContent!.includes('Día'))!
+      .querySelector('select')!;
+    const [from, to] = el.querySelectorAll<HTMLInputElement>('input[type=time]');
+
+    await press('.only label', 'Abierto ahora');
+    await press('.only label', 'Abierto ahora');
+    expect(openNowBox(el).checked).toBe(false);
+    expect([day.value, from.value, to.value]).toEqual(['', '', '']);
   });
 
   describe('with «Abierto ahora» on', () => {
@@ -389,19 +412,21 @@ describe('App', () => {
           await fixture.whenStable();
         },
         to,
+        checked: () => openNowBox(el).checked,
         shown: () => [day.value, from.value, to.value],
       };
     }
 
     it('starts on the current time when the app opens', async () => {
       const saved = { openNow: true, day: 'friday', from: '13:00', to: '14:00' } as const;
-      const { shown } = await startAt(new Date(2026, 10, 1, 23, 30), saved);
+      const { checked, shown } = await startAt(new Date(2026, 10, 1, 23, 30), saved);
+      expect(checked()).toBe(true);
       expect(shown()).toEqual(['sunday', '23:30', '00:30']);
     });
 
     it('goes on with the clock, also past midnight', async () => {
       const { press, tick, shown } = await startAt(new Date(2026, 10, 1, 22, 59));
-      await press('.actions button', 'Abierto ahora');
+      await press('.only label', 'Abierto ahora');
 
       await tick(new Date(2026, 10, 1, 23, 0));
       expect(shown()).toEqual(['sunday', '23:00', '00:00']);
@@ -412,11 +437,12 @@ describe('App', () => {
     });
 
     it('stays as it is once the time is changed by hand', async () => {
-      const { press, tick, type, to, shown } = await startAt(new Date(2026, 10, 1, 20, 0));
-      await press('.actions button', 'Abierto ahora');
+      const { press, tick, type, to, checked, shown } = await startAt(new Date(2026, 10, 1, 20, 0));
+      await press('.only label', 'Abierto ahora');
       await tick(new Date(2026, 10, 1, 20, 1));
 
       await type(to, '22:00');
+      expect(checked()).toBe(false);
       await tick(new Date(2026, 10, 1, 20, 2));
       expect(shown()).toEqual(['sunday', '20:01', '22:00']);
     });

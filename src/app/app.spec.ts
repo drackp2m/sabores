@@ -154,7 +154,9 @@ describe('App', () => {
     expect(activeMarker(el)).toBe('2. CÚPULA');
     // The browser's back button doesn't return from it: only «Volver».
     expect(history.length).toBe(entries);
-    expect(el.querySelector('.back')).not.toBeNull();
+    // On the floating buttons' layer, out of the venue view: on its way out, it would hold it.
+    expect(el.querySelector('.floating > .back')).not.toBeNull();
+    expect(el.querySelector('.detail .back')).toBeNull();
     // The map, before the card: on phones it goes on top.
     expect(el.querySelector('.detail > :first-child')!.tagName).toBe('APP-MAP');
     expect(focus).toHaveBeenCalledWith(2);

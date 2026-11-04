@@ -94,7 +94,6 @@
         />
       }
     </div>
-    <button type="button" class="back" (click)="goBack()"><app-icon name="back" />Volver</button>
   </main>
 } @else {
   <app-filters [(filters)]="filters" [range]="range()" />
@@ -150,6 +149,39 @@
   }
 }
 
+<!--
+  The floating buttons, on a layer of their own that's always there: in a transition between views
+  it goes above the rest, live (view-switch.ts), and they come and go on it as they always do. Out
+  of main, each one in its own block: on its way out, «Volver» would hold the whole venue view.
+-->
+<div class="floating">
+  @if (detail() !== null) {
+    <button
+      type="button"
+      class="back"
+      animate.enter="entering"
+      animate.leave="leaving"
+      (click)="goBack()"
+    >
+      <app-icon name="back" />Volver
+    </button>
+  }
+
+  @if (showScrollTop()) {
+    <button
+      type="button"
+      class="scroll-top"
+      title="Subir arriba"
+      aria-label="Subir arriba"
+      animate.enter="entering"
+      animate.leave="leaving"
+      (click)="scrollToTop()"
+    >
+      <app-icon name="up" />
+    </button>
+  }
+</div>
+
 <footer class="footer">
   <p>
     Desarrollado con mucho cariño por
@@ -157,19 +189,5 @@
   </p>
   <p>Castellón de la Plana 2026</p>
 </footer>
-
-@if (showScrollTop()) {
-  <button
-    type="button"
-    class="scroll-top"
-    title="Subir arriba"
-    aria-label="Subir arriba"
-    animate.enter="entering"
-    animate.leave="leaving"
-    (click)="scrollToTop()"
-  >
-    <app-icon name="up" />
-  </button>
-}
 
 <app-photo-viewer />

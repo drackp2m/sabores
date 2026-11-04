@@ -239,41 +239,47 @@ $corner: math.div(8px, math.sqrt(2));
 }
 
 // Floating buttons: bottom left, «Volver» from the venue back to the list; at the same height on the
-// right, «Subir» once the top of the list is out of sight (the footer leaves room for them). The border, that of the cards, sets them
-// apart from what passes beneath in their same color (buttons, venue numbers).
+// right, «Subir» once the top of the list is out of sight (the footer leaves room for them). The
+// border, that of the cards, sets them apart from what passes beneath in their same color (buttons,
+// venue numbers). On a layer the size of the screen that lets everything else through (see app.html).
+.floating {
+  position: fixed;
+  inset: 0;
+  z-index: 1050; // Above the map's buttons (1000); below the enlarged photo and the header.
+  pointer-events: none;
+}
+
+// How much they stretch along their way, out of sight.
+$stretch: 1.14;
+
+// Moved $by along their way (x for «Volver», y for «Subir»), and stretched $along it and $across it.
+@function bounce($axis, $by, $along, $across) {
+  @if $axis == x {
+    @return translateX($by) scale($along, $across);
+  }
+  @return translateY($by) scale($across, $along);
+}
+
+// Where each one is on its way (see arrive and depart), along its axis: out of sight, at $offscreen;
+// still stretched once in place; and squashed.
+@mixin bounce($axis, $offscreen) {
+  --away: #{bounce($axis, $offscreen, $stretch, 0.9)};
+  --stretched: #{bounce($axis, 0, 1.06, 0.95)};
+  --squashed: #{bounce($axis, 0, 0.93, 1.06)};
+}
+
 .back,
 .scroll-top {
-  position: fixed;
+  position: absolute;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-  z-index: 1050; // Above the map's buttons (1000); below the enlarged photo and the header.
   height: 3rem;
   border-color: var(--border);
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);
+  pointer-events: auto;
 
   &:hover:not(:disabled) {
     border-color: var(--border);
   }
-}
-
-.back {
-  left: var(--gutter-left);
-  padding: 0 1.2rem 0 1rem;
-  border-radius: 999px;
-}
-
-.scroll-top {
-  right: var(--gutter-right);
-  width: 3rem;
-  padding: 0;
-  border-radius: 50%;
-  font-size: 1.3rem;
-}
-
-.scroll-top {
-  // It deforms resting on the floor, as if it fell upwards and bounced.
-  transform-origin: 50% 100%;
-  // How far down it goes to be off-screen: its height, the margin and the safe area.
-  --offscreen: calc(100% + 1.5rem + env(safe-area-inset-bottom, 0px));
 
   &.entering {
     animation: arrive 0.5s;
@@ -284,20 +290,42 @@ $corner: math.div(8px, math.sqrt(2));
   }
 }
 
-// It rises from below stretched vertically, squashes a little on arrival and settles in place.
+// It comes in from the left, as far as its width, stretched, the margin and a little more for the
+// shadow. Deformed from that edge, as if resting on it.
+.back {
+  left: var(--gutter-left);
+  padding: 0 1.2rem 0 1rem;
+  border-radius: 999px;
+  transform-origin: 0 50%;
+  @include bounce(x, calc(-1 * (#{$stretch * 100%} + var(--gutter-left) + 0.5rem)));
+}
+
+// From below: its height, stretched, the margin and the safe area.
+.scroll-top {
+  right: var(--gutter-right);
+  width: 3rem;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  transform-origin: 50% 100%;
+  @include bounce(y, calc(#{$stretch * 100%} + 1.5rem + env(safe-area-inset-bottom, 0px)));
+}
+
+// They come in from the edge they're closest to, stretched along their way, squash a little on
+// arrival and settle in place.
 @keyframes arrive {
   0% {
-    transform: translateY(var(--offscreen)) scale(0.9, 1.14);
+    transform: var(--away);
     animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
   55% {
-    transform: translateY(0) scale(0.95, 1.06);
+    transform: var(--stretched);
     animation-timing-function: ease-out;
   }
 
   75% {
-    transform: translateY(0) scale(1.06, 0.93);
+    transform: var(--squashed);
     animation-timing-function: ease-in-out;
   }
 
@@ -306,10 +334,10 @@ $corner: math.div(8px, math.sqrt(2));
   }
 }
 
-// It drops, stretching a little.
+// They leave the way they came, faster and faster, stretching.
 @keyframes depart {
   to {
-    transform: translateY(var(--offscreen)) scale(0.94, 1.1);
+    transform: var(--away);
   }
 }
 
@@ -465,6 +493,7 @@ main {
 
 @include media.reduced-motion {
   .menu,
+  .back,
   .scroll-top {
     animation: none !important;
   }

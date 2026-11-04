@@ -1,14 +1,14 @@
 import { isPhone, reducedMotion } from './media';
 
 /**
- * Fixed on the screen, the same in every view. Not one on its way out (animate.leave, in app.html):
- * the page takes it away once it's gone, and a new picture losing something named stops the
- * transition. «Subir», say, which the venue view doesn't have. It leaves with the rest of the page.
+ * Fixed on the screen, the same element in every view. The floating buttons go on a layer of their
+ * own, which stays, and not each one: those coming and going (animate.leave, in app.html) do so as
+ * the transition goes on, and a new picture losing something named stops it. On the layer, live,
+ * they're seen coming and going above the rest; otherwise, with the page underneath it all.
  */
 const FIXED = {
   header: '.header',
-  'scroll-top': '.scroll-top',
-  back: '.back',
+  floating: '.floating',
 };
 
 /**
@@ -143,7 +143,7 @@ function moveCard({
   // What gets captured: the fixed ones, what stays, the card and what's in sight around it.
   const nameAll = (card: HTMLElement, side: 'out' | 'in') => {
     for (const [key, selector] of Object.entries(FIXED)) {
-      name(document.querySelector<HTMLElement>(`${selector}:not(.leaving)`), key);
+      name(document.querySelector<HTMLElement>(selector), key);
     }
     const staying = keepAboveList
       ? ABOVE_LIST.map((selector) => document.querySelector<HTMLElement>(selector))

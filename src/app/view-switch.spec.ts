@@ -21,8 +21,8 @@ const card = (number: number, idle = false) => `
 
 const LIST = `
   <header class="header"></header>
-  <button class="scroll-top" id="scroll-top"></button>
   <main><app-filters id="filters"></app-filters><section class="list">${card(3)}${card(4)}</section></main>
+  <div class="floating" id="floating"><button class="scroll-top"></button></div>
   <footer class="footer" id="footer"></footer>`;
 
 // The cards side by side, with 3 in the middle, and in the middle of the map.
@@ -32,8 +32,9 @@ const VENUE = `
     <div class="map" id="map"></div>
     <div class="cards">${card(2)}${card(3, true)}${card(4)}</div>
   </main>
-  <button class="back" id="back"></button>
-  <button class="scroll-top leaving" id="leaving"></button>
+  <div class="floating" id="floating">
+    <button class="back entering"></button><button class="scroll-top leaving"></button>
+  </div>
   <footer class="footer" id="footer"></footer>`;
 
 /** Where an element is, that far from the top: the venue view's cards beside the middle one, off it. */
@@ -86,7 +87,7 @@ describe('view transitions', () => {
     expect(switchView(4, scroller, () => {})).toBe(true);
     const around = {
       header: 'header',
-      'scroll-top': 'scroll-top',
+      floating: 'floating',
       'stay-1': 'filters',
       card: 'card-4',
       'card-heading': 'app-venue-header',
@@ -107,7 +108,7 @@ describe('view transitions', () => {
     expect(openVenue(3, scroller, update, false)).toBe(true);
 
     expect(captured.before).toMatchObject({
-      'scroll-top': 'scroll-top',
+      floating: 'floating',
       card: 'card-3',
       'card-heading': 'app-venue-header',
       'card-favorite': 'app-favorite',
@@ -115,10 +116,11 @@ describe('view transitions', () => {
       'out-down-1': 'card-4',
       'out-down-2': 'footer',
     });
-    // «Subir», on its way out, isn't named: once gone, it would stop the transition.
+    // The floating buttons' layer, not the buttons coming and going on it: «Subir», once gone, would
+    // stop the transition.
     expect(captured.after).toEqual({
       header: 'header',
-      back: 'back',
+      floating: 'floating',
       card: 'card-3',
       'card-heading': 'app-venue-header',
       'card-favorite': 'app-favorite',
@@ -183,7 +185,7 @@ describe('view transitions', () => {
 
     expect(captured.before).toEqual({
       header: 'header',
-      back: 'back',
+      floating: 'floating',
       card: 'card-3',
       'card-heading': 'app-venue-header',
       'card-favorite': 'app-favorite',
@@ -192,6 +194,7 @@ describe('view transitions', () => {
     });
     expect(captured.after).toMatchObject({
       header: 'header',
+      floating: 'floating',
       card: 'card-3',
       'in-up-1': 'filters',
       'in-down-1': 'card-4',

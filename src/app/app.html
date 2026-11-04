@@ -12,55 +12,57 @@
       <app-icon [name]="menuOpen() ? 'close' : 'menu'" />
     </button>
 
-    @if (menuOpen()) {
-      <nav
-        id="menu"
-        class="menu"
-        aria-label="Menú"
-        animate.enter="entering"
-        animate.leave="leaving"
-      >
-        <div class="group">
-          <span id="view-label">Vista</span>
-          <div class="segments" role="group" aria-labelledby="view-label">
-            <button
-              type="button"
-              title="Lista con todos los detalles y el mapa"
-              [class.active]="view() === 'details'"
-              [attr.aria-pressed]="view() === 'details'"
-              (click)="changeView('details')"
-            >
-              <app-icon name="list" />Detalles
-            </button>
-            <button
-              type="button"
-              title="Solo el nombre y las fotos de las tapas"
-              [class.active]="view() === 'photos'"
-              [attr.aria-pressed]="view() === 'photos'"
-              (click)="changeView('photos')"
-            >
-              <app-icon name="photos" />Fotos
-            </button>
-          </div>
-        </div>
-
-        <div class="group">
-          <span id="theme-label">Tema</span>
-          <div class="segments" role="group" aria-labelledby="theme-label">
-            @for (option of themes; track option.theme) {
+    <div class="menu-slot">
+      @if (menuOpen()) {
+        <nav
+          id="menu"
+          class="menu"
+          aria-label="Menú"
+          animate.enter="entering"
+          animate.leave="leaving"
+        >
+          <div class="group">
+            <span id="view-label">Vista</span>
+            <div class="segments" role="group" aria-labelledby="view-label">
               <button
                 type="button"
-                [class.active]="theme.theme() === option.theme"
-                [attr.aria-pressed]="theme.theme() === option.theme"
-                (click)="theme.theme.set(option.theme)"
+                title="Lista con todos los detalles y el mapa"
+                [class.active]="view() === 'details'"
+                [attr.aria-pressed]="view() === 'details'"
+                (click)="changeView('details')"
               >
-                <app-icon [name]="option.icon" />{{ option.name }}
+                <app-icon name="list" />Detalles
               </button>
-            }
+              <button
+                type="button"
+                title="Solo el nombre y las fotos de las tapas"
+                [class.active]="view() === 'photos'"
+                [attr.aria-pressed]="view() === 'photos'"
+                (click)="changeView('photos')"
+              >
+                <app-icon name="photos" />Fotos
+              </button>
+            </div>
           </div>
-        </div>
-      </nav>
-    }
+
+          <div class="group">
+            <span id="theme-label">Tema</span>
+            <div class="segments" role="group" aria-labelledby="theme-label">
+              @for (option of themes; track option.theme) {
+                <button
+                  type="button"
+                  [class.active]="theme.theme() === option.theme"
+                  [attr.aria-pressed]="theme.theme() === option.theme"
+                  (click)="theme.theme.set(option.theme)"
+                >
+                  <app-icon [name]="option.icon" />{{ option.name }}
+                </button>
+              }
+            </div>
+          </div>
+        </nav>
+      }
+    </div>
   </div>
 </header>
 

@@ -1,4 +1,5 @@
 import {
+  ApplicationRef,
   Component,
   ElementRef,
   Injector,
@@ -26,6 +27,7 @@ import { TapasRoute } from './tapas-route';
 import { Theme, Themes } from './theme';
 import { UserLocation } from './user-location';
 import { VenueCard } from './venue-card/venue-card';
+import { switchView } from './view-switch';
 import {
   Filters,
   NO_FILTERS,
@@ -66,6 +68,7 @@ const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
 export class App {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly injector = inject(Injector);
+  private readonly appRef = inject(ApplicationRef);
   protected readonly location = inject(UserLocation);
   protected readonly theme = inject(Themes);
   private readonly viewer = inject(Viewer);
@@ -180,11 +183,14 @@ export class App {
 
     // «Subir», as soon as the mark at the end of the map has gone under the header. Without listening
     // to scroll: the browser tells when it crosses, with no JavaScript in between. With no mark (in
-    // the venue view or while loading), there is no button.
+    // the venue view or while loading), there is no button. From one list view to the other it stays
+    // as it was until the browser tells, instead of leaving and coming back.
     afterRenderEffect((onCleanup) => {
       const mark = this.scrollTopMark()?.nativeElement;
-      this.showScrollTop.set(false);
-      if (!mark) return;
+      if (!mark) {
+        this.showScrollTop.set(false);
+        return;
+      }
       const observer = new IntersectionObserver(
         ([{ boundingClientRect, rootBounds }]) =>
           this.showScrollTop.set(boundingClientRect.bottom <= (rootBounds?.top ?? 0)),
@@ -287,15 +293,35 @@ export class App {
 
   protected changeView(view: View): void {
     this.menuOpen.set(false);
+    this.store.saveSetting('view', view);
     if (this.detail() !== null) {
       this.leavingFromMenu = true;
       history.back();
     } else if (view !== this.view()) {
-      this.position.returnTo.set(null);
-      this.landOn(this.position.current());
+      this.switchTo(view);
+      return;
     }
     this.view.set(view);
-    this.store.saveSetting('view', view);
+  }
+
+  /**
+   * From one list view to the other, on the venue the scroll is on. On a phone, as a transition that
+   * keeps it in place on the screen (view-switch.ts), with the new view rendered at once; otherwise,
+   * landing on it.
+   */
+  private switchTo(view: View): void {
+    const venue = this.position.current();
+    const change = () => {
+      this.position.returnTo.set(null);
+      this.view.set(view);
+    };
+    const render = () => {
+      change();
+      this.appRef.tick();
+    };
+    if (switchView(venue, this.scroller, render)) return;
+    change();
+    this.landOn(venue);
   }
 
   /**

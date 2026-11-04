@@ -10,6 +10,14 @@ export function desktop(): MediaQueryList {
   return matchMedia('(min-width: 960px)');
 }
 
+/**
+ * A phone: narrower than two of the gallery's cards side by side (20rem each, see gallery.ts), with
+ * the gap and the margins. The gallery and the list have a single column, as wide in both.
+ */
+export function isPhone(): boolean {
+  return matchMedia('(max-width: 42.98rem)').matches;
+}
+
 /** No mouse: app-root scrolls instead of the document, and the map moves with two fingers. */
 export function isTouch(): boolean {
   return matchMedia('(hover: none) and (pointer: coarse)').matches;

@@ -1,0 +1,229 @@
+@use 'sass:math';
+
+// From one list view to the other on a phone (app/view-switch.ts): the venue's card stays in place
+// while what it shows changes, and what's around it leaves and arrives.
+
+// The whole of it, and the share of it each part takes. What leaves goes in the first part ($leave),
+// quickly, and what arrives comes in the last one ($arrive), with time to be seen coming: from when
+// the closest one is almost gone, so that there isn't a moment with nothing. The card takes its new
+// height in the first $resize, and what's around it goes along: what arrives lands next to it once
+// it's still, and not while it keeps changing.
+$duration: 700ms;
+$leave: 0.4;
+$resize: 0.7;
+$arrive: 0.65;
+// Each block further away from the card leaves (and arrives) in this share of the time of the one
+// before it: faster the further away.
+$step: 0.85;
+// How far the blocks around move: away on leaving, closer on arriving.
+$travel: 4rem;
+// How far what the card shows moves to the right, of the card's width.
+$slide: 30%;
+// As many as view-switch.ts names on each side.
+$around: 12;
+
+$leaving: $duration * $leave;
+$resizing: $duration * $resize;
+$arriving: $duration * $arrive;
+// How the card's edges move, and with them what's around it.
+$curve: ease-in-out;
+
+::view-transition-group(*) {
+  animation-duration: $resizing;
+  animation-timing-function: $curve;
+}
+
+// Fixed on the screen, they don't take part: the new ones at once, live (a button leaving, see
+// app.scss), above the rest.
+@each $fixed in header, return-to-venue, scroll-top {
+  ::view-transition-group(#{$fixed}) {
+    z-index: 2;
+  }
+
+  ::view-transition-old(#{$fixed}) {
+    display: none;
+  }
+
+  ::view-transition-new(#{$fixed}) {
+    animation: none;
+  }
+}
+
+// The menu, which choosing a view closes, goes back up behind the header as it does on its own
+// (app.scss): above the rest, under the header, which hides it.
+::view-transition-group(menu) {
+  z-index: 2;
+}
+
+::view-transition-group(header) {
+  z-index: 3;
+}
+
+::view-transition-old(menu) {
+  animation: menu-drop 0.2s ease-out reverse both;
+}
+
+// The menu comes down from behind the header, appearing, and goes back up behind it in reverse,
+// fading. From all the way up: 0.25rem above it, under the header.
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-100% - 0.25rem));
+  }
+}
+
+// The card's outline, drawn here: it takes the new height with round corners, and what moves inside
+// doesn't come out of it, nor covers its border (it's cut inside it). Above the blocks around, which
+// it may cover as it grows.
+::view-transition-group(card) {
+  z-index: 1;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+// Where the card is, border included, and not inside the group's.
+::view-transition-image-pair(card) {
+  inset: -1px;
+}
+
+::view-transition-group(card-number),
+::view-transition-group(card-name) {
+  z-index: 1;
+}
+
+// At their size, not stretched to that of the group: the name, a line longer or shorter, would grow
+// or shrink on its way.
+::view-transition-old(card),
+::view-transition-new(card),
+::view-transition-old(card-name),
+::view-transition-new(card-name) {
+  inline-size: auto;
+}
+
+// Without the card's own border, which would leave with them: the group's stays. A pixel beyond it,
+// into the padding: moved by fractions of a pixel, the border blurs into the next one. Their
+// background, the same as the group's, doesn't show. The card itself isn't touched: anything changed
+// on it would flash for a frame at the start and at the end.
+::view-transition-old(card),
+::view-transition-new(card) {
+  clip-path: inset(2px round calc(var(--radius) - 2px));
+}
+
+// What leaves speeds up on its way out; what arrives slows down as it gets to its place.
+::view-transition-old(card) {
+  animation: slide-out $leaving ease-in both;
+}
+
+::view-transition-new(card) {
+  animation: slide-in $arriving ease-out ($duration - $arriving) both;
+}
+
+@keyframes slide-out {
+  to {
+    opacity: 0;
+    transform: translateX($slide);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX($slide);
+  }
+}
+
+// The time of the block that far from the card.
+@function time-at($time, $i) {
+  @return math.round(math.div($time * math.pow($step, $i - 1), 1ms)) * 1ms;
+}
+
+// Each one, besides moving away or coming closer, goes along with the card's edge on its side: those
+// below don't get covered by the card as it grows, nor left behind as it shrinks.
+@for $i from 1 through $around {
+  $leave-time: time-at($leaving, $i);
+  $arrive-time: time-at($arriving, $i);
+
+  ::view-transition-old(out-up-#{$i}) {
+    animation:
+      leave-up $leave-time ease-in both,
+      leave-with-top $resizing $curve both;
+  }
+
+  ::view-transition-old(out-down-#{$i}) {
+    animation:
+      leave-down $leave-time ease-in both,
+      leave-with-bottom $resizing $curve both;
+  }
+
+  ::view-transition-new(in-up-#{$i}) {
+    animation:
+      arrive-from-above $arrive-time ease-out ($duration - $arrive-time) both,
+      arrive-with-top $resizing $curve both;
+  }
+
+  ::view-transition-new(in-down-#{$i}) {
+    animation:
+      arrive-from-below $arrive-time ease-out ($duration - $arrive-time) both,
+      arrive-with-bottom $resizing $curve both;
+  }
+}
+
+@keyframes leave-up {
+  to {
+    opacity: 0;
+    transform: translateY(-$travel);
+  }
+}
+
+@keyframes leave-down {
+  to {
+    opacity: 0;
+    transform: translateY($travel);
+  }
+}
+
+@keyframes arrive-from-above {
+  from {
+    opacity: 0;
+    transform: translateY(-$travel);
+  }
+}
+
+@keyframes arrive-from-below {
+  from {
+    opacity: 0;
+    transform: translateY($travel);
+  }
+}
+
+// How far each edge goes, from view-switch.ts. With translate, which adds up with the transform of
+// moving away or closer. Only so that the card doesn't cover them: what leaves gets pushed by an edge
+// that comes towards it, and what arrives follows an edge that goes away from it. This way what
+// leaves and what arrives always move in opposite directions, instead of together through the same
+// place, swapping with a fade.
+@keyframes leave-with-top {
+  to {
+    translate: 0 min(0px, var(--card-top));
+  }
+}
+
+@keyframes leave-with-bottom {
+  to {
+    translate: 0 max(0px, var(--card-bottom));
+  }
+}
+
+@keyframes arrive-with-top {
+  from {
+    translate: 0 calc(-1 * max(0px, var(--card-top)));
+  }
+}
+
+@keyframes arrive-with-bottom {
+  from {
+    translate: 0 calc(-1 * min(0px, var(--card-bottom)));
+  }
+}

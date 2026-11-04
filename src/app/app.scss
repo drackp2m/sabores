@@ -90,37 +90,40 @@
   }
 }
 
-// Dropdown under the button, in the page's colors.
-.menu {
+// Where the menu opens, under the button: what goes above it (the menu on its way up, its shadow)
+// stays behind the header. The cut, below the header's border, doesn't move: animated along with the
+// menu, Safari moved them out of step.
+.menu-slot {
   position: absolute;
-  top: calc(100% + 0.25rem);
+  top: 100%;
   right: 0;
+  clip-path: inset(1px -100vw -100vh);
+}
+
+// Dropdown, in the page's colors. It comes down from behind the header and goes back up behind it,
+// fading (menu-drop, in styles/_view-switch.scss: on a phone, choosing a view also takes it away that
+// way).
+.menu {
   display: grid;
   grid-template-columns: minmax(0, 1fr); // Within the maximum width, even if it's a tight fit.
   gap: 0.9rem;
   width: max-content;
   max-width: calc(100vw - var(--gutter-left) - var(--gutter-right));
+  margin-top: 0.25rem;
   padding: 0.9rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
   box-shadow: var(--shadow-raised);
-  transform-origin: top right;
 
   &.entering {
-    animation: appear 0.18s ease-out;
+    animation: menu-drop 0.25s ease-out;
   }
 
+  // Reversed, the curve too: it speeds up on its way in.
   &.leaving {
-    animation: appear 0.14s ease-in reverse;
-  }
-}
-
-@keyframes appear {
-  from {
-    opacity: 0;
-    transform: translateY(-0.4rem) scale(0.97);
+    animation: menu-drop 0.2s ease-out reverse;
   }
 }
 

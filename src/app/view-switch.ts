@@ -164,6 +164,17 @@ function moveCard({ before, update, after: find, place, slide }: CardMove): void
 }
 
 /**
+ * Scrolls the new page so that the card stays where it was on the screen, as far as the page lets it:
+ * no higher than the top, no lower than the end. In whole pixels, rounded here: left to the browser,
+ * which can drop the fraction always the same way, everything went down a pixel on every switch.
+ */
+function keepInPlace(scroller: Element): CardMove['place'] {
+  return (after, top) => {
+    scroller.scrollTop = Math.round(scroller.scrollTop + after.getBoundingClientRect().top - top);
+  };
+}
+
+/**
  * From one list view to the other on a phone: the venue's card stays where it is on the screen, and
  * what it shows changes. False, with nothing done, if it can't: no transitions in the browser, not a
  * phone, reduced motion or no card to keep.
@@ -175,12 +186,7 @@ export function switchView(number: number | null, scroller: Element, update: () 
     before,
     update,
     after: () => cardOf(number!),
-    // As far as the page lets it: no higher than the top, no lower than the end. In whole pixels,
-    // rounded here: left to the browser, which can drop the fraction always the same way, everything
-    // went down a pixel on every switch.
-    place: (after, top) => {
-      scroller.scrollTop = Math.round(scroller.scrollTop + after.getBoundingClientRect().top - top);
-    },
+    place: keepInPlace(scroller),
     slide: true,
   });
   return true;
@@ -206,6 +212,29 @@ export function openVenue(
     after: openCard,
     place: () => (scroller.scrollTop = 0),
     slide: fromGallery,
+  });
+  return true;
+}
+
+/**
+ * From the venue's view back to a list view, on a phone: the card stays where it is on the screen, as
+ * on switching view, and the list arrives around it while the map goes back up. Into the gallery, what
+ * the card shows changes. False, with nothing done, if it can't (see switchView).
+ */
+export function closeVenue(
+  number: number,
+  scroller: Element,
+  update: () => void,
+  toGallery: boolean,
+): boolean {
+  const before = openCard();
+  if (!before || !canTransition()) return false;
+  moveCard({
+    before,
+    update,
+    after: () => cardOf(number),
+    place: keepInPlace(scroller),
+    slide: toGallery,
   });
   return true;
 }

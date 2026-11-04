@@ -2,7 +2,8 @@
 
 // From one list view to the other on a phone (app/view-switch.ts): the venue's card stays in place
 // while what it shows changes, and what's around it leaves and arrives. On opening a venue, the same,
-// with the card going to its place under the map, which arrives from above like the rest.
+// with the card going to its place under the map, which arrives from above like the rest. On going
+// back, the card stays in place as on switching view, and the map leaves upwards.
 
 // The whole of it, and the share of it each part takes. What leaves goes in the first part ($leave),
 // quickly, and what arrives comes in the last one ($arrive), with time to be seen coming: from when

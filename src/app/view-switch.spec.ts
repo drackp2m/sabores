@@ -1,4 +1,4 @@
-import { openVenue, switchView } from './view-switch';
+import { closeVenue, openVenue, switchView } from './view-switch';
 
 /** The transition names on the page, by name. */
 function names(): Record<string, string> {
@@ -137,6 +137,55 @@ describe('view transitions', () => {
     expect(sameCard).toBe(false);
   });
 
+  it('on going back, the card stays in place and the list arrives around it, as the map leaves', () => {
+    toVenue();
+    // Under the map, 300px from the top; in the list, with the scroll it had, 150px lower.
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      const top = this.id !== 'card-3' ? 100 : this.closest('.detail') ? 300 : 450;
+      return { top, bottom: top + 200 } as DOMRect;
+    });
+    let sameCard: boolean | undefined;
+    const update = () => {
+      sameCard = document.documentElement.classList.contains('same-card');
+      document.body.innerHTML = LIST;
+    };
+    expect(closeVenue(3, scroller, update, false)).toBe(true);
+
+    expect(captured.before).toEqual({
+      header: 'header',
+      back: 'back',
+      card: 'card-3',
+      'card-heading': 'app-venue-header',
+      'card-favorite': 'app-favorite',
+      'out-up-1': 'map',
+      'out-down-1': 'footer',
+    });
+    expect(captured.after).toMatchObject({
+      header: 'header',
+      card: 'card-3',
+      'in-up-1': 'filters',
+      'in-down-1': 'card-4',
+      'in-down-2': 'footer',
+    });
+    // The list goes up those 150px, and the card is where it was.
+    expect(scroller.scrollTop).toBe(650);
+    // From the venue to the list it's the same card: it only moves.
+    expect(sameCard).toBe(true);
+  });
+
+  it('into the gallery, what the card shows changes', () => {
+    toVenue();
+    let sameCard: boolean | undefined;
+    const update = () => {
+      sameCard = document.documentElement.classList.contains('same-card');
+      document.body.innerHTML = LIST;
+    };
+    closeVenue(3, scroller, update, true);
+    expect(sameCard).toBe(false);
+  });
+
   it('there is none without a phone, with reduced motion or without the card', () => {
     const update = vi.fn();
     vi.stubGlobal('matchMedia', () => ({ matches: false }));
@@ -146,6 +195,7 @@ describe('view transitions', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('reduce') }));
     expect(openVenue(9, scroller, update, false)).toBe(false);
     expect(switchView(null, scroller, update)).toBe(false);
+    expect(closeVenue(3, scroller, update, false)).toBe(false); // In the list: no venue open.
     expect(update).not.toHaveBeenCalled();
   });
 });

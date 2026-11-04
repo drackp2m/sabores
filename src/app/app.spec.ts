@@ -583,8 +583,6 @@ describe('App', () => {
         scrollTo,
         switchTo,
         goBack,
-        /** Chooses a view in the menu with a venue open. */
-        leaveVenueTo: switchTo,
         position: TestBed.inject(ScrollPosition),
         open: (number: number) => press(MAP_BUTTON(number)),
       };
@@ -645,37 +643,55 @@ describe('App', () => {
       expect(el.querySelector<HTMLElement>('.list')!.style.marginTop).toBe('');
     });
 
-    it('from a venue opened in the gallery, «Detalles» lands on it', async () => {
-      const { open, scrollTo, switchTo, leaveVenueTo, position } = await startFollowing();
+    it('from a venue opened in the gallery, «Detalles» stays on it, for going back', async () => {
+      const { el, open, scrollTo, switchTo, goBack, position } = await startFollowing();
       await switchTo('Fotos');
       await scrollTo(2);
       await open(5);
       expect(position.current()).toBe(2);
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
-      await leaveVenueTo('Detalles');
+      await switchTo('Detalles');
+      expect(el.querySelector('.detail app-venue-card h2')!.textContent).toBe('LOCAL 5');
+      expect(el.querySelector('app-gallery, .list')).toBeNull();
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      expect(TestBed.inject(Store).setting('view')).toBe('details');
+
+      // Going back, in the new view, it lands on it.
+      await goBack();
       expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
+      expect(el.querySelector('#venue-5')!.tagName).toBe('APP-VENUE-CARD');
     });
 
-    it('from a venue opened in the list, «Fotos» lands on it', async () => {
-      const { el, open, leaveVenueTo } = await startFollowing();
+    it('from a venue opened in the list, «Fotos» stays on it, for going back', async () => {
+      const { el, open, switchTo, goBack } = await startFollowing();
       await open(5);
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
-      await leaveVenueTo('Fotos');
+      await switchTo('Fotos');
+      expect(el.querySelector('.detail app-venue-card h2')!.textContent).toBe('LOCAL 5');
+      expect(scrollIntoView).not.toHaveBeenCalled();
+
+      await goBack();
       expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
       expect(el.querySelector('#venue-5')!.tagName).toBe('LI');
     });
 
-    it('from a venue opened in the gallery, «Fotos» lands on it too', async () => {
-      const { open, scrollTo, switchTo, leaveVenueTo } = await startFollowing();
+    it('from a venue opened in the gallery, «Fotos» changes nothing', async () => {
+      const { el, open, scrollTo, switchTo, goBack } = await startFollowing();
       await switchTo('Fotos');
       await scrollTo(2);
       await open(5);
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
-      await leaveVenueTo('Fotos');
-      expect(landedOn(scrollIntoView)).toEqual(['venue-5']);
+      const top = vi.spyOn(Element.prototype, 'scrollTo');
+      await switchTo('Fotos');
+      expect(el.querySelector('.detail app-venue-card')).not.toBeNull();
+
+      // Back where it was left, as if nothing had been chosen.
+      await goBack();
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      expect(top).toHaveBeenCalledWith({ top: 0 }); // What's saved: nothing scrolls in the tests.
     });
 
     it('from a venue opened in the gallery, going back leaves it where it was', async () => {

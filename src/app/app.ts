@@ -27,7 +27,7 @@ import { TapasRoute } from './tapas-route';
 import { Theme, Themes } from './theme';
 import { UserLocation } from './user-location';
 import { VenueCard } from './venue-card/venue-card';
-import { openVenue, switchView } from './view-switch';
+import { closeVenue, openVenue, switchView } from './view-switch';
 import {
   Filters,
   NO_FILTERS,
@@ -124,8 +124,11 @@ export class App {
     return venue ? [venue] : [];
   });
 
-  /** The list's or the gallery's scroll when opening a venue, to leave it the same on the way back. */
-  private listScroll = 0;
+  /**
+   * The list's or the gallery's scroll when opening a venue, to leave it the same on the way back
+   * (without a transition, see goBack). Null if the view changed meanwhile: it lands on the venue.
+   */
+  private listScroll: number | null = 0;
 
   constructor() {
     effect(() => this.store.saveSetting('filters', this.filters()));
@@ -241,13 +244,12 @@ export class App {
   protected changeView(view: View): void {
     this.menuOpen.set(false);
     this.store.saveSetting('view', view);
-    const opened = this.detail();
-    // From a venue, whatever the view, it opens on that same venue.
-    if (opened !== null) {
-      this.detail.set(null);
+    if (view === this.view()) return;
+    // From a venue it stays there, with its card as it is: the new view is for going back (goBack).
+    if (this.detail() !== null) {
       this.view.set(view);
-      this.landOn(opened);
-    } else if (view !== this.view()) {
+      this.listScroll = null;
+    } else {
       this.switchTo(view);
     }
   }
@@ -323,10 +325,25 @@ export class App {
     afterNextRender(() => this.detailMap()?.focus(number), { injector: this.injector });
   }
 
-  /** «Volver»: to the list or the gallery, where it was left. */
+  /**
+   * «Volver»: to the list or the gallery. On a phone, as a transition (view-switch.ts) in which the
+   * card stays where it is on the screen and the list, rendered at once, arrives around it; not if
+   * the venue is no longer in it (it stopped being a favorite, say, with that filter on), with no
+   * place for the card to go. Otherwise, where it was left; or on the venue, if the view changed.
+   */
   protected goBack(): void {
-    this.detail.set(null);
+    const number = this.detail();
     const top = this.listScroll;
-    afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
+    const back = () => this.detail.set(null);
+    const render = () => {
+      back();
+      this.appRef.tick();
+    };
+    const inList = this.visible().some((venue) => venue.number === number);
+    const toGallery = this.view() === 'photos';
+    if (number !== null && inList && closeVenue(number, this.scroller, render, toGallery)) return;
+    back();
+    if (top === null) this.landOn(number);
+    else afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
   }
 }

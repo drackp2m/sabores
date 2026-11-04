@@ -12,7 +12,8 @@ globalThis.IntersectionObserver ??= class {
   observe() {}
   disconnect() {}
 } as unknown as typeof IntersectionObserver;
-Element.prototype.animate ??= () => ({ finished: Promise.resolve() }) as unknown as Animation;
+Element.prototype.animate ??= () =>
+  ({ finished: Promise.resolve(), cancel() {} }) as unknown as Animation;
 Element.prototype.getAnimations ??= () => [];
 Element.prototype.scrollIntoView ??= () => {};
 Element.prototype.scrollTo ??= () => {};

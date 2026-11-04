@@ -2,6 +2,7 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
   PendingTasks,
   afterNextRender,
   computed,
@@ -19,7 +20,7 @@ import type * as ml from 'maplibre-gl';
 import { ArrivalTime, createArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
-import { desktop, isTouch, remInPx } from '../media';
+import { desktop, isTouch, reducedMotion, remInPx } from '../media';
 import {
   Route,
   directionsLink,
@@ -146,6 +147,31 @@ function sameKinds(
   return a.size === b.size && [...a].every(([number, kind]) => b.get(number) === kind);
 }
 
+/** How long the map takes to go full screen or back, all the way. */
+const RESIZE_TIME = 450;
+const RESIZE_EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+/**
+ * On the root while the map is full screen or on its way: the page's background, and not the
+ * header's, shows where the header leaves (styles/_base.scss).
+ */
+const LARGE_MAP = 'large-map';
+/** What setLarge leaves on the root while the map is full screen or on its way. */
+const SMALL_MAP = [
+  '--map-large',
+  '--map-top',
+  '--map-right',
+  '--map-bottom',
+  '--map-edge-top',
+  '--map-edge-bottom',
+  '--map-round-top',
+  '--map-round-bottom',
+  '--map-left',
+  '--map-rise',
+  '--map-drop',
+  '--map-shift-x',
+  '--map-shift-y',
+];
+
 /**
  * OpenStreetMap map with one marker per venue; it fits the filtered venues. With a starting point, it
  * draws the route to the chosen venue (or the one selected on the map, which gets highlighted). It
@@ -185,11 +211,11 @@ function sameKinds(
         <button
           type="button"
           class="secondary icon expand"
-          [title]="large() ? 'Reducir el mapa' : 'Ampliar el mapa'"
-          [attr.aria-label]="large() ? 'Reducir el mapa' : 'Ampliar el mapa'"
-          (click)="large.set(!large())"
+          [title]="enlarged() ? 'Reducir el mapa' : 'Ampliar el mapa'"
+          [attr.aria-label]="enlarged() ? 'Reducir el mapa' : 'Ampliar el mapa'"
+          (click)="setLarge(!enlarged())"
         >
-          <app-icon [name]="large() ? 'collapse' : 'expand'" />
+          <app-icon [name]="enlarged() ? 'collapse' : 'expand'" />
         </button>
         @if (externalLink(); as link) {
           <a
@@ -252,7 +278,7 @@ function sameKinds(
       }
     </div>
   `,
-  host: { '(document:keydown.escape)': 'large.set(false)' },
+  host: { '(document:keydown.escape)': 'setLarge(false)' },
   styles: `
     @use 'media';
 
@@ -276,12 +302,46 @@ function sameKinds(
           // the home indicator's area (styles/_map.scss: MapLibre paints it outside the component).
           padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0
             env(safe-area-inset-left, 0px);
-          --attribution-bottom: env(safe-area-inset-bottom, 0px);
+          --attribution-bottom: calc(var(--map-large) * env(safe-area-inset-bottom, 0px));
           background: var(--background);
+          // On its way (setLarge), clipped from what was shown of it on the page, with round corners
+          // (with --map-large at 0), to the whole screen (at 1). Its edges and what goes on them (the
+          // buttons, the border) go from where they were, even under the header: the clip hides them
+          // there. The variables, only on the way and while full screen: without them, nothing is
+          // clipped.
+          --frame-closed: calc(1 - var(--map-large));
+          --frame-top: calc(var(--frame-closed) * var(--map-top, 0px));
+          --frame-right: calc(var(--frame-closed) * var(--map-right, 0px));
+          --frame-bottom: calc(var(--frame-closed) * var(--map-bottom, 0px));
+          --frame-left: calc(var(--frame-closed) * var(--map-left, 0px));
+          --frame-edge-top: calc(var(--frame-closed) * var(--map-edge-top, 0px));
+          --frame-edge-bottom: calc(var(--frame-closed) * var(--map-edge-bottom, 0px));
+          --frame-radius: calc(var(--frame-closed) * var(--radius));
+          // Square where something covered the map: as it was seen.
+          --frame-radius-top: calc(var(--frame-radius) * var(--map-round-top, 1));
+          --frame-radius-bottom: calc(var(--frame-radius) * var(--map-round-bottom, 1));
+          clip-path: inset(
+            var(--frame-top) var(--frame-right) var(--frame-bottom) var(--frame-left) round
+              var(--frame-radius-top) var(--frame-radius-top) var(--frame-radius-bottom)
+              var(--frame-radius-bottom)
+          );
 
           .container {
             border: 0;
             border-radius: 0;
+          }
+
+          // The small map's border, which fades on the way.
+          &::after {
+            content: '';
+            position: absolute;
+            inset: var(--frame-edge-top) var(--frame-right) var(--frame-edge-bottom)
+              var(--frame-left);
+            z-index: 999; // Above the map, below its buttons.
+            border: 1px solid var(--border);
+            border-radius: var(--frame-radius);
+            opacity: var(--frame-closed);
+            pointer-events: none;
           }
         }
       }
@@ -305,9 +365,15 @@ function sameKinds(
       flex-direction: column;
       gap: 0.5rem;
 
+      // Full screen, a pixel closer to the edges, which have no border, and out of the safe area. On
+      // the way, in the corners of what's shown.
       .large & {
-        top: calc(10px + env(safe-area-inset-top, 0px));
-        right: calc(10px + env(safe-area-inset-right, 0px));
+        top: calc(
+          var(--frame-edge-top) + 11px + var(--map-large) * (env(safe-area-inset-top, 0px) - 1px)
+        );
+        right: calc(
+          var(--frame-right) + 11px + var(--map-large) * (env(safe-area-inset-right, 0px) - 1px)
+        );
       }
 
       &.left {
@@ -316,7 +382,9 @@ function sameKinds(
 
         .large & {
           right: auto;
-          left: calc(10px + env(safe-area-inset-left, 0px));
+          left: calc(
+            var(--frame-left) + 11px + var(--map-large) * (env(safe-area-inset-left, 0px) - 1px)
+          );
         }
       }
 
@@ -326,7 +394,9 @@ function sameKinds(
 
         .large & {
           top: auto;
-          bottom: calc(var(--credits-height) + 10px);
+          bottom: calc(
+            var(--frame-edge-bottom) + var(--credits-height) + 11px - var(--map-large) * 1px
+          );
         }
       }
 
@@ -375,7 +445,9 @@ function sameKinds(
       translate: -50%;
 
       .large & {
-        top: calc(10px + env(safe-area-inset-top, 0px));
+        top: calc(
+          var(--frame-edge-top) + 11px + var(--map-large) * (env(safe-area-inset-top, 0px) - 1px)
+        );
       }
     }
 
@@ -440,8 +512,13 @@ export class VenueMap {
   private readonly location = inject(UserLocation);
   private readonly themes = inject(Themes);
 
-  /** Full screen. */
+  /** Full screen, as laid out: also while it goes back to its place (see setLarge). */
   protected readonly large = signal(false);
+  /** Full screen, as asked for: the button already says what it does next. */
+  protected readonly enlarged = signal(false);
+  /** Going full screen or back, while it lasts. */
+  private resizing?: Animation;
+  private readonly injector = inject(Injector);
   private readonly desktopQuery = desktop();
   private readonly desktop = signal(this.desktopQuery.matches);
   /**
@@ -602,6 +679,11 @@ export class VenueMap {
     });
 
     effect(() => this.location.mapInSight.set(this.large() || this.inSight()));
+    // Leaving the venue on its way: the page stays as it is.
+    this.destroyRef.onDestroy(() => {
+      this.resizing?.cancel();
+      this.forgetSmall();
+    });
 
     // Over the map, the page still scrolls: with one finger (the map moves with two) and with the
     // mouse wheel (it zooms the map with Ctrl, ⌘ on Mac, or pinching on a trackpad, as in Google
@@ -729,6 +811,107 @@ export class VenueMap {
       }
       point.classList.toggle('lost', lost);
     });
+  }
+
+  /**
+   * Full screen or back, on a phone (on desktop there's no button). It goes from where it is on the
+   * page to the whole screen, clipped (styles here and in styles/_map.scss): the header goes up with
+   * its top edge and what's below it, down with its bottom edge (app.scss). All of it follows
+   * --map-large, from 0 (in its place) to 1 (full screen), on the root. Laid out full screen from the
+   * start, and in its place only once back: the map doesn't change size on the way, which would
+   * make MapLibre paint it again on every frame. Pressed again on the way, it turns back from there.
+   */
+  protected setLarge(large: boolean): void {
+    if (large === this.enlarged()) return;
+    this.enlarged.set(large);
+    const root = document.documentElement;
+    // Where it is on the way: until the animation is cancelled, the value it gives.
+    const at = this.resizing
+      ? parseFloat(getComputedStyle(root).getPropertyValue('--map-large')) || 0
+      : Number(!large);
+    this.resizing?.cancel();
+    this.resizing = undefined;
+    if (large && !this.large()) {
+      // From its place: measured before laying it out full screen, and again once it is.
+      const small = this.host.getBoundingClientRect();
+      this.placeSmall(small, new DOMRect(0, 0, innerWidth, innerHeight));
+      root.style.setProperty('--map-large', '0');
+      root.classList.add(LARGE_MAP);
+      this.large.set(true);
+      afterNextRender(
+        () => {
+          this.placeSmall(small, this.host.querySelector('.frame')!.getBoundingClientRect());
+          this.resize(0, 1);
+        },
+        { injector: this.injector },
+      );
+      return;
+    }
+    this.resize(at, Number(large));
+  }
+
+  /**
+   * Where the small map is, on a screen the size of the frame full screen. What was shown of it, for
+   * the clip and for what makes way: not under the header, nor below the screen, so that what was
+   * hidden there doesn't appear. And where its edges are, even hidden, for what goes on them. What
+   * it shows stays where it was: full screen, MapLibre keeps the same center, in the middle of the
+   * map.
+   */
+  private placeSmall(small: DOMRect, frame: DOMRect): void {
+    const header = document.querySelector('.header')?.getBoundingClientRect().bottom ?? frame.top;
+    const top = Math.max(small.top, header) - frame.top;
+    const bottom = frame.bottom - Math.min(small.bottom, frame.bottom);
+    const edgeTop = small.top - frame.top;
+    const edgeBottom = frame.bottom - small.bottom;
+    const map = this.map()?.getContainer().getBoundingClientRect() ?? frame;
+    const set = (name: string, px: number) =>
+      document.documentElement.style.setProperty(name, `${px}px`);
+    set('--map-top', top);
+    set('--map-right', frame.right - small.right);
+    set('--map-bottom', bottom);
+    set('--map-left', small.left - frame.left);
+    set('--map-edge-top', edgeTop);
+    set('--map-edge-bottom', edgeBottom);
+    document.documentElement.style.setProperty('--map-round-top', String(Number(top <= edgeTop)));
+    document.documentElement.style.setProperty(
+      '--map-round-bottom',
+      String(Number(bottom <= edgeBottom)),
+    );
+    set('--map-rise', -top);
+    set('--map-drop', bottom);
+    set('--map-shift-x', small.left + small.width / 2 - (map.left + map.width / 2));
+    set('--map-shift-y', small.top + small.height / 2 - (map.top + map.height / 2));
+  }
+
+  /** From that far on the way to that far, in the time it takes for that distance. */
+  private resize(from: number, to: number): void {
+    const root = document.documentElement;
+    const animation = root.animate([{ '--map-large': from }, { '--map-large': to }], {
+      duration: reducedMotion() ? 0 : RESIZE_TIME * Math.abs(to - from),
+      easing: RESIZE_EASING,
+      fill: 'forwards',
+    });
+    this.resizing = animation;
+    animation.finished.then(
+      () => {
+        if (this.resizing !== animation) return;
+        this.resizing = undefined;
+        root.style.setProperty('--map-large', String(to));
+        animation.cancel();
+        if (to) return;
+        // Back in its place, where it already looks to be.
+        this.large.set(false);
+        afterNextRender(() => this.forgetSmall(), { injector: this.injector });
+      },
+      () => {},
+    );
+  }
+
+  /** Without the variables, nothing makes way: the header and the card stay as they are. */
+  private forgetSmall(): void {
+    const root = document.documentElement;
+    for (const name of SMALL_MAP) root.style.removeProperty(name);
+    root.classList.remove(LARGE_MAP);
   }
 
   /** Zooms in on a venue and opens its popup; with no popup, it just centers it. */

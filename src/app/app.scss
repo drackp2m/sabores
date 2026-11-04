@@ -146,6 +146,24 @@
   }
 }
 
+// While the venue's map goes full screen or back (map.ts), the header goes up with its top edge and
+// what's below it, down with its bottom edge. Without the map on its way, the variables don't exist
+// and nothing moves.
+.header {
+  translate: 0 calc(var(--map-large) * var(--map-rise));
+
+  // What it says goes away in the first quarter of the way, and comes back in the last one.
+  .content {
+    opacity: max(0, 1 - 4 * var(--map-large));
+  }
+}
+
+.detail > app-venue-card,
+.back,
+.footer {
+  translate: 0 calc(var(--map-large) * var(--map-drop));
+}
+
 // Floating buttons: bottom left, «Volver» from the venue back to the list; at the same height on the
 // right, «Subir» once the top of the list is out of sight (the footer leaves room for them). The border, that of the cards, sets them
 // apart from what passes beneath in their same color (buttons, venue numbers).

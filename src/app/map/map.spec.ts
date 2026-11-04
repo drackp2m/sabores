@@ -510,6 +510,120 @@ describe('VenueMap', () => {
     expect(tooltip()).toBeUndefined();
   });
 
+  describe('going full screen', () => {
+    const root = document.documentElement.style;
+    /** Each animation of the way, finished on demand. */
+    let ends: (() => void)[];
+    let animate: ReturnType<typeof vi.spyOn>;
+    beforeEach(() => {
+      ends = [];
+      animate = vi.spyOn(Element.prototype, 'animate').mockImplementation(
+        () =>
+          ({
+            finished: new Promise<void>((resolve) => ends.push(resolve)),
+            cancel() {},
+          }) as unknown as Animation,
+      );
+    });
+    afterEach(() => animate.mockRestore());
+
+    const arrive = async (fixture: { whenStable(): Promise<unknown> }) => {
+      ends.at(-1)!();
+      await new Promise((r) => setTimeout(r));
+      await fixture.whenStable();
+    };
+    const keyframes = () => animate.mock.lastCall![0];
+
+    it('lays it out full screen at once, and in its place only once back', async () => {
+      const { fixture, el } = await create([ONE]);
+      const frame = el.querySelector('.frame')!;
+      const button = el.querySelector<HTMLElement>('.expand')!;
+
+      button.click();
+      await fixture.whenStable();
+      expect(frame.classList).toContain('large');
+      expect(button.title).toBe('Reducir el mapa');
+      // From where the small map is, with the page's background where the header leaves.
+      expect(root.getPropertyValue('--map-top')).not.toBe('');
+      expect(document.documentElement.classList).toContain('large-map');
+      expect(keyframes()).toEqual([{ '--map-large': 0 }, { '--map-large': 1 }]);
+      await arrive(fixture);
+      expect(root.getPropertyValue('--map-large')).toBe('1');
+
+      // The button says what it does next at once; the map goes back to its place once there.
+      button.click();
+      await fixture.whenStable();
+      expect(button.title).toBe('Ampliar el mapa');
+      expect(keyframes()).toEqual([{ '--map-large': 1 }, { '--map-large': 0 }]);
+      expect(frame.classList).toContain('large');
+      await arrive(fixture);
+      expect(frame.classList).not.toContain('large');
+      expect(root.getPropertyValue('--map-large')).toBe('');
+      expect(root.getPropertyValue('--map-top')).toBe('');
+      expect(document.documentElement.classList).not.toContain('large-map');
+    });
+
+    it('half under the header, its edges go from where they were, and what was hidden stays so', async () => {
+      const { fixture, el } = await create([ONE]);
+      const header = document.body.appendChild(document.createElement('header'));
+      header.className = 'header';
+      const box = (top: number, bottom: number, left = 16, right = 359) =>
+        ({ top, bottom, left, right, width: right - left, height: bottom - top }) as DOMRect;
+      const rects = vi
+        .spyOn(Element.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: Element) {
+          if (this === header) return box(0, 100);
+          if (this === el) return box(60, 420);
+          return box(0, 800, 0, 375); // Full screen.
+        });
+
+      el.querySelector<HTMLElement>('.expand')!.click();
+      await fixture.whenStable();
+      // What was shown of it: from the header down.
+      expect(root.getPropertyValue('--map-top')).toBe('100px');
+      expect(root.getPropertyValue('--map-rise')).toBe('-100px');
+      expect(root.getPropertyValue('--map-bottom')).toBe('380px');
+      // Where its edges are, for its buttons: the top one, under the header.
+      expect(root.getPropertyValue('--map-edge-top')).toBe('60px');
+      expect(root.getPropertyValue('--map-edge-bottom')).toBe('380px');
+      // Square at the top, where the header cut it; round at the bottom.
+      expect(root.getPropertyValue('--map-round-top')).toBe('0');
+      expect(root.getPropertyValue('--map-round-bottom')).toBe('1');
+      rects.mockRestore();
+      header.remove();
+    });
+
+    it('pressed again on the way, it turns back from where it is', async () => {
+      const { fixture, el } = await create([ONE]);
+      const button = el.querySelector<HTMLElement>('.expand')!;
+      button.click();
+      await fixture.whenStable();
+      const style = vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+        getPropertyValue: () => '0.4',
+      } as unknown as CSSStyleDeclaration);
+
+      button.click();
+      await fixture.whenStable();
+      expect(keyframes()).toEqual([{ '--map-large': 0.4 }, { '--map-large': 0 }]);
+      style.mockRestore();
+      // The first one, cancelled, no longer counts.
+      ends[0]();
+      await new Promise((r) => setTimeout(r));
+      expect(el.querySelector('.frame.large')).not.toBeNull();
+      await arrive(fixture);
+      expect(el.querySelector('.frame.large')).toBeNull();
+    });
+
+    it('leaving with it on its way leaves the page as it was', async () => {
+      const { fixture, el } = await create([ONE]);
+      el.querySelector<HTMLElement>('.expand')!.click();
+      await fixture.whenStable();
+      fixture.destroy();
+      expect(root.getPropertyValue('--map-large')).toBe('');
+      expect(root.getPropertyValue('--map-drop')).toBe('');
+    });
+  });
+
   it('lets the page scroll over it, except enlarged', async () => {
     const { fixture, el } = await create([ONE]);
     const gestures = FakeMap.of(el).cooperativeGestures;

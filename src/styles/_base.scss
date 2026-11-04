@@ -53,6 +53,12 @@ body {
     overscroll-behavior: none;
     scrollbar-gutter: auto;
     background: linear-gradient(var(--brand) 50%, var(--background) 50%) var(--brand);
+
+    // While the venue's map is full screen or on its way (map.ts), where the header leaves as it
+    // goes up, and beside the map, the page.
+    &.large-map {
+      background: var(--background);
+    }
   }
 
   body {

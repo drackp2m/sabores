@@ -22,6 +22,33 @@
   left: 0;
 }
 
+// How far the map is on its way to full screen on a phone, from 0 (in its place) to 1 (map.ts, where
+// the rest is). Registered, to be animated; inherited, for the header and the card (app.scss).
+@property --map-large {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@include media.below-desktop {
+  app-map .large {
+    // What it shows stays where it was in the small map, and goes along to its place. The markers and
+    // the route too: they're in here.
+    .maplibregl-canvas-container {
+      translate: calc(var(--frame-closed) * var(--map-shift-x, 0px))
+        calc(var(--frame-closed) * var(--map-shift-y, 0px));
+    }
+
+    // The credits, along the map's bottom edge. The map, full screen, is out of the sides'
+    // safe area.
+    .maplibregl-ctrl-bottom-right {
+      right: max(0px, var(--frame-right) - env(safe-area-inset-right, 0px));
+      bottom: var(--frame-edge-bottom);
+      left: max(0px, var(--frame-left) - env(safe-area-inset-left, 0px));
+    }
+  }
+}
+
 .maplibregl-ctrl-bottom-right .maplibregl-ctrl.maplibregl-ctrl-attrib {
   float: none;
   padding: 2px 8px calc(5px + var(--attribution-bottom, 0px));

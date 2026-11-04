@@ -30,40 +30,6 @@ article {
   border-radius: var(--radius);
 }
 
-// The number, centered with the name and the address; the map button, at the top on the right.
-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-
-  button {
-    flex: none;
-    align-self: flex-start;
-  }
-}
-
-.title {
-  flex: 1;
-  min-width: 0;
-}
-
-h2 {
-  font-size: 1rem;
-}
-
-.subtitle,
-.address {
-  margin: 0.1rem 0 0;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.address {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 0.75rem;
-}
-
 .note {
   margin: 0;
   padding: 0.4rem 0.6rem;

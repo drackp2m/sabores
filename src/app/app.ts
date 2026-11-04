@@ -83,6 +83,8 @@ export class App {
   /** The scroll-to-top button, once the map is out of sight (in the photo view, the gallery's top). */
   protected readonly showScrollTop = signal(false);
   private readonly scrollTopMark = viewChild<ElementRef<HTMLElement>>('scrollTopMark');
+  /** The venue view's map. */
+  private readonly detailMap = viewChild<VenueMap>('detailMap');
 
   /** Any that are missing (added after they were saved) start empty. */
   protected readonly filters = signal<Filters>({
@@ -421,6 +423,12 @@ export class App {
     history.pushState({ venue: number }, '');
     this.detail.set(number);
     this.scroller.scrollTo({ top: 0 });
+  }
+
+  /** From the gallery's map button: the venue opens and its map shows it, once it's on the page. */
+  protected openOnMap(number: number): void {
+    this.openVenue(number);
+    afterNextRender(() => this.detailMap()?.focus(number), { injector: this.injector });
   }
 
   protected goBack(): void {

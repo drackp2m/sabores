@@ -259,7 +259,7 @@ for pi in 0..<doc.pageCount {
       }
 
     var number: Int?
-    var nameFr: [Fragment] = [], subFr: [Fragment] = []
+    var nameFr: [Fragment] = []
     var dayLabels: [(key: String, y: CGFloat, closed: Bool)] = []
     var slotFr: [Fragment] = []
     var contact: [Fragment] = []
@@ -281,7 +281,8 @@ for pi in 0..<doc.pageCount {
       let hasTime = f.text.range(of: #"\d:\d\d"#, options: .regularExpression) != nil
       switch (f.y, f.size) {
       case (30..<70, 10.5...): nameFr.append(f)
-      case (30..<70, 8..<10.5) where f.rect.minX < 150: subFr.append(f)
+      // A second line in smaller type ("TASCA GASTRONÓMICA") is still part of the name.
+      case (30..<70, 8..<10.5) where f.rect.minX < 150: nameFr.append(f)
       case (15..<70, _) where f.rect.minX >= 185 && hasTime: slotFr.append(f)
       case (15..<70, _) where f.rect.minX >= 185: notes.append(f)
       case (68..<80, _): contact.append(f)
@@ -347,7 +348,6 @@ for pi in 0..<doc.pageCount {
       "tapas": tapas,
       "page": pi + 1,
     ]
-    venue["subtitle"] = subFr.isEmpty ? NSNull() : join(subFr)
     venue["phone"] = c.phone ?? NSNull()
     venue["instagram"] = c.instagram ?? NSNull()
     venue["notes"] = notes.map(\.text)

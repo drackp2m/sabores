@@ -53,7 +53,7 @@ function around(card: HTMLElement): { above: HTMLElement[]; below: HTMLElement[]
 /**
  * From one list view to the other on a phone, as a view transition (styles/_view-switch.scss). The
  * venue's card stays where it is on the screen, and so do its outline (taking the new height), its
- * number and its name; the rest of what it shows leaves to the right and the new one comes in from
+ * heading (the same in both) and its heart, in the bottom right corner; the rest of what it shows leaves to the right and the new one comes in from
  * there. What's around it moves away, and the new one comes closer. Update changes the view and
  * renders it, with the menu closed: it goes back up behind the header. False, with nothing done, if
  * it can't: no transitions in the browser, not a phone, reduced motion or no card to keep.
@@ -77,8 +77,8 @@ export function switchView(number: number | null, scroller: Element, update: () 
       name(document.querySelector<HTMLElement>(selector), key);
     }
     name(card, 'card');
-    name(card.querySelector('.venue-number'), 'card-number');
-    name(card.querySelector('h2, .open-venue'), 'card-name');
+    name(card.querySelector('app-venue-header'), 'card-heading');
+    name(card.querySelector('app-favorite'), 'card-favorite');
     const { above, below } = around(card);
     above.forEach((block, i) => name(block, `${side}-up-${i + 1}`));
     below.forEach((block, i) => name(block, `${side}-down-${i + 1}`));

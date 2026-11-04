@@ -26,7 +26,6 @@ scripts/
   "venues": [{
     "number": 1,
     "name": "ORIGEN",
-    "subtitle": null,                    // e.g. "TASCA GASTRONÓMICA"
     "address": "C/ CARCAGENTE, 17",
     "phone": "641986169",
     "instagram": "@origen_castellon",    // null if it doesn't appear

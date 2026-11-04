@@ -33,7 +33,6 @@ export interface Coordinates {
 export interface Venue {
   number: number;
   name: string;
-  subtitle: string | null;
   address: string;
   phone: string | null;
   instagram: string | null;
@@ -486,7 +485,6 @@ function searchTextOf(venue: Venue): string {
     text = normalize(
       [
         venue.name,
-        venue.subtitle,
         venue.address,
         ...venue.drinks.flatMap((d) => [d.name, d.type]),
         ...venue.tapas.flatMap((t) => [t.name, t.description]),

@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 
 import { Unfolding } from '../animate-height';
-import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Collapsible } from '../collapsible/collapsible';
 import { Favorite } from '../favorite/favorite';
@@ -19,12 +18,12 @@ import { reducedMotion } from '../media';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
-import { TapasRoute } from '../tapas-route';
+import { VenueHeader } from '../venue-header/venue-header';
 import { Venue, WEEKDAYS, Weekday, formatSlots, splitSlots, weekdayOf } from '../venues';
 
 @Component({
   selector: 'app-venue-card',
-  imports: [ArrivalTime, Collapsible, Favorite, Icon, ScheduleStatus, Seal, TapaPhoto],
+  imports: [Collapsible, Favorite, Icon, ScheduleStatus, Seal, TapaPhoto, VenueHeader],
   templateUrl: './venue-card.html',
   styleUrl: './venue-card.scss',
 })
@@ -34,7 +33,6 @@ export class VenueCard {
   readonly day = input<Weekday | ''>('');
   readonly showOnMap = output<void>();
 
-  private readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
   protected readonly weekdays = WEEKDAYS;
   /** To highlight today in the schedule. */
@@ -65,8 +63,6 @@ export class VenueCard {
       .drinks.map((d) => d.name)
       .join(' · '),
   );
-
-  protected readonly arrival = computed(() => this.tapasRoute.arrivals().get(this.venue().number));
 
   /**
    * Opens the schedule making room day by day, with each one appearing as soon as it fits; on closing,

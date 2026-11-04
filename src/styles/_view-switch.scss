@@ -89,17 +89,16 @@ $curve: ease-in-out;
   inset: -1px;
 }
 
-::view-transition-group(card-number),
-::view-transition-group(card-name) {
+// The heading, number included (it comes out of the card), and the heart stay above the card: the
+// heart goes along with its bottom edge.
+::view-transition-group(card-heading),
+::view-transition-group(card-favorite) {
   z-index: 1;
 }
 
-// At their size, not stretched to that of the group: the name, a line longer or shorter, would grow
-// or shrink on its way.
+// At their size, not stretched to that of the group.
 ::view-transition-old(card),
-::view-transition-new(card),
-::view-transition-old(card-name),
-::view-transition-new(card-name) {
+::view-transition-new(card) {
   inline-size: auto;
 }
 

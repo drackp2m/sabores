@@ -136,7 +136,11 @@
         </div>
       } @else {
         <div #scrollTopMark class="scroll-top-mark"></div>
-        <app-gallery [venues]="visible()" (open)="openVenue($event)" />
+        <app-gallery
+          [venues]="visible()"
+          (open)="openVenue($event)"
+          (showOnMap)="openOnMap($event)"
+        />
         @if (!visible().length) {
           <p class="message">Ningún local cumple los filtros.</p>
         }

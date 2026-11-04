@@ -1,31 +1,6 @@
 <span class="venue-mark"></span>
 <article>
-  <header>
-    <span class="venue-number">{{ venue().number }}</span>
-    <div class="title">
-      <h2>{{ venue().name }}</h2>
-      @if (venue().subtitle) {
-        <p class="subtitle">{{ venue().subtitle }}</p>
-      }
-      <p class="address">
-        <span>{{ venue().address }}</span>
-        @if (arrival(); as arrival) {
-          <app-arrival-time [arrival]="arrival" />
-        }
-      </p>
-    </div>
-    @if (venue().location) {
-      <button
-        type="button"
-        class="secondary icon"
-        title="Ver en el mapa"
-        aria-label="Ver en el mapa"
-        (click)="showOnMap.emit()"
-      >
-        <app-icon name="pin" />
-      </button>
-    }
-  </header>
+  <app-venue-header [venue]="venue()" (showOnMap)="showOnMap.emit()" />
 
   @for (note of venue().notes; track note) {
     <p class="note">{{ note }}</p>

@@ -30,7 +30,6 @@ export function testVenue(extra: Partial<Venue> = {}): Venue {
   return {
     number: 1,
     name: 'VENUE',
-    subtitle: null,
     address: 'C/ MAYOR, 1',
     phone: null,
     instagram: null,

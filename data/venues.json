@@ -107,7 +107,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Boquerón relleno de queso crema, pimiento del piquillo y membrillo sobre crudité de verduras.",
@@ -190,7 +189,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tortita de patatas crujientes acompañadas de una salsa cremosa de ternera, nata agria suave y coronadas con tocino ahumado.",
@@ -279,7 +277,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Pernil de jamón marinado en salsa a base de aceituna, alcaparra, pepinillo, zumo de naranja, vino y cerveza, sobre una tosta de yuca con una reducción de naranja caramelizada.",
@@ -319,7 +316,7 @@
         "precision" : "portal",
         "source" : "cartociudad"
       },
-      "name" : "EL PORTÓN",
+      "name" : "EL PORTÓN TASCA GASTRONÓMICA",
       "notes" : [
 
       ],
@@ -371,7 +368,6 @@
           }
         ]
       },
-      "subtitle" : "TASCA GASTRONÓMICA",
       "tapas" : [
         {
           "description" : "Rosquilleta con ensaladilla de pato con yema de huevo y encurtidos.",
@@ -464,7 +460,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Arancini de rabo de toro, queso taleggio y pico de gallo.",
@@ -564,7 +559,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tartar de navaja con escabeche de maíz dulce.",
@@ -664,7 +658,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Canelón crujiente de gambón con salsa holandesa, coronado con huevas de arenque ahumado.",
@@ -759,7 +752,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Base de causa peruana, bonito con salsa nikkei y mayonesa de ajo negro.",
@@ -834,7 +826,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Envoltini de berenjena rellena de pollo y terminada con cebolla caramelizada, queso de cabra y mermelada de pimiento picante y tomate casero.",
@@ -939,7 +930,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Pastel de sepia con tartar de gamba, esferificación de algas, gel de limón y crujiente de arroz y tinta.",
@@ -1031,7 +1021,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Albóndigas de carne de cerdo picada con ajo, perejil, orégano, huevo y tomate natural frito.",
@@ -1147,7 +1136,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Langostinos pelados, marinados y rebozados, acompañados con caviar y salsa mayonesa de pimentón.",
@@ -1244,7 +1232,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Rodaja de flamenquín con papa al horno con salsa de mojo picón y salsa casera baby’s.",
@@ -1338,7 +1325,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Caracoles en salsa de carne de ñora con chorizo, jamón, tomate y vino blanco.",
@@ -1425,7 +1411,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Gilda de langostino y huevo de codorniz con pimiento alegría y dip de gilda de anchoa.",
@@ -1538,7 +1523,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Patatas con salsa brava madrileña.",
@@ -1661,7 +1645,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Croquetas de carabineros y gamba roja sobre crema de pimientos.",
@@ -1753,7 +1736,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Berenjena al horno envuelta en papel de arroz crujiente, rellena de gorgonzola y nueces con salsa de remolacha.",
@@ -1869,7 +1851,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Sándwich crujiente de frito en conserva de San Vicente con salsa del chef y crema de zanahoria.",
@@ -1984,7 +1965,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Gambón relleno con mantequilla de ajo, perejil y ahumados, cubierto de salmón marinado en soja y naranja sobre crema marinera.",
@@ -2088,7 +2068,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Empanada de mechada con pico de gallo y mayonesa de naranja.",
@@ -2180,7 +2159,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Alfajor de naranja relleno de salmón con corazón de naranja y crujiente de almendra.",
@@ -2297,7 +2275,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tortilla de trigo rellena de arroz de cilantro, frijoles negros y ternera acompañada de guacamole, cebolla encurtida y salsa verde.",
@@ -2377,7 +2354,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tartar de fuet sobre nori crujiente con salsa de yema.",
@@ -2493,7 +2469,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Verduras cocidas con salmón, mayonesa, huevo decorado con ralladura de yema y canónigos.",
@@ -2584,7 +2559,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Pulpo encebollado acompañado con rodajitas de pan tostado.",
@@ -2678,7 +2652,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Patata natural cocida en horno coronada con queso provolone fundido, mayonesa de chimichurri y jamón serrano cocido.",
@@ -2768,7 +2741,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Taco de lomo de lubina con pico de gallo y flambeado al cointreau.",
@@ -2869,7 +2841,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Sándwich de cerdo asado con salsa de jugo y piparras.",
@@ -2985,7 +2956,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tosta de ensalada de berenjena con crujiente de jamón y tomate cherry.",
@@ -3090,7 +3060,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Croquetas semifrías de tartar de atún, alga wakame e inyección de salsa teriyaki.",
@@ -3180,7 +3149,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Un tomate de penjar relleno de queso sobre una crema de aguacate y una vinagreta de pistacho.",
@@ -3302,7 +3270,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Papas y mejillones en escabeche terminados con sal negra de nuestra marca Espinaler.",
@@ -3418,7 +3385,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Matrimonio formado por boquerones rebozados más anchoas y pimiento rojo y verde en pan de bocata.",
@@ -3497,7 +3463,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Champiñón relleno de almendra marcona, manzana y queso de cabra, cubierto de láminas de bacon crujiente.",
@@ -3593,7 +3558,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Hamburguesa con salsa bourbon, miel y Jack Daniels y 4 quesos.",
@@ -3690,7 +3654,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Buñuelo de bacalao, emulsión de cítricos y piel de bacalao deshidratada sobre tinta de chipirón.",
@@ -3781,7 +3744,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Crema de berenjena asada con 3 sabores: lima, ahumado y picante sobre lecho de pan laminado.",
@@ -3867,7 +3829,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Clásica elaboración de manitas de cerdo en su salsa casera.",
@@ -3946,7 +3907,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Falso tiramisú con tomate confitado, anchoa del cantábrico y tierra de aceituna.",
@@ -4030,7 +3990,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Chupa chups de cordero con puré de patatas y salsa demi-glace con un toque ligero de manzana.",
@@ -4132,7 +4091,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Caviar 100% real sobre crema de kéfir, tosta de brioche y gel de yema.",
@@ -4235,7 +4193,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tomate de penjar confitado con aceite de oliva virgen extra, relleno de stracciatella y aceite de albahaca.",
@@ -4344,7 +4301,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Canana rellena de longaniza y sobrasada.",
@@ -4438,7 +4394,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Wanton frito de yema con salmón marinado, cebolla morada, mango, aguacate y mayonesa japonesa con avellana tostada.",
@@ -4526,7 +4481,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Croqueta de mejillón tigre con mayonesa de Gilda.",
@@ -4641,7 +4595,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Croqueta de limón fermentado y queso parmesano.",
@@ -4731,7 +4684,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Gilda de corvina curada con limón fermentado a la sal, cebolla encurtida con vermut, aceitunas y piparras, acompañada de su propio gazpachuelo.",
@@ -4836,7 +4788,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Alitas de pollo rebozadas con apio, ajo picante, jengibre y cilantro.",
@@ -4929,7 +4880,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Patata crujiente con nuestra salsa brava.",
@@ -5033,7 +4983,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Calamar de lonja salteado con verdura encima de patacón.",
@@ -5113,7 +5062,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Pulpo encebollado acompañado de aceite de sésamo, aceite de oliva y jengibre.",
@@ -5236,7 +5184,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Nido de patatas con puré de pimientos y pulpo asado, acompañado con cebolla encurtida.",
@@ -5326,7 +5273,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Vieiras grilladas con mantequilla de limón, miel y bacon crocante.",
@@ -5410,7 +5356,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Porra del almuerzo tradicional de morcilla, longaniza y habas con ajoaceite y yema curada con reducción de carne para dipear.",
@@ -5497,7 +5442,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Rosquilleta con ensaladilla rusa de atún, anchoa, cebollino y AOVE.",
@@ -5609,7 +5553,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tomate de penjar en salazón de naranja, relleno de brandada de bacalao, gambita blanca y gel de gambas.",
@@ -5691,7 +5634,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Tortilla de camarón frita coronada con ensaladilla de mariscos y patatas paja.",
@@ -5817,7 +5759,6 @@
           }
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Carrillera, papas García, pepinillos y yema curada.",
@@ -5896,7 +5837,6 @@
 
         ]
       },
-      "subtitle" : null,
       "tapas" : [
         {
           "description" : "Nuestro clásico de toda la vida: hojaldre crujiente, crema de yema caramelizada, nata y chocolate.",

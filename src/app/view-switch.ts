@@ -84,6 +84,25 @@ function around(
 }
 
 /**
+ * In the venue view, the cards on each side of the one in the middle, peeking at the screen's edges
+ * (around leaves them out): they come and go sideways.
+ */
+function beside(card: HTMLElement): { left: HTMLElement | null; right: HTMLElement | null } {
+  const holder = card.parentElement;
+  if (!holder?.parentElement?.matches('.cards')) return { left: null, right: null };
+  const peeking = (next: Element | null) => {
+    const neighbour = next?.querySelector<HTMLElement>(':scope > article');
+    if (!neighbour) return null;
+    const { top, bottom, left, right } = neighbour.getBoundingClientRect();
+    return bottom > 0 && top < innerHeight && right > 0 && left < innerWidth ? neighbour : null;
+  };
+  return {
+    left: peeking(holder.previousElementSibling),
+    right: peeking(holder.nextElementSibling),
+  };
+}
+
+/**
  * The photos of what arrives, in the new picture: new elements, which would otherwise come in empty
  * and flash once decoded. They're the ones already on the page (the same venues), so the browser has
  * them at hand: decoded as they're painted, and not lazily, which waits for the page to be painted.
@@ -124,7 +143,8 @@ interface CardMove {
  * The venue's card goes from the old view to the new one as a view transition
  * (styles/_view-switch.scss): its outline takes the new height and its new place, along with its
  * heading (the same in every view) and its heart, in the bottom right corner. What's around it moves
- * away, and the new one comes closer. The menu goes back up behind the header.
+ * away, and the new one comes closer: above and below, and in the venue view, on its sides. The menu
+ * goes back up behind the header.
  */
 function moveCard({
   before,
@@ -155,6 +175,9 @@ function moveCard({
     const { above, below } = around(card, staying);
     above.forEach((block, i) => name(block, `${side}-up-${i + 1}`));
     below.forEach((block, i) => name(block, `${side}-down-${i + 1}`));
+    const { left, right } = beside(card);
+    name(left, `${side}-left`);
+    name(right, `${side}-right`);
   };
   const clear = () => {
     for (const element of named.splice(0)) element.style.removeProperty('view-transition-name');

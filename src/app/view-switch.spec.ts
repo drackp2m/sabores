@@ -37,10 +37,13 @@ const VENUE = `
   </div>
   <footer class="footer" id="footer"></footer>`;
 
-/** Where an element is, that far from the top: the venue view's cards beside the middle one, off it. */
+/**
+ * Where an element is, that far from the top: the venue view's cards beside the middle one, peeking
+ * at the screen's edges, with their middle off it.
+ */
 function at(element: Element, top: number): DOMRect {
   const beside = element.closest('.cards') && element.id !== 'card-3';
-  const left = beside ? (element.id === 'card-2' ? -innerWidth : innerWidth) : 0;
+  const left = beside ? (element.id === 'card-2' ? 8 - 300 : innerWidth - 8) : 0;
   return { top, bottom: top + 200, left, right: left + 300 } as DOMRect;
 }
 
@@ -56,7 +59,8 @@ describe('view transitions', () => {
   beforeEach(() => {
     document.body.innerHTML = LIST;
     scroller.scrollTop = 500;
-    // A phone, with motion: everything in sight, but the venue view's cards beside the middle one.
+    // A phone, with motion: everything in sight, the venue view's cards beside the middle one only
+    // just.
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('reduce') }));
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
@@ -126,6 +130,9 @@ describe('view transitions', () => {
       'card-favorite': 'app-favorite',
       'in-up-1': 'map',
       'in-down-1': 'footer',
+      // Those beside it, from the sides.
+      'in-left': 'card-2',
+      'in-right': 'card-4',
     });
     expect(scroller.scrollTop).toBe(0);
     // From the list it's the same card: it only moves.
@@ -168,7 +175,7 @@ describe('view transitions', () => {
     expect(sameCard).toBe(false);
   });
 
-  it('on going back, the card stays in place and the list arrives around it, as the map leaves', () => {
+  it('on going back, the card stays in place and the list arrives around it, as the rest leaves', () => {
     toVenue();
     // Under the map, 300px from the top; in the list, with the scroll it had, 150px lower.
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
@@ -191,6 +198,8 @@ describe('view transitions', () => {
       'card-favorite': 'app-favorite',
       'out-up-1': 'map',
       'out-down-1': 'footer',
+      'out-left': 'card-2',
+      'out-right': 'card-4',
     });
     expect(captured.after).toMatchObject({
       header: 'app-header',

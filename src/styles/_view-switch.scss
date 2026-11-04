@@ -1,9 +1,10 @@
 @use 'sass:math';
 
 // From one list view to the other on a phone (app/view-switch.ts): the venue's card stays in place
-// while what it shows changes, and what's around it leaves and arrives. On opening a venue, the same,
-// with the card going to its place under the map, which arrives from above like the rest. On going
-// back, the card stays in place as on switching view, and the map leaves upwards.
+// while what it shows changes, and the other cards and the footer leave and arrive. What's above the
+// list, the same in both views, stays. On opening a venue, the same, with what's above the list
+// leaving too and the card going to its place under the map, which arrives from above like the rest.
+// On going back, the card stays in place as on switching view, and the map leaves upwards.
 
 // The whole of it, and the share of it each part takes. What leaves goes in the first part ($leave),
 // quickly, and what arrives comes in the last one ($arrive), with time to be seen coming: from when
@@ -23,6 +24,8 @@ $travel: 4rem;
 $slide: 30%;
 // As many as view-switch.ts names on each side.
 $around: 12;
+// As many as view-switch.ts has above the list.
+$staying: 4;
 
 $leaving: $duration * $leave;
 $resizing: $duration * $resize;
@@ -47,6 +50,18 @@ $curve: ease-in-out;
   }
 
   ::view-transition-new(#{$fixed}) {
+    animation: none;
+  }
+}
+
+// What's above the list, from one list view to the other: the same, where it was. The new one at
+// once, live, without the old one fading under it.
+@for $i from 1 through $staying {
+  ::view-transition-old(stay-#{$i}) {
+    display: none;
+  }
+
+  ::view-transition-new(stay-#{$i}) {
     animation: none;
   }
 }

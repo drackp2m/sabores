@@ -18,15 +18,20 @@ const FIXED = {
 const MENU = '.menu';
 
 /**
- * What comes and goes, top to bottom: the filters and what's above the list, the cards (in the venue
- * view, the map and the card) and the footer. Even if it's the same element in both views, it goes and
- * comes back in its new place, like the rest.
+ * The filters and what's above the list: the same elements in both list views. From one to the other
+ * they stay where they are (as many as styles/_view-switch.scss has names for), instead of leaving and
+ * coming back. With the card in its place on the screen, so are they: they're only in sight with the
+ * first venue, which has nothing else above it in either view.
+ */
+const ABOVE_LIST = ['app-filters', 'main > .summary', 'main > .sort', 'main > app-origin'];
+
+/**
+ * What comes and goes, top to bottom: what's above the list (except from one list view to the other),
+ * the cards (in the venue view, the map and the card) and the footer. Even if it's the same element in
+ * both views, it goes and comes back in its new place, like the rest.
  */
 const BLOCKS = [
-  'app-filters',
-  'main > .summary',
-  'main > .sort',
-  'main > app-origin',
+  ...ABOVE_LIST,
   '.list > app-venue-card > article',
   'app-gallery li',
   '.detail > .map',
@@ -51,9 +56,13 @@ function openCard(): HTMLElement | null {
   return document.querySelector<HTMLElement>('.detail > app-venue-card > article');
 }
 
-/** What's in sight above and below the card, from the closest one outwards. */
-function around(card: HTMLElement): { above: HTMLElement[]; below: HTMLElement[] } {
-  const blocks = [...document.querySelectorAll<HTMLElement>(BLOCKS)];
+/** What's in sight above and below the card, from the closest one outwards, but those staying. */
+function around(
+  card: HTMLElement,
+  staying: readonly (HTMLElement | null)[],
+): { above: HTMLElement[]; below: HTMLElement[] } {
+  const all = document.querySelectorAll<HTMLElement>(BLOCKS);
+  const blocks = [...all].filter((block) => !staying.includes(block));
   const at = blocks.indexOf(card);
   const inSight = (block: HTMLElement) => {
     const { top, bottom } = block.getBoundingClientRect();
@@ -96,6 +105,8 @@ interface CardMove {
   place: (after: HTMLElement, top: number) => void;
   /** What the card shows changes: it leaves to the right and the new one comes in from there. */
   slide: boolean;
+  /** What's above the list stays where it is: from one list view to the other. */
+  keepAboveList?: boolean;
 }
 
 /**
@@ -104,22 +115,33 @@ interface CardMove {
  * heading (the same in every view) and its heart, in the bottom right corner. What's around it moves
  * away, and the new one comes closer. The menu goes back up behind the header.
  */
-function moveCard({ before, update, after: find, place, slide }: CardMove): void {
+function moveCard({
+  before,
+  update,
+  after: find,
+  place,
+  slide,
+  keepAboveList = false,
+}: CardMove): void {
   const named: HTMLElement[] = [];
   const name = (element: HTMLElement | null, value: string) => {
     if (!element) return;
     element.style.setProperty('view-transition-name', value);
     named.push(element);
   };
-  // What gets captured: the fixed ones, the card and what's in sight around it.
+  // What gets captured: the fixed ones, what stays, the card and what's in sight around it.
   const nameAll = (card: HTMLElement, side: 'out' | 'in') => {
     for (const [key, selector] of Object.entries(FIXED)) {
       name(document.querySelector<HTMLElement>(`${selector}:not(.leaving)`), key);
     }
+    const staying = keepAboveList
+      ? ABOVE_LIST.map((selector) => document.querySelector<HTMLElement>(selector))
+      : [];
+    staying.forEach((element, i) => name(element, `stay-${i + 1}`));
     name(card, 'card');
     name(card.querySelector('app-venue-header'), 'card-heading');
     name(card.querySelector('app-favorite'), 'card-favorite');
-    const { above, below } = around(card);
+    const { above, below } = around(card, staying);
     above.forEach((block, i) => name(block, `${side}-up-${i + 1}`));
     below.forEach((block, i) => name(block, `${side}-down-${i + 1}`));
   };
@@ -176,8 +198,8 @@ function keepInPlace(scroller: Element): CardMove['place'] {
 
 /**
  * From one list view to the other on a phone: the venue's card stays where it is on the screen, and
- * what it shows changes. False, with nothing done, if it can't: no transitions in the browser, not a
- * phone, reduced motion or no card to keep.
+ * what it shows changes. What's above the list stays too. False, with nothing done, if it can't: no
+ * transitions in the browser, not a phone, reduced motion or no card to keep.
  */
 export function switchView(number: number | null, scroller: Element, update: () => void): boolean {
   const before = number === null ? null : cardOf(number);
@@ -188,6 +210,7 @@ export function switchView(number: number | null, scroller: Element, update: () 
     after: () => cardOf(number!),
     place: keepInPlace(scroller),
     slide: true,
+    keepAboveList: true,
   });
   return true;
 }

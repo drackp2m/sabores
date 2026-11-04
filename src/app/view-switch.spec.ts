@@ -67,6 +67,21 @@ describe('view transitions', () => {
     document.documentElement.className = '';
   });
 
+  it('on switching view, the filters stay where they are: only the cards come and go', () => {
+    // The same page: the same filters, and the other cards around.
+    expect(switchView(4, scroller, () => {})).toBe(true);
+    const around = {
+      header: 'header',
+      'scroll-top': 'scroll-top',
+      'stay-1': 'filters',
+      card: 'card-4',
+      'card-heading': 'app-venue-header',
+      'card-favorite': 'app-favorite',
+    };
+    expect(captured.before).toEqual({ ...around, 'out-up-1': 'card-3', 'out-down-1': 'footer' });
+    expect(captured.after).toEqual({ ...around, 'in-up-1': 'card-3', 'in-down-1': 'footer' });
+  });
+
   const toVenue = () => (document.body.innerHTML = VENUE);
 
   it('on opening a venue, its card goes under the map, which arrives from above', async () => {

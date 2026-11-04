@@ -1,7 +1,8 @@
 @use 'sass:math';
 
 // From one list view to the other on a phone (app/view-switch.ts): the venue's card stays in place
-// while what it shows changes, and what's around it leaves and arrives.
+// while what it shows changes, and what's around it leaves and arrives. On opening a venue, the same,
+// with the card going to its place under the map, which arrives from above like the rest.
 
 // The whole of it, and the share of it each part takes. What leaves goes in the first part ($leave),
 // quickly, and what arrives comes in the last one ($arrive), with time to be seen coming: from when
@@ -35,7 +36,7 @@ $curve: ease-in-out;
 
 // Fixed on the screen, they don't take part: the new ones at once, live (a button leaving, see
 // app.scss), above the rest.
-@each $fixed in header, scroll-top {
+@each $fixed in header, scroll-top, back {
   ::view-transition-group(#{$fixed}) {
     z-index: 2;
   }
@@ -118,6 +119,16 @@ $curve: ease-in-out;
 
 ::view-transition-new(card) {
   animation: slide-in $arriving ease-out ($duration - $arriving) both;
+}
+
+// Opening a venue from its card in the list: it's the same card, it only moves and takes its new
+// height. The new one at once, live, without the old one fading under it.
+:root.same-card::view-transition-old(card) {
+  display: none;
+}
+
+:root.same-card::view-transition-new(card) {
+  animation: none;
 }
 
 @keyframes slide-out {

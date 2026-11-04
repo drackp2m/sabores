@@ -27,7 +27,7 @@ import { TapasRoute } from './tapas-route';
 import { Theme, Themes } from './theme';
 import { UserLocation } from './user-location';
 import { VenueCard } from './venue-card/venue-card';
-import { switchView } from './view-switch';
+import { openVenue, switchView } from './view-switch';
 import {
   Filters,
   NO_FILTERS,
@@ -56,7 +56,6 @@ const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
-    '(window:popstate)': 'onNavigate($event)',
     // Safari on iOS ignores user-scalable=no: pinch-to-zoom gets blocked here.
     '(document:gesturestart)': '$event.preventDefault()',
     '(document:keydown.escape)': 'menuOpen.set(false)',
@@ -127,8 +126,6 @@ export class App {
 
   /** The list's or the gallery's scroll when opening a venue, to leave it the same on the way back. */
   private listScroll = 0;
-  /** The menu is leaving a venue: whatever the view, it opens on that venue. */
-  private leavingFromMenu = false;
 
   constructor() {
     effect(() => this.store.saveSetting('filters', this.filters()));
@@ -244,14 +241,15 @@ export class App {
   protected changeView(view: View): void {
     this.menuOpen.set(false);
     this.store.saveSetting('view', view);
-    if (this.detail() !== null) {
-      this.leavingFromMenu = true;
-      history.back();
+    const opened = this.detail();
+    // From a venue, whatever the view, it opens on that same venue.
+    if (opened !== null) {
+      this.detail.set(null);
+      this.view.set(view);
+      this.landOn(opened);
     } else if (view !== this.view()) {
       this.switchTo(view);
-      return;
     }
-    this.view.set(view);
   }
 
   /**
@@ -304,33 +302,31 @@ export class App {
   }
 
   /**
-   * From a venue's map button, in either view: it opens in a new history entry, with its map showing
-   * it once it's on the page. The browser's back button returns to where it was (onNavigate).
+   * From a venue's map button, in either view: it opens with its map showing it once it's on the
+   * page. Not as a history entry: the browser's back button doesn't return from it, only «Volver»
+   * (goBack). On a phone, as a transition that takes the card to its place under the map
+   * (view-switch.ts), with the venue rendered at once.
    */
   protected openVenue(number: number): void {
     this.listScroll = this.scroller.scrollTop;
-    history.pushState({ venue: number }, '');
-    this.detail.set(number);
-    this.scroller.scrollTo({ top: 0 });
+    const open = () => {
+      this.detail.set(number);
+      this.scroller.scrollTo({ top: 0 });
+    };
+    const render = () => {
+      open();
+      this.appRef.tick();
+      this.detailMap()?.focus(number);
+    };
+    if (openVenue(number, this.scroller, render, this.view() === 'photos')) return;
+    open();
     afterNextRender(() => this.detailMap()?.focus(number), { injector: this.injector });
   }
 
+  /** «Volver»: to the list or the gallery, where it was left. */
   protected goBack(): void {
-    history.back();
-  }
-
-  protected onNavigate(event: PopStateEvent): void {
-    const number = (event.state as { venue?: number } | null)?.venue ?? null;
-    const opened = this.detail();
-    const land = this.leavingFromMenu;
-    this.leavingFromMenu = false;
-    this.detail.set(number);
-    // From a venue to any view from the menu, it opens on that same venue.
-    if (number === null && land) {
-      this.landOn(opened);
-      return;
-    }
-    const top = number === null ? this.listScroll : 0;
+    this.detail.set(null);
+    const top = this.listScroll;
     afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
   }
 }

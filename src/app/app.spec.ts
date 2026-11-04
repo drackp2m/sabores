@@ -139,18 +139,19 @@ describe('App', () => {
     expect(el.querySelector('app-venue-card')).toBeNull();
 
     const focus = vi.spyOn(VenueMap.prototype, 'focus');
+    const entries = history.length;
     await press(MAP_BUTTON(2));
     expect(el.querySelector('.filters')).toBeNull();
     expect(el.querySelector('app-venue-card h2')!.textContent).toBe('CÚPULA');
-    expect(history.state).toEqual({ venue: 2 });
+    // The browser's back button doesn't return from it: only «Volver».
+    expect(history.length).toBe(entries);
     expect(el.querySelector('.back')).not.toBeNull();
     // The map, before the card: on phones it goes on top.
     expect(el.querySelector('.detail > :first-child')!.tagName).toBe('APP-MAP');
     expect(focus).toHaveBeenCalledWith(2);
     focus.mockRestore();
 
-    window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
-    await new Promise((r) => setTimeout(r));
+    await press('.back');
     expect(el.querySelector('app-venue-card')).toBeNull();
     expect(el.querySelectorAll('app-gallery li').length).toBe(2);
     expect(TestBed.inject(Store).setting('view')).toBe('photos');
@@ -160,7 +161,6 @@ describe('App', () => {
     const { el, press } = await start();
     expect(el.querySelector('app-map')).toBeNull();
     await press(MAP_BUTTON(1));
-    expect(history.state).toEqual({ venue: 1 });
     expect(el.querySelectorAll('app-venue-card').length).toBe(1);
     expect(el.querySelector('app-map')).not.toBeNull();
   });
@@ -533,9 +533,7 @@ describe('App', () => {
 
     await press(MAP_BUTTON(2));
     expect(el.querySelector('app-filters')).toBeNull();
-    window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
-    await new Promise((r) => setTimeout(r));
-    await fixture.whenStable();
+    await press('.back');
     expect(el.querySelector<HTMLInputElement>('.field.text input')!.value).toBe('cúpula');
     expect(el.querySelectorAll('app-gallery li').length).toBe(1);
   });
@@ -574,25 +572,19 @@ describe('App', () => {
         await new Promise((r) => setTimeout(r));
         await fixture.whenStable();
       };
-      /** The browser goes back a page. */
-      const browserBack = async () => {
-        window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
+      /** «Volver», from the venue. */
+      const goBack = async () => {
+        await press('.back');
         await new Promise((r) => setTimeout(r));
         await fixture.whenStable();
-      };
-      /** Chooses a view in the menu with a venue open: going back is up to the browser. */
-      const leaveVenueTo = async (view: string) => {
-        vi.spyOn(history, 'back').mockImplementation(() => {});
-        await press('.menu-button');
-        await press('.menu button', view);
-        await browserBack();
       };
       return {
         ...started,
         scrollTo,
         switchTo,
-        browserBack,
-        leaveVenueTo,
+        goBack,
+        /** Chooses a view in the menu with a venue open. */
+        leaveVenueTo: switchTo,
         position: TestBed.inject(ScrollPosition),
         open: (number: number) => press(MAP_BUTTON(number)),
       };
@@ -687,26 +679,26 @@ describe('App', () => {
     });
 
     it('from a venue opened in the gallery, going back leaves it where it was', async () => {
-      const { open, scrollTo, switchTo, browserBack } = await startFollowing();
+      const { open, scrollTo, switchTo, goBack } = await startFollowing();
       await switchTo('Fotos');
       await scrollTo(2);
       await open(5);
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
       const top = vi.spyOn(Element.prototype, 'scrollTo');
-      await browserBack();
+      await goBack();
       expect(scrollIntoView).not.toHaveBeenCalled();
       expect(top).toHaveBeenCalledWith({ top: 0 }); // What's saved: nothing scrolls in the tests.
     });
 
     it('from a venue opened in the list, going back leaves it where it was', async () => {
-      const { open, scrollTo, browserBack } = await startFollowing();
+      const { open, scrollTo, goBack } = await startFollowing();
       await scrollTo(2);
       await open(5);
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
       const top = vi.spyOn(Element.prototype, 'scrollTo');
-      await browserBack();
+      await goBack();
       expect(scrollIntoView).not.toHaveBeenCalled();
       expect(top).toHaveBeenCalledWith({ top: 0 }); // What's saved: nothing scrolls in the tests.
     });
@@ -737,6 +729,23 @@ describe('App', () => {
     expect(schedule.open).toBe(true);
     expect(schedule.querySelectorAll('dt').length).toBe(7);
     expect(cards[1].querySelector('dl')).toBeNull();
+  });
+
+  it('the schedule stays open from the list to the venue and back', async () => {
+    const { fixture, el, press } = await start();
+    el.querySelector<HTMLElement>('#venue-1 summary')!.click();
+    await fixture.whenStable();
+    expect(el.querySelector<HTMLDetailsElement>('#venue-1 details')!.open).toBe(true);
+
+    await press(MAP_BUTTON(1));
+    const opened = el.querySelector<HTMLDetailsElement>('.detail details')!;
+    expect(opened.open).toBe(true);
+    expect(opened.querySelectorAll('dt').length).toBe(7);
+    expect(opened.querySelector('summary.open')).not.toBeNull();
+
+    await press('.back');
+    expect(el.querySelector<HTMLDetailsElement>('#venue-1 details')!.open).toBe(true);
+    expect(el.querySelector<HTMLDetailsElement>('#venue-2 details')!.open).toBe(false);
   });
 
   it('the heart only has the ripple and sparks while it beats', async () => {

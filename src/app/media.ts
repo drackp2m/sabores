@@ -1,11 +1,9 @@
 // The same media queries as in styles/_media.scss, for the code.
 
-/** List on the left and map on the right. */
-export function isDesktop(): boolean {
-  return desktop().matches;
-}
-
-/** The same, to hear when it changes (on turning an iPad). */
+/**
+ * In the venue view, the card on the left and the map on the right. A list, to hear when it changes
+ * (on turning an iPad).
+ */
 export function desktop(): MediaQueryList {
   return matchMedia('(min-width: 960px)');
 }

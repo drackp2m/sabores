@@ -32,7 +32,8 @@
     </p>
   }
 
-  <details #scheduleDetails>
+  <!-- Only to start with: from then on, opening and closing it is up to toggleSchedule. -->
+  <details #scheduleDetails [open]="startsOpen()">
     <summary [class.open]="scheduleOpen()" (click)="toggleSchedule($event, scheduleDetails)">
       <span>Horario de tapas</span>
       <app-schedule-status [venue]="venue().number" />

@@ -213,6 +213,11 @@ class FakeMap extends Evented {
     this.fire('moveend', { originalEvent: new Event('touchend') });
   }
 
+  /** MapLibre's first paint, once the style and the tiles in sight are there. */
+  load(): void {
+    this.fire('load');
+  }
+
   easeTo(_options: { center: unknown; zoom: number; offset?: [number, number] }): this {
     return this;
   }

@@ -658,6 +658,13 @@ export class VenueMap {
   private resizeObserver?: ResizeObserver;
   /** The venue asked to be focused before MapLibre arrived. */
   private pendingFocus: number | null = null;
+  /**
+   * Whether MapLibre has painted it yet (its load event). Until then, what the app asks of the camera
+   * (focus, frame) is done at once: with nothing on the screen, there's nothing to come from. In the
+   * venue view the map is new and arrives with the page (view-switch.ts): moving inside it on its
+   * way (from the venue to closer up to it, then to the whole route), its street names shook.
+   */
+  private shown = false;
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
@@ -914,7 +921,10 @@ export class VenueMap {
     root.classList.remove(LARGE_MAP);
   }
 
-  /** Zooms in on a venue and opens its popup; with no popup, it just centers it. */
+  /**
+   * Zooms in on a venue and opens its popup; with no popup, it just centers it. At once before it's
+   * painted (see shown).
+   */
   focus(number: number): void {
     const map = this.map();
     if (!map) {
@@ -933,7 +943,7 @@ export class VenueMap {
       this.placePopup(marker, zoom);
     } else {
       this.selected.set(number);
-      map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME });
+      map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME, animate: this.shown });
     }
   }
 
@@ -1037,6 +1047,7 @@ export class VenueMap {
       if (originalEvent.target === origin) this.originTooltip.addTo(map);
       else this.originTooltip.remove();
     });
+    map.on('load', () => (this.shown = true));
     map.on('zoomend', () => {
       this.zoom.set(map.getZoom());
       if (this.route()) this.drawDots(map);
@@ -1203,7 +1214,10 @@ export class VenueMap {
     });
   }
 
-  /** Without turning it back to the north, as it would by default. Not while guiding (see guide). */
+  /**
+   * Without turning it back to the north, as it would by default. Not while guiding (see guide). At
+   * once before it's painted (see shown).
+   */
   private frame(map: ml.Map, points: ml.LngLatLike[], maxZoom: number, animate = true): void {
     if (this.guiding()) return;
     const bounds = points.reduce(
@@ -1216,7 +1230,7 @@ export class VenueMap {
       bearing: map.getBearing(),
       linear: true,
       duration: MOVE_TIME,
-      animate,
+      animate: animate && this.shown,
     });
   }
 
@@ -1386,6 +1400,7 @@ export class VenueMap {
       zoom,
       offset: [0, y - height / 2],
       duration: MOVE_TIME,
+      animate: this.shown,
     });
   }
 

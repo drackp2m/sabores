@@ -92,6 +92,19 @@ describe('VenueMap', () => {
     expect(popup()).toBeUndefined();
   });
 
+  it('goes straight to the venue before the map is painted, and on its way once it is', async () => {
+    const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+    // In the venue view: without popups, it only centers it.
+    const { fixture } = await create([ONE, TWO], 1);
+    fixture.componentInstance.focus(1);
+    expect(easeTo.mock.lastCall![0]).toMatchObject({ zoom: 16, animate: false });
+
+    FakeMap.of(fixture.nativeElement).load();
+    fixture.componentInstance.focus(2);
+    expect(easeTo.mock.lastCall![0]).toMatchObject({ zoom: 16, animate: true });
+    easeTo.mockRestore();
+  });
+
   it('if asked to focus a venue before MapLibre arrives, does it as soon as it’s there', async () => {
     const fixture = TestBed.createComponent(VenueMap);
     fixture.componentRef.setInput('venues', [ONE, TWO]);
@@ -773,6 +786,16 @@ describe('VenueMap', () => {
       expect(fitBounds).toHaveBeenCalledTimes(2);
       expect(setData).toHaveBeenCalledTimes(draws);
       setData.mockRestore();
+    });
+
+    it('frames it at once if it arrives before the map is painted, and on its way after', async () => {
+      const { fixture, change } = await withRoute(-0.053);
+      expect(fitBounds.mock.lastCall![1]).toMatchObject({ animate: false });
+
+      map(fixture).load();
+      await change('origin', { lat: 39.991, lng: -0.046 });
+      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(3));
+      expect(fitBounds.mock.lastCall![1]).toMatchObject({ animate: true });
     });
 
     it('on leaving it, it asks for another one from there', async () => {

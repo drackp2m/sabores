@@ -3,7 +3,6 @@ import { isPhone, reducedMotion } from './media';
 /** Fixed on the screen, the same in both views. */
 const FIXED = {
   header: '.header',
-  'return-to-venue': '.return',
   'scroll-top': '.scroll-top',
 };
 
@@ -14,8 +13,7 @@ const FIXED = {
 const MENU = '.menu';
 
 /**
- * What comes and goes, top to bottom: the filters and what's above the list, the map in «Detalles»,
- * the cards and the footer. Even if it's the same element in both views, it goes and comes back in
+ * What comes and goes, top to bottom: the filters and what's above the list, the cards and the footer. Even if it's the same element in both views, it goes and comes back in
  * its new place, like the rest.
  */
 const BLOCKS = [
@@ -23,7 +21,6 @@ const BLOCKS = [
   'main > .summary',
   'main > .sort',
   'main > app-origin',
-  '.results > .map',
   '.list > app-venue-card > article',
   'app-gallery li',
   '.footer',

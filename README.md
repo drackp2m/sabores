@@ -116,17 +116,15 @@ enlarges from its place over the blurred background. Drinks, in the filter and o
 to least common. Venues can be sorted by number, by distance (to the browser's location or to an address,
 searched in the official street map or in OpenStreetMap/Nominatim; each card shows the rough arrival time,
 on foot, by car or based on the distance) or by soonest closing (first those serving tapas now that close
-soonest; then those opening soonest). Each card and each map popup say how long until it closes or opens.
+soonest; then those opening soonest). Each card says how long until it closes or opens.
 
 If it closes before you can get there, the status shows in red.
 
-The header switches between the «Detalles» view and the «Fotos» view: each venue's name with its seals,
-the arrival time, the status and the photos, with the same filters. Clicking one opens its card with its
-map, and the floating «Volver» button (or the browser's back button) returns to the gallery where it was
-left. Switching view keeps the scroll on the same venue. After going from a venue in the list to the map,
-once the app has moved the list and left its card out of sight, «Volver al local N» takes you back to it,
-however many other venues you look at on the map. Bringing the card back into sight forgets it, and so
-do three other different venues that were shown and then went completely out of sight on the same side.
+The header switches between the «Detalles» view and the «Fotos» view: each venue with the same heading
+as its card, the photos, the status, its seals and its heart, with the same filters. Neither view has a
+map: each venue's map button opens its card with the map above it (on desktop, next to it), and the
+floating «Volver» button (or the browser's back button) returns to the list or the gallery where it was
+left. Switching view keeps the scroll on the same venue.
 
 Code, comments, file names and commands are in English; only the text the app shows is in Spanish.
 

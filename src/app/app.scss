@@ -8,7 +8,7 @@
 :host {
   display: block;
   background: var(--background);
-  // The height of the map, in the list and in the venue view; also that of the «Subir» mark.
+  // The height of the venue view's map.
   --map-height: 22.3rem;
 }
 
@@ -146,12 +146,10 @@
   }
 }
 
-// Floating buttons: bottom left, «Volver» from the venue back to the gallery and, in the list,
-// «Volver al local» after having gone to the map; at the same height on the right, «Subir» once the
-// map is out of sight (the footer leaves room for them). The border, that of the cards, sets them
+// Floating buttons: bottom left, «Volver» from the venue back to the list; at the same height on the
+// right, «Subir» once the top of the list is out of sight (the footer leaves room for them). The border, that of the cards, sets them
 // apart from what passes beneath in their same color (buttons, venue numbers).
 .back,
-.return,
 .scroll-top {
   position: fixed;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -165,8 +163,7 @@
   }
 }
 
-.back,
-.return {
+.back {
   left: var(--gutter-left);
   padding: 0 1.2rem 0 1rem;
   border-radius: 999px;
@@ -180,7 +177,6 @@
   font-size: 1.3rem;
 }
 
-.return,
 .scroll-top {
   // It deforms resting on the floor, as if it fell upwards and bounced.
   transform-origin: 50% 100%;
@@ -269,30 +265,19 @@ main {
   }
 }
 
-.results {
-  position: relative;
-  display: grid;
-  gap: 1rem;
-}
-
 .map {
   height: var(--map-height);
   // «Ver en el mapa» brings it below the header as far as scroll-padding-top says (focus, in map.ts),
   // the same as the gap above it. The browser scrolls whole pixels and the map can start between two:
-  // the bottom edge of what's above (starting point panel, venue card) would peek out under the
-  // header. A pixel higher, it stays hidden.
+  // the bottom edge of what's above would peek out under the header. A pixel higher, it stays hidden.
   scroll-margin-top: -1px;
 }
 
-// «Subir» appears when its end goes under the header (app.ts). In the list, it is as tall as the map
-// (next to the list on desktop, above it on phones); in the photo view, with no height, it marks the
-// top of the gallery.
-.results .scroll-top-mark {
-  position: absolute;
-  top: 0;
-  left: 0;
+// «Subir» appears when it goes under the header (app.ts): with no height, it marks the top of the
+// list or the gallery.
+.scroll-top-mark {
   width: 1px;
-  height: var(--map-height);
+  margin-bottom: -1rem; // Without adding main's gap.
 }
 
 .list {
@@ -336,20 +321,15 @@ main {
     --map-height: calc(100vh - var(--header-bottom) - 2rem);
   }
 
-  .results,
   .detail {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
   }
 
-  // List on the left and the map fixed on the right while scrolling.
-  .results .map {
-    order: 2;
-  }
-
-  .results .map,
+  // The card on the left and the map fixed on the right while scrolling.
   .detail .map {
+    order: 2;
     position: sticky;
     top: calc(var(--header-bottom) + 1rem);
 
@@ -362,7 +342,6 @@ main {
 
 @include media.reduced-motion {
   .menu,
-  .return,
   .scroll-top {
     animation: none !important;
   }

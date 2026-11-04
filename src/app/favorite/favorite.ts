@@ -50,8 +50,7 @@ const SPARKS = [0, 45, 90, 135, 180, 225, 270, 315];
     }
 
     // Just the heart, without the look of the other buttons (styles/_controls.scss), with room for
-    // the finger.
-    // Relative, to stay above whatever covers the card (the gallery's heading).
+    // the finger. Relative, for the ripple and the sparks.
     button,
     button:hover:not(:disabled) {
       position: relative;

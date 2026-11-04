@@ -28,7 +28,7 @@ import {
   findRoute,
   routeBearing,
 } from '../routing';
-import { ScrollPosition, WHOLE } from '../scroll-position';
+import { WHOLE } from '../scroll-position';
 import { TapasRoute } from '../tapas-route';
 import { Themes } from '../theme';
 import { UserLocation } from '../user-location';
@@ -437,7 +437,6 @@ export class VenueMap {
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
-  private readonly position = inject(ScrollPosition);
   private readonly location = inject(UserLocation);
   private readonly themes = inject(Themes);
 
@@ -744,7 +743,6 @@ export class VenueMap {
     this.guiding.set(false);
     // The component, not its container: the page gives it its scroll-margin-top (app.scss).
     this.host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    this.position.appScrolled();
     const zoom = 16;
     const popup = marker.getPopup();
     if (popup) {

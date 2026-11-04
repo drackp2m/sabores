@@ -5,20 +5,6 @@
   contain: layout style;
 }
 
-// The card it goes to, on clicking its marker or «Volver al local». Not on touch screens, like the
-// hovers (styles/_base.scss): there the card ends up at the top, where it's already easy to find.
-@media (hover: hover) {
-  :host(.highlighted) article {
-    animation: flash 1.6s ease-out;
-  }
-}
-
-@keyframes flash {
-  from {
-    box-shadow: 0 0 0 3px var(--accent);
-  }
-}
-
 article {
   container: card / inline-size;
   display: flex;

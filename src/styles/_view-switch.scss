@@ -35,7 +35,7 @@ $curve: ease-in-out;
 
 // Fixed on the screen, they don't take part: the new ones at once, live (a button leaving, see
 // app.scss), above the rest.
-@each $fixed in header, return-to-venue, scroll-top {
+@each $fixed in header, scroll-top {
   ::view-transition-group(#{$fixed}) {
     z-index: 2;
   }

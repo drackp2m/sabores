@@ -26,7 +26,7 @@
             <div class="segments" role="group" aria-labelledby="view-label">
               <button
                 type="button"
-                title="Lista con todos los detalles y el mapa"
+                title="Lista con todos los detalles"
                 [class.active]="view() === 'details'"
                 [attr.aria-pressed]="view() === 'details'"
                 (click)="changeView('details')"
@@ -67,18 +67,19 @@
 </header>
 
 @if (detailVenue(); as venue) {
+  <!-- On phones the map on top; on desktop, fixed on the right of the card. -->
   <main class="detail content">
-    <app-venue-card
-      [venue]="venue"
-      [day]="filters().day"
-      (showOnMap)="detailMap.focus(venue.number)"
-    />
     <app-map
       #detailMap
       class="map"
       [venues]="detailOnly()"
       [routeTo]="venue.number"
       [origin]="location.origin()"
+    />
+    <app-venue-card
+      [venue]="venue"
+      [day]="filters().day"
+      (showOnMap)="detailMap.focus(venue.number)"
     />
     <button type="button" class="back" (click)="goBack()"><app-icon name="back" />Volver</button>
   </main>
@@ -108,39 +109,22 @@
         <app-origin />
       }
 
+      <div #scrollTopMark class="scroll-top-mark"></div>
       @if (view() === 'details') {
-        <div class="results">
-          <div #scrollTopMark class="scroll-top-mark"></div>
-          <app-map
-            #map
-            class="map"
-            [venues]="onMap()"
-            [origin]="location.origin()"
-            (venueSelect)="showInList($event)"
-            (venueOpen)="openVenue($event)"
-          />
-
-          <section class="list" aria-label="Locales">
-            @for (venue of visible(); track venue.number) {
-              <app-venue-card
-                [attr.id]="'venue-' + venue.number"
-                [class.highlighted]="highlighted() === venue.number"
-                [venue]="venue"
-                [day]="filters().day"
-                (showOnMap)="locate(map, venue.number)"
-              />
-            } @empty {
-              <p class="message">Ningún local cumple los filtros.</p>
-            }
-          </section>
-        </div>
+        <section class="list" aria-label="Locales">
+          @for (venue of visible(); track venue.number) {
+            <app-venue-card
+              [attr.id]="'venue-' + venue.number"
+              [venue]="venue"
+              [day]="filters().day"
+              (showOnMap)="openVenue(venue.number)"
+            />
+          } @empty {
+            <p class="message">Ningún local cumple los filtros.</p>
+          }
+        </section>
       } @else {
-        <div #scrollTopMark class="scroll-top-mark"></div>
-        <app-gallery
-          [venues]="visible()"
-          (open)="openVenue($event)"
-          (showOnMap)="openOnMap($event)"
-        />
+        <app-gallery [venues]="visible()" (showOnMap)="openVenue($event)" />
         @if (!visible().length) {
           <p class="message">Ningún local cumple los filtros.</p>
         }
@@ -160,18 +144,6 @@
   </p>
   <p>Castellón de la Plana 2026</p>
 </footer>
-
-@if (returnButton(); as number) {
-  <button
-    type="button"
-    class="return"
-    animate.enter="entering"
-    animate.leave="leaving"
-    (click)="returnToVenue(number)"
-  >
-    <app-icon [name]="returnUp() ? 'up' : 'down'" />Volver al local {{ number }}
-  </button>
-}
 
 @if (showScrollTop()) {
   <button

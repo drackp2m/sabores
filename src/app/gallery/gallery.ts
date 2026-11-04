@@ -10,8 +10,8 @@ import { Venue } from '../venues';
 /**
  * The «Fotos» view: each venue with the same heading as its card (number, name, address, how long it
  * takes to get there and the map button), the photos of its two tapas with their stars and, at the
- * bottom, whether it's open, its seals and the favorite heart, where the card has it. The card opens
- * the venue and each photo enlarges (and gets rated there).
+ * bottom, whether it's open, its seals and the favorite heart, where the card has it. The map button
+ * opens the venue and each photo enlarges (and gets rated there).
  */
 @Component({
   selector: 'app-gallery',
@@ -22,12 +22,7 @@ import { Venue } from '../venues';
         @let venue = card.venue;
         <li [attr.id]="'venue-' + venue.number">
           <span class="venue-mark"></span>
-          <app-venue-header
-            [venue]="venue"
-            opens
-            (open)="open.emit(venue.number)"
-            (showOnMap)="showOnMap.emit(venue.number)"
-          />
+          <app-venue-header [venue]="venue" (showOnMap)="showOnMap.emit(venue.number)" />
           <div class="photos">
             @for (tapa of venue.tapas; track tapa.number) {
               <figure>
@@ -75,13 +70,6 @@ import { Venue } from '../venues';
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: var(--surface);
-      transition: border-color 0.15s;
-
-      @media (hover: hover) {
-        &:hover {
-          border-color: var(--control-border);
-        }
-      }
     }
 
     // With the padding of the card's sides, which this one has less of: the heading stays in place on
@@ -134,7 +122,6 @@ import { Venue } from '../venues';
 })
 export class Gallery {
   readonly venues = input.required<readonly Venue[]>();
-  readonly open = output<number>();
   /** The map button: the venue opens, on its map. */
   readonly showOnMap = output<number>();
 

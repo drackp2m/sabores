@@ -15,7 +15,8 @@ import {
 import { Clock } from './clock';
 import { FiltersPanel } from './filters/filters';
 import { Gallery } from './gallery/gallery';
-import { Icon, IconName } from './icon/icon';
+import { Header, View } from './header/header';
+import { Icon } from './icon/icon';
 import { legacyView } from './legacy-storage';
 import { VenueMap } from './map/map';
 import { isTouch, reducedMotion, remInPx } from './media';
@@ -24,7 +25,6 @@ import { ScrollPosition } from './scroll-position';
 import { Seal } from './seal/seal';
 import { Store } from './store';
 import { TapasRoute } from './tapas-route';
-import { Theme, Themes } from './theme';
 import { UserLocation } from './user-location';
 import { VenueCard } from './venue-card/venue-card';
 import { closeVenue, openVenue, switchView } from './view-switch';
@@ -39,26 +39,28 @@ import {
   sortBy,
   timeRange,
 } from './venues';
-import { PhotoViewer, Viewer } from './viewer/viewer';
+import { PhotoViewer } from './viewer/viewer';
 
-type View = 'details' | 'photos';
 type Sort = 'number' | 'nearest' | 'closing';
-
-const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
-  { theme: 'light', name: 'Claro', icon: 'sun' },
-  { theme: 'dark', name: 'Oscuro', icon: 'moon' },
-  { theme: 'system', name: 'Sistema', icon: 'system' },
-];
 
 @Component({
   selector: 'app-root',
-  imports: [FiltersPanel, Gallery, Icon, OriginPanel, PhotoViewer, Seal, VenueCard, VenueMap],
+  imports: [
+    FiltersPanel,
+    Gallery,
+    Header,
+    Icon,
+    OriginPanel,
+    PhotoViewer,
+    Seal,
+    VenueCard,
+    VenueMap,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {
     // Safari on iOS ignores user-scalable=no: pinch-to-zoom gets blocked here.
     '(document:gesturestart)': '$event.preventDefault()',
-    '(document:keydown.escape)': 'menuOpen.set(false)',
   },
 })
 export class App {
@@ -66,16 +68,12 @@ export class App {
   private readonly injector = inject(Injector);
   private readonly appRef = inject(ApplicationRef);
   protected readonly location = inject(UserLocation);
-  protected readonly theme = inject(Themes);
-  private readonly viewer = inject(Viewer);
   /** Already loaded at startup (app.config.ts): filters, sort order and view start as they were left. */
   private readonly store = inject(Store);
   private readonly position = inject(ScrollPosition);
   protected readonly tapasRoute = inject(TapasRoute);
   private readonly clock = inject(Clock);
-  protected readonly themes = THEMES;
 
-  protected readonly menuOpen = signal(false);
   /** The scroll-to-top button, once the top of the list or the gallery has gone under the header. */
   protected readonly showScrollTop = signal(false);
   private readonly scrollTopMark = viewChild<ElementRef<HTMLElement>>('scrollTopMark');
@@ -203,15 +201,6 @@ export class App {
       const marks = [...this.host.querySelectorAll('.venue-mark')];
       onCleanup(this.position.follow(venues, marks, this.headerOverlap, this.root));
     });
-
-    // Clicking outside the menu closes it; it only listens while open: otherwise, every click
-    // anywhere on the page would check the view again.
-    effect((onCleanup) => {
-      if (!this.menuOpen()) return;
-      const onClick = (event: MouseEvent) => this.closeMenuOutside(event);
-      document.addEventListener('click', onClick);
-      onCleanup(() => document.removeEventListener('click', onClick));
-    });
   }
 
   /**
@@ -241,7 +230,7 @@ export class App {
   }
 
   private get headerHeight(): number {
-    return this.host.querySelector<HTMLElement>('.header')!.offsetHeight;
+    return this.host.querySelector<HTMLElement>('app-header')!.offsetHeight;
   }
 
   /** What the header hides of what scrolls: nothing on touch screens, where it starts below it. */
@@ -258,20 +247,6 @@ export class App {
     this.scroller.scrollTo({ top: 0, behavior: this.scrollBehavior });
   }
 
-  /** Opening the menu closes any enlarged photo (the header stays above it). */
-  protected toggleMenu(): void {
-    const open = !this.menuOpen();
-    this.menuOpen.set(open);
-    if (open) this.viewer.close();
-  }
-
-  /** The menu button already opens and closes it on its own. */
-  private closeMenuOutside(event: MouseEvent): void {
-    const target = event.target as Element | null;
-    if (target?.closest('.menu, .menu-button')) return;
-    this.menuOpen.set(false);
-  }
-
   /** Sorting by distance needs a starting point: if there is none, it asks for the location. */
   protected changeSort(sort: Sort): void {
     this.sort.set(sort);
@@ -279,8 +254,8 @@ export class App {
     if (sort === 'nearest' && !this.location.origin()) this.location.useMyLocation();
   }
 
+  /** From the header's menu, already closed. */
   protected changeView(view: View): void {
-    this.menuOpen.set(false);
     this.store.saveSetting('view', view);
     if (view === this.view()) return;
     // From a venue it stays there, with its card as it is: the new view is for going back (goBack).

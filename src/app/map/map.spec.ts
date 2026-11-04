@@ -625,8 +625,7 @@ describe('VenueMap', () => {
 
     it('half under the header, its edges go from where they were, and what was hidden stays so', async () => {
       const { fixture, el } = await create([ONE]);
-      const header = document.body.appendChild(document.createElement('header'));
-      header.className = 'header';
+      const header = document.body.appendChild(document.createElement('app-header'));
       const box = (top: number, bottom: number, left = 16, right = 359) =>
         ({ top, bottom, left, right, width: right - left, height: bottom - top }) as DOMRect;
       const rects = vi

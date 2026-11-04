@@ -7,7 +7,7 @@ import { isPhone, reducedMotion } from './media';
  * they're seen coming and going above the rest; otherwise, with the page underneath it all.
  */
 const FIXED = {
-  header: '.header',
+  header: 'app-header',
   floating: '.floating',
 };
 

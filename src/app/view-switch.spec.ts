@@ -20,14 +20,14 @@ const card = (number: number, idle = false) => `
   </app-venue-card>`;
 
 const LIST = `
-  <header class="header"></header>
+  <app-header></app-header>
   <main><app-filters id="filters"></app-filters><section class="list">${card(3)}${card(4)}</section></main>
   <div class="floating" id="floating"><button class="scroll-top"></button></div>
   <footer class="footer" id="footer"></footer>`;
 
 // The cards side by side, with 3 in the middle, and in the middle of the map.
 const VENUE = `
-  <header class="header"></header>
+  <app-header></app-header>
   <main class="detail">
     <div class="map" id="map"></div>
     <div class="cards">${card(2)}${card(3, true)}${card(4)}</div>
@@ -86,7 +86,7 @@ describe('view transitions', () => {
     // The same page: the same filters, and the other cards around.
     expect(switchView(4, scroller, () => {})).toBe(true);
     const around = {
-      header: 'header',
+      header: 'app-header',
       floating: 'floating',
       'stay-1': 'filters',
       card: 'card-4',
@@ -119,7 +119,7 @@ describe('view transitions', () => {
     // The floating buttons' layer, not the buttons coming and going on it: «Subir», once gone, would
     // stop the transition.
     expect(captured.after).toEqual({
-      header: 'header',
+      header: 'app-header',
       floating: 'floating',
       card: 'card-3',
       'card-heading': 'app-venue-header',
@@ -184,7 +184,7 @@ describe('view transitions', () => {
     expect(closeVenue(3, scroller, update, false)).toBe(true);
 
     expect(captured.before).toEqual({
-      header: 'header',
+      header: 'app-header',
       floating: 'floating',
       card: 'card-3',
       'card-heading': 'app-venue-header',
@@ -193,7 +193,7 @@ describe('view transitions', () => {
       'out-down-1': 'footer',
     });
     expect(captured.after).toMatchObject({
-      header: 'header',
+      header: 'app-header',
       floating: 'floating',
       card: 'card-3',
       'in-up-1': 'filters',

@@ -889,7 +889,8 @@ export class VenueMap {
    * map.
    */
   private placeSmall(small: DOMRect, frame: DOMRect): void {
-    const header = document.querySelector('.header')?.getBoundingClientRect().bottom ?? frame.top;
+    const header =
+      document.querySelector('app-header')?.getBoundingClientRect().bottom ?? frame.top;
     const top = Math.max(small.top, header) - frame.top;
     const bottom = frame.bottom - Math.min(small.bottom, frame.bottom);
     const edgeTop = small.top - frame.top;
@@ -1299,7 +1300,7 @@ export class VenueMap {
 
   /** Only with the whole map in sight: half of it, with the list below, doesn't count. */
   private watchSight(container: HTMLElement): void {
-    const header = document.querySelector<HTMLElement>('.header')?.offsetHeight ?? 0;
+    const header = document.querySelector<HTMLElement>('app-header')?.offsetHeight ?? 0;
     const observer = new IntersectionObserver(
       (entries) => this.inSight.set(entries.at(-1)!.intersectionRatio >= WHOLE),
       { rootMargin: `-${header}px 0px 0px`, threshold: WHOLE },

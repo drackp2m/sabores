@@ -23,7 +23,8 @@
 }
 
 // How far the map is on its way to full screen on a phone, from 0 (in its place) to 1 (map.ts, where
-// the rest is). Registered, to be animated; inherited, for the header and the card (app.scss).
+// the rest is). Registered, to be animated; inherited, for the header (header.ts) and the card
+// (app.scss).
 @property --map-large {
   syntax: '<number>';
   inherits: true;

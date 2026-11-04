@@ -67,7 +67,7 @@ $curve: ease-in-out;
 }
 
 // The menu, which choosing a view closes, goes back up behind the header as it does on its own
-// (app.scss): above the rest, under the header, which hides it.
+// (header.ts): above the rest, under the header, which hides it.
 ::view-transition-group(menu) {
   z-index: 2;
 }

@@ -28,6 +28,7 @@ import { Venue } from '../venues';
       <button
         type="button"
         class="secondary icon map-button"
+        [class.idle]="!mapButton()"
         title="Ver en el mapa"
         aria-label="Ver en el mapa"
         (click)="showOnMap.emit()"
@@ -64,11 +65,37 @@ import { Venue } from '../venues';
     .map-button {
       flex: none;
       align-self: flex-start;
+      transition:
+        background-color 0.15s,
+        border-color 0.15s,
+        opacity 0.15s,
+        visibility 0.15s;
+
+      // With nothing to do, it goes away without leaving its place: the heading stays as it is.
+      &.idle {
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      // While its card arrives from another view, as it was there (view-switch.ts).
+      &.kept-shown {
+        visibility: visible;
+        opacity: 1;
+        transition: none;
+      }
+
+      &.kept-hidden {
+        visibility: hidden;
+        opacity: 0;
+        transition: none;
+      }
     }
   `,
 })
 export class VenueHeader {
   readonly venue = input.required<Venue>();
+  /** Whether the map button has something to do: not with the venue in the middle of the map. */
+  readonly mapButton = input(true);
   readonly showOnMap = output<void>();
 
   private readonly tapasRoute = inject(TapasRoute);

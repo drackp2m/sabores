@@ -122,11 +122,15 @@ If it closes before you can get there, the status shows in red.
 
 The header switches between the «Detalles» view and the «Fotos» view: each venue with the same heading
 as its card, the photos, the status, its seals and its heart, with the same filters. Neither view has a
-map: each venue's map button opens its card with the map above it (on desktop, next to it), and the
-floating «Volver» button returns to the list or the gallery where it was left (on a phone, around the
-card, which stays where it is; opening a venue isn't a history entry: the browser's back button doesn't
-return from it). Switching view keeps the scroll on the same venue; from a venue it stays there, and the
-new view shows on going back.
+map: each venue's map button opens its card with the map above it (on desktop, next to it). The map
+shows all the list's venues and, below it, their cards side by side, one at a time: the one in the
+middle is the venue, which the map goes to (with a starting point, to its whole route); touching a
+venue on the map brings its card. A card's map button is only there while its venue isn't in the middle
+of the map and, without a starting point, only on the card in the middle. The floating «Volver» button
+returns to the list or the gallery where it was left, or on the venue if another one was chosen (on a
+phone, around the card, which stays where it is; opening a venue isn't a history entry: the browser's
+back button doesn't return from it). Switching view keeps the scroll on the same venue; from a venue it
+stays there, and the new view shows on going back.
 
 Code, comments, file names and commands are in English; only the text the app shows is in Spanish.
 

@@ -1,6 +1,6 @@
 <span class="venue-mark"></span>
 <article>
-  <app-venue-header [venue]="venue()" (showOnMap)="showOnMap.emit()" />
+  <app-venue-header [venue]="venue()" [mapButton]="mapButton()" (showOnMap)="showOnMap.emit()" />
 
   @for (note of venue().notes; track note) {
     <p class="note">{{ note }}</p>

@@ -71,21 +71,29 @@
   </div>
 </header>
 
-@if (detailVenue(); as venue) {
-  <!-- On phones the map on top; on desktop, fixed on the right of the card. -->
+@if (detail() !== null) {
+  <!-- On phones the map on top; on desktop, fixed on the right of the cards. -->
   <main class="detail content">
     <app-map
       #detailMap
       class="map"
-      [venues]="detailOnly()"
-      [routeTo]="venue.number"
+      [venues]="detailVenues()"
+      [routeTo]="detail()"
       [origin]="location.origin()"
+      (venueSelect)="selectVenue($event)"
     />
-    <app-venue-card
-      [venue]="venue"
-      [day]="filters().day"
-      (showOnMap)="detailMap.focus(venue.number)"
-    />
+    <!-- The list's cards side by side, one at a time: the one in the middle is the venue (app.ts). -->
+    <div #cards class="cards">
+      @for (venue of detailVenues(); track venue.number) {
+        <app-venue-card
+          [attr.id]="'venue-' + venue.number"
+          [venue]="venue"
+          [day]="filters().day"
+          [mapButton]="mapButton(venue.number, detailMap.centered())"
+          (showOnMap)="showOnMap(venue.number)"
+        />
+      }
+    </div>
     <button type="button" class="back" (click)="goBack()"><app-icon name="back" />Volver</button>
   </main>
 } @else {

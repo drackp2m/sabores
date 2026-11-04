@@ -27,15 +27,15 @@ const ABOVE_LIST = ['app-filters', 'main > .summary', 'main > .sort', 'main > ap
 
 /**
  * What comes and goes, top to bottom: what's above the list (except from one list view to the other),
- * the cards (in the venue view, the map and the card) and the footer. Even if it's the same element in
- * both views, it goes and comes back in its new place, like the rest.
+ * the cards (in the venue view, the map and the cards side by side) and the footer. Even if it's the
+ * same element in both views, it goes and comes back in its new place, like the rest.
  */
 const BLOCKS = [
   ...ABOVE_LIST,
   '.list > app-venue-card > article',
   'app-gallery li',
   '.detail > .map',
-  '.detail > app-venue-card > article',
+  '.cards > app-venue-card > article',
   '.footer',
 ].join(', ');
 
@@ -45,15 +45,24 @@ const AROUND = 12;
 /** With it on the root, what the card shows doesn't change: it only moves (see _view-switch.scss). */
 const SAME_CARD = 'same-card';
 
-/** A venue's card in the view on the page: the list's article or the gallery's li. */
+/**
+ * On the new card's map button while it arrives: as it was in the view it comes from, so that the
+ * card looks the same in both pictures (in the venue view the one in the middle may have none, see
+ * VenueHeader). Once there, it comes or goes.
+ */
+const KEPT = { shown: 'kept-shown', hidden: 'kept-hidden' };
+
+function mapButton(card: HTMLElement | null): HTMLElement | null | undefined {
+  return card?.querySelector<HTMLElement>('.map-button');
+}
+
+/**
+ * A venue's card in the view on the page: the article of the list's or the venue view's (among the
+ * cards side by side), or the gallery's li.
+ */
 function cardOf(number: number): HTMLElement | null {
   const venue = document.getElementById(`venue-${number}`);
   return venue?.querySelector<HTMLElement>(':scope > article') ?? venue;
-}
-
-/** The card in the venue view. */
-function openCard(): HTMLElement | null {
-  return document.querySelector<HTMLElement>('.detail > app-venue-card > article');
 }
 
 /** What's in sight above and below the card, from the closest one outwards, but those staying. */
@@ -64,9 +73,11 @@ function around(
   const all = document.querySelectorAll<HTMLElement>(BLOCKS);
   const blocks = [...all].filter((block) => !staying.includes(block));
   const at = blocks.indexOf(card);
+  // On the screen, and with its middle on it: not the venue view's cards peeking on the sides.
   const inSight = (block: HTMLElement) => {
-    const { top, bottom } = block.getBoundingClientRect();
-    return bottom > 0 && top < innerHeight;
+    const { top, bottom, left, right } = block.getBoundingClientRect();
+    const middle = (left + right) / 2;
+    return bottom > 0 && top < innerHeight && middle >= 0 && middle <= innerWidth;
   };
   const closest = (side: HTMLElement[]) => side.filter(inSight).slice(0, AROUND);
   return { above: closest(blocks.slice(0, at).reverse()), below: closest(blocks.slice(at + 1)) };
@@ -154,6 +165,8 @@ function moveCard({
     root.style.setProperty(`--card-${edge}`, `${by}px`);
 
   root.classList.toggle(SAME_CARD, !slide);
+  const kept = mapButton(before)?.classList.contains('idle') ? KEPT.hidden : KEPT.shown;
+  let keptButton: HTMLElement | null | undefined;
   nameAll(before, 'out');
   const menu = document.querySelector<HTMLElement>(MENU);
   name(menu, 'menu');
@@ -167,6 +180,8 @@ function moveCard({
     menu?.style.setProperty('display', 'none');
     const after = find();
     if (!after) return;
+    keptButton = mapButton(after);
+    keptButton?.classList.add(kept);
     place(after, top);
     const edges = after.getBoundingClientRect();
     shift('top', edges.top - top);
@@ -179,6 +194,7 @@ function moveCard({
   const end = () => {
     clear();
     root.classList.remove(SAME_CARD);
+    keptButton?.classList.remove(kept);
     root.style.removeProperty('--card-top');
     root.style.removeProperty('--card-bottom');
   };
@@ -217,9 +233,10 @@ export function switchView(number: number | null, scroller: Element, update: () 
 
 /**
  * From a list view to the venue's, on a phone: the card goes from where it is to its place, at the top
- * of the page under the map, which comes down from above. From the gallery, what the card shows
- * changes as on switching view; from the list it's the same card, it only moves. False, with nothing
- * done, if it can't (see switchView).
+ * of the page under the map, which comes down from above; update leaves it in the middle of the cards
+ * side by side, whose neighbours arrive with the rest of the page. From the gallery, what the card
+ * shows changes as on switching view; from the list it's the same card, it only moves. False, with
+ * nothing done, if it can't (see switchView).
  */
 export function openVenue(
   number: number,
@@ -232,7 +249,7 @@ export function openVenue(
   moveCard({
     before,
     update,
-    after: openCard,
+    after: () => cardOf(number),
     place: () => (scroller.scrollTop = 0),
     slide: fromGallery,
   });
@@ -240,9 +257,9 @@ export function openVenue(
 }
 
 /**
- * From the venue's view back to a list view, on a phone: the card stays where it is on the screen, as
- * on switching view, and the list arrives around it while the map goes back up. Into the gallery, what
- * the card shows changes. False, with nothing done, if it can't (see switchView).
+ * From the venue's view back to a list view, on a phone: the card in the middle stays where it is on
+ * the screen, as on switching view, and the list arrives around it while the map goes back up. Into
+ * the gallery, what the card shows changes. False, with nothing done, if it can't (see switchView).
  */
 export function closeVenue(
   number: number,
@@ -250,7 +267,7 @@ export function closeVenue(
   update: () => void,
   toGallery: boolean,
 ): boolean {
-  const before = openCard();
+  const before = cardOf(number);
   if (!before || !canTransition()) return false;
   moveCard({
     before,

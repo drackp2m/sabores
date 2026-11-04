@@ -232,7 +232,7 @@ $corner: math.div(8px, math.sqrt(2));
   }
 }
 
-.detail > app-venue-card,
+.detail > .cards,
 .back,
 .footer {
   translate: 0 calc(var(--map-large) * var(--map-drop));
@@ -363,6 +363,37 @@ main {
   // the same as the gap above it. The browser scrolls whole pixels and the map can start between two:
   // the bottom edge of what's above would peek out under the header. A pixel higher, it stays hidden.
   scroll-margin-top: -1px;
+}
+
+// The venue view's cards, side by side, one at a time, with a stop at each: the one in the middle is
+// the venue (app.ts). Each one as tall as it is. On a phone, from edge to edge of the screen, past
+// main's padding: they come in from it, and at rest the next ones peek on the sides. Without a
+// scroll bar, as on a phone; with a mouse it's the way to know they're there.
+.cards {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+
+  @include media.below-desktop {
+    margin-inline: calc(-1 * var(--gutter-left)) calc(-1 * var(--gutter-right));
+    padding-inline: var(--gutter-left) var(--gutter-right);
+  }
+
+  @media (hover: hover) {
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+  }
+
+  // Not one at a time however hard they're flung (scroll-snap-stop: always): Safari on iOS then
+  // stopped quick swipes, back on the card they started from.
+  > app-venue-card {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+  }
 }
 
 // «Subir» appears when it goes under the header (app.ts): with no height, it marks the top of the

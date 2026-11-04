@@ -144,11 +144,6 @@
     }
   }
 
-  // In the venue view: the map under it is what gets touched.
-  &.static {
-    pointer-events: none;
-  }
-
   &::after {
     content: '';
     width: 0.75rem;

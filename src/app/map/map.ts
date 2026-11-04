@@ -498,11 +498,18 @@ export class VenueMap {
   readonly origin = input<Coordinates | null>(null);
   /**
    * Venue to always draw the route to (in the venue view, which has no popups: its data is already on
-   * the page); otherwise, the one selected on the map.
+   * the page); otherwise, the one selected on the map. In the venue view it's the one whose card is
+   * in sight below: when it changes (scrolling the cards), the map goes to it (see follow).
    */
   readonly routeTo = input<number | null>(null);
   /** Number of the venue whose marker was clicked. */
   readonly venueSelect = output<number>();
+  /**
+   * The venue whose point is in the middle of the map, to within a pixel (that of routeTo first), if
+   * any, or on its way there (see goTo): its card's map button has nothing to do. Measured again
+   * each time the map stops.
+   */
+  readonly centered = signal<number | null>(null);
   /** Number of the venue to open, from the button on its popup. */
   readonly venueOpen = output<number>();
 
@@ -665,6 +672,11 @@ export class VenueMap {
    * way (from the venue to closer up to it, then to the whole route), its street names shook.
    */
   private shown = false;
+  /**
+   * The venue the map was last taken to (focus) or touched on (its marker): when routeTo becomes it,
+   * the map is already there (see follow).
+   */
+  private reached: number | null = null;
   private readonly destroyRef = inject(DestroyRef);
 
   constructor() {
@@ -724,13 +736,25 @@ export class VenueMap {
       let current = true;
       onCleanup(() => (current = false));
       void findRoute(origin, venue.location, mode).then((route) => {
-        if (!current || !route) return;
+        if (!current) return;
+        // Without one, in the venue view, the map goes to the venue itself (see follow).
+        if (!route) {
+          if (fixed) this.goTo(map, venue.number);
+          return;
+        }
         this.route.set([[origin.lng, origin.lat], ...route]);
         this.drawRoute(map);
         // In the venue view, show the whole route; with a popup open the map doesn't move. Guided, it
         // looks along it (see the effect below).
         if (fixed) this.frame(map, this.route()!, 16);
       });
+    });
+
+    // In the venue view, the map goes along with the cards below it (see follow).
+    effect(() => {
+      const map = this.map();
+      const number = this.routeTo();
+      if (map && number !== null) untracked(() => this.follow(map, number));
     });
 
     // Guided, the map keeps up with every step and with the route, when it arrives (guide reads them).
@@ -926,6 +950,8 @@ export class VenueMap {
    * painted (see shown).
    */
   focus(number: number): void {
+    // Without a popup, it goes to the middle: already the one there (see goTo), even before MapLibre.
+    if (!this.popups()) this.centered.set(number);
     const map = this.map();
     if (!map) {
       this.pendingFocus = number;
@@ -934,6 +960,7 @@ export class VenueMap {
     const marker = this.markers.get(number);
     if (!marker) return;
     this.guiding.set(false);
+    this.reached = number;
     // The component, not its container: the page gives it its scroll-margin-top (app.scss).
     this.host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     const zoom = 16;
@@ -945,6 +972,41 @@ export class VenueMap {
       this.selected.set(number);
       map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME, animate: this.shown });
     }
+  }
+
+  /**
+   * To the venue chosen below the map (scrolling the cards). Not if it already went there (focus) or
+   * was touched on it, in sight. With a route to it, framing it takes the map there once it arrives
+   * (see the route's effect): going to the venue first, it would move twice.
+   */
+  private follow(map: ml.Map, number: number): void {
+    if (number === this.reached) return;
+    this.reached = number;
+    if (!this.origin() || !this.routeMode()) this.goTo(map, number);
+  }
+
+  /**
+   * The venue in the middle, at the zoom it's at. Not while the map keeps up with the user (guide).
+   * On its way, it's already the one in the middle (see centered): its card's button doesn't come and
+   * go while the map gets there.
+   */
+  private goTo(map: ml.Map, number: number): void {
+    const location = this.venues().find((venue) => venue.number === number)?.location;
+    if (!location || this.guiding()) return;
+    this.centered.set(number);
+    map.easeTo({ center: [location.lng, location.lat], duration: MOVE_TIME, animate: this.shown });
+  }
+
+  /** See centered. */
+  private findCentered(map: ml.Map): void {
+    const center = map.project(map.getCenter());
+    const inMiddle = (number: number) => {
+      const marker = this.markers.get(number);
+      return !!marker && center.dist(map.project(marker.getLngLat())) < 1;
+    };
+    const active = this.active();
+    if (active !== null && inMiddle(active)) this.centered.set(active);
+    else this.centered.set([...this.markers.keys()].find(inMiddle) ?? null);
   }
 
   /**
@@ -1073,6 +1135,7 @@ export class VenueMap {
       }
       const bearing = map.getBearing();
       if (originalEvent && bearing !== 0 && Math.abs(bearing) < NORTH_SNAP) this.resetNorth();
+      this.findCentered(map);
     });
     // One line or two, with the width of the map, and empty until the style arrives.
     const credits = container.querySelector('.maplibregl-ctrl-attrib')!;
@@ -1303,24 +1366,21 @@ export class VenueMap {
   }
 
   private addMarkers(map: ml.Map, venues: readonly Venue[]): void {
-    const clickable = this.routeTo() === null;
     for (const venue of venues) {
       if (!venue.location) continue;
       // A small dot (styles/_map.scss) in the middle of an area to click on.
       const element = document.createElement('div');
       element.className = 'venue-marker';
       element.title = `${venue.number}. ${venue.name}`;
+      element.role = 'button';
       const marker = new this.maplibre.Marker({ element });
       marker.setLngLat([venue.location.lng, venue.location.lat]);
-      if (clickable) {
-        element.role = 'button';
-        marker.on('click', () => {
-          if (!marker.getPopup()) this.selected.set(venue.number);
-          this.venueSelect.emit(venue.number);
-        });
-      } else {
-        element.classList.add('static');
-      }
+      // Touched, it's already in sight: the map stays where it is (see follow).
+      marker.on('click', () => {
+        if (!marker.getPopup()) this.selected.set(venue.number);
+        this.reached = venue.number;
+        this.venueSelect.emit(venue.number);
+      });
       marker.addTo(map);
       this.markers.set(venue.number, marker);
     }

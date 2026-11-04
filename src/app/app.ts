@@ -81,6 +81,8 @@ export class App {
   private readonly scrollTopMark = viewChild<ElementRef<HTMLElement>>('scrollTopMark');
   /** The venue view's map. */
   private readonly detailMap = viewChild<VenueMap>('detailMap');
+  /** The venue view's cards, side by side. */
+  private readonly cards = viewChild<ElementRef<HTMLElement>>('cards');
 
   /** Any that are missing (added after they were saved) start empty. */
   protected readonly filters = signal<Filters>({
@@ -93,8 +95,21 @@ export class App {
   });
   protected readonly sort = signal<Sort>(this.store.setting<Sort>('sort') ?? 'number');
   protected readonly view = signal<View>(this.store.setting<View>('view') ?? legacyView());
-  /** Venue opened with its map button, from either view. */
+  /**
+   * In the venue view, the venue: the one opened with its map button, from either view, and then the
+   * one whose card is in the middle (see selectVenue).
+   */
   protected readonly detail = signal<number | null>(null);
+  /**
+   * The venue view's, on the map and side by side below it: the list's as it was on opening a venue,
+   * which stays the same while there (sorted by distance, the list follows the user's steps).
+   */
+  protected readonly detailVenues = signal<readonly Venue[]>([]);
+  /**
+   * The venue whose card is on its way to the middle, chosen on the map: those it passes by on the
+   * way don't get selected. Until it gets there, or the cards are touched.
+   */
+  private cardOnItsWay: number | null = null;
 
   protected readonly filtered = computed(() => this.filter(this.filters()));
 
@@ -116,17 +131,10 @@ export class App {
     }
   });
 
-  protected readonly detailVenue = computed(() =>
-    this.tapasRoute.venues().find((v) => v.number === this.detail()),
-  );
-  protected readonly detailOnly = computed(() => {
-    const venue = this.detailVenue();
-    return venue ? [venue] : [];
-  });
-
   /**
    * The list's or the gallery's scroll when opening a venue, to leave it the same on the way back
-   * (without a transition, see goBack). Null if the view changed meanwhile: it lands on the venue.
+   * (without a transition, see goBack). Null if the view or the venue changed meanwhile: it lands on
+   * the venue.
    */
   private listScroll: number | null = 0;
 
@@ -154,6 +162,36 @@ export class App {
       );
       observer.observe(mark);
       onCleanup(() => observer.disconnect());
+    });
+
+    // In the venue view, the venue is the one whose card is in the middle as they scroll: the one
+    // crossing a thin line down the middle (between two, in the gap, the one before stays). Without
+    // listening to scroll, as with «Subir».
+    afterRenderEffect((onCleanup) => {
+      const strip = this.cards()?.nativeElement;
+      const venues = this.detailVenues();
+      if (!strip) return;
+      const cards = [...strip.children];
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const { target, isIntersecting } of entries) {
+            const number = venues[cards.indexOf(target)]?.number;
+            if (isIntersecting && number !== undefined) this.cardInMiddle(number);
+          }
+        },
+        { root: strip, rootMargin: '0px -49%' },
+      );
+      for (const card of cards) observer.observe(card);
+      // Touched, they go wherever they're taken.
+      const touched = () => (this.cardOnItsWay = null);
+      const passive = { passive: true };
+      strip.addEventListener('pointerdown', touched, passive);
+      strip.addEventListener('wheel', touched, passive);
+      onCleanup(() => {
+        observer.disconnect();
+        strip.removeEventListener('pointerdown', touched);
+        strip.removeEventListener('wheel', touched);
+      });
     });
 
     // Which venue the scroll is on. The same mark says whether there's a list to follow; it stays on
@@ -305,36 +343,100 @@ export class App {
 
   /**
    * From a venue's map button, in either view: it opens with its map showing it once it's on the
-   * page. Not as a history entry: the browser's back button doesn't return from it, only «Volver»
-   * (goBack). On a phone, as a transition that takes the card to its place under the map
-   * (view-switch.ts), with the venue rendered at once.
+   * page, and the list's cards side by side below it, with its own in the middle. Not as a history
+   * entry: the browser's back button doesn't return from it, only «Volver» (goBack). On a phone, as a
+   * transition that takes the card to its place under the map (view-switch.ts), with the venue
+   * rendered at once.
    */
   protected openVenue(number: number): void {
     this.listScroll = this.scroller.scrollTop;
     const open = () => {
+      this.detailVenues.set(this.visible());
       this.detail.set(number);
       this.scroller.scrollTo({ top: 0 });
+    };
+    const show = () => {
+      this.centerCard(number, 'instant');
+      this.detailMap()?.focus(number);
     };
     const render = () => {
       open();
       this.appRef.tick();
-      this.detailMap()?.focus(number);
+      show();
     };
     if (openVenue(number, this.scroller, render, this.view() === 'photos')) return;
     open();
-    afterNextRender(() => this.detailMap()?.focus(number), { injector: this.injector });
+    afterNextRender(show, { injector: this.injector });
   }
 
   /**
-   * «Volver»: to the list or the gallery. On a phone, as a transition (view-switch.ts) in which the
-   * card stays where it is on the screen and the list, rendered at once, arrives around it; not if
-   * the venue is no longer in it (it stopped being a favorite, say, with that filter on), with no
-   * place for the card to go. Otherwise, where it was left; or on the venue, if the view changed.
+   * A venue's card got to the middle, scrolling them: it's the venue, with the map going to it (see
+   * VenueMap.follow). On the way to one chosen on the map, only that one.
+   */
+  private cardInMiddle(number: number): void {
+    if (this.cardOnItsWay !== null && number !== this.cardOnItsWay) return;
+    this.cardOnItsWay = null;
+    this.choose(number);
+  }
+
+  /** On the map, its marker: its card comes to the middle, and the map stays where it is. */
+  protected selectVenue(number: number): void {
+    if (number === this.detail()) return;
+    this.cardOnItsWay = number;
+    this.choose(number);
+    this.centerCard(number, this.scrollBehavior);
+  }
+
+  /**
+   * Whether a card has its map button, in the venue view: not with its venue in the middle of the map
+   * (or on its way there). Without a starting point, not on the others either: once their card is
+   * in the middle the map goes to them, and the button would come and go. With one, the map frames
+   * the route instead, and the button takes it to the venue.
+   */
+  protected mapButton(number: number, centered: number | null): boolean {
+    if (number === centered) return false;
+    return number === this.detail() || !!this.location.origin();
+  }
+
+  /** A card's map button: the map goes to its venue, and its card to the middle if it wasn't. */
+  protected showOnMap(number: number): void {
+    this.selectVenue(number);
+    this.detailMap()?.focus(number);
+  }
+
+  /** Another venue, which «Volver» leaves the list on (see listScroll). */
+  private choose(number: number): void {
+    if (number === this.detail()) return;
+    this.detail.set(number);
+    this.listScroll = null;
+  }
+
+  /** Scrolls the cards (only them, not the page) to leave that venue's in the middle, at its stop. */
+  private centerCard(number: number, behavior: ScrollBehavior): void {
+    const strip = this.cards()?.nativeElement;
+    const card = this.card(number);
+    if (!strip || !card) return;
+    const { left, width } = card.getBoundingClientRect();
+    const box = strip.getBoundingClientRect();
+    const middle = left - box.left - (box.width - width) / 2;
+    strip.scrollTo({ left: strip.scrollLeft + middle, behavior });
+  }
+
+  /**
+   * «Volver»: to the list or the gallery, on the venue whose card is in the middle. On a phone, as a
+   * transition (view-switch.ts) in which the card stays where it is on the screen and the list,
+   * rendered at once, arrives around it; not if the venue is no longer in it (it stopped being a
+   * favorite, say, with that filter on), with no place for the card to go. Otherwise, where it was
+   * left; or on the venue, if the view or the venue changed.
    */
   protected goBack(): void {
     const number = this.detail();
     const top = this.listScroll;
-    const back = () => this.detail.set(null);
+    const back = () => {
+      this.detail.set(null);
+      this.detailVenues.set([]);
+      this.cardOnItsWay = null;
+    };
     const render = () => {
       back();
       this.appRef.tick();

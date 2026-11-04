@@ -10,10 +10,12 @@ function names(): Record<string, string> {
   return named;
 }
 
-const card = (number: number) => `
+/** With its map button, or without it (idle) if its venue is in the middle of the map. */
+const card = (number: number, idle = false) => `
   <app-venue-card id="venue-${number}">
     <article id="card-${number}">
-      <app-venue-header></app-venue-header><img loading="lazy" /><app-favorite></app-favorite>
+      <app-venue-header><button class="map-button${idle ? ' idle' : ''}"></button></app-venue-header>
+      <img loading="lazy" /><app-favorite></app-favorite>
     </article>
   </app-venue-card>`;
 
@@ -23,12 +25,23 @@ const LIST = `
   <main><app-filters id="filters"></app-filters><section class="list">${card(3)}${card(4)}</section></main>
   <footer class="footer" id="footer"></footer>`;
 
+// The cards side by side, with 3 in the middle, and in the middle of the map.
 const VENUE = `
   <header class="header"></header>
-  <main class="detail"><div class="map" id="map"></div>${card(3)}</main>
+  <main class="detail">
+    <div class="map" id="map"></div>
+    <div class="cards">${card(2)}${card(3, true)}${card(4)}</div>
+  </main>
   <button class="back" id="back"></button>
   <button class="scroll-top leaving" id="leaving"></button>
   <footer class="footer" id="footer"></footer>`;
+
+/** Where an element is, that far from the top: the venue view's cards beside the middle one, off it. */
+function at(element: Element, top: number): DOMRect {
+  const beside = element.closest('.cards') && element.id !== 'card-3';
+  const left = beside ? (element.id === 'card-2' ? -innerWidth : innerWidth) : 0;
+  return { top, bottom: top + 200, left, right: left + 300 } as DOMRect;
+}
 
 describe('view transitions', () => {
   let captured: {
@@ -42,12 +55,13 @@ describe('view transitions', () => {
   beforeEach(() => {
     document.body.innerHTML = LIST;
     scroller.scrollTop = 500;
-    // A phone, with motion: everything in sight.
+    // A phone, with motion: everything in sight, but the venue view's cards beside the middle one.
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('reduce') }));
-    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
-      top: 100,
-      bottom: 300,
-    } as DOMRect);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element,
+    ) {
+      return at(this, 100);
+    });
     const finished = new Promise<void>((resolve) => (finish = resolve));
     Object.assign(document, {
       startViewTransition: (update: () => unknown) => {
@@ -158,8 +172,7 @@ describe('view transitions', () => {
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
     ) {
-      const top = this.id !== 'card-3' ? 100 : this.closest('.detail') ? 300 : 450;
-      return { top, bottom: top + 200 } as DOMRect;
+      return at(this, this.id !== 'card-3' ? 100 : this.closest('.detail') ? 300 : 450);
     });
     let sameCard: boolean | undefined;
     const update = () => {
@@ -190,6 +203,25 @@ describe('view transitions', () => {
     expect(sameCard).toBe(true);
   });
 
+  it('the card arriving keeps its map button as it was in the other view, until it’s there', async () => {
+    // In the list it has it; in the middle of the venue view, with its venue in the middle of the map,
+    // it wouldn't.
+    openVenue(3, scroller, toVenue, false);
+    const button = document.querySelector('#card-3 .map-button')!;
+    expect(button.classList).toContain('kept-shown');
+
+    finish();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button.classList).not.toContain('kept-shown');
+  });
+
+  it('and back to the list, without it as it was in the venue view', () => {
+    toVenue();
+    closeVenue(3, scroller, () => (document.body.innerHTML = LIST), false);
+    expect(document.querySelector('#card-3 .map-button')!.classList).toContain('kept-hidden');
+  });
+
   it('into the gallery, what the card shows changes', () => {
     toVenue();
     let sameCard: boolean | undefined;
@@ -210,7 +242,7 @@ describe('view transitions', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: !query.includes('reduce') }));
     expect(openVenue(9, scroller, update, false)).toBe(false);
     expect(switchView(null, scroller, update)).toBe(false);
-    expect(closeVenue(3, scroller, update, false)).toBe(false); // In the list: no venue open.
+    expect(closeVenue(9, scroller, update, false)).toBe(false);
     expect(update).not.toHaveBeenCalled();
   });
 });

@@ -302,13 +302,60 @@ describe('VenueMap', () => {
       expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 2');
     });
 
-    it('in the venue view, the map has none: it only centers on the venue', async () => {
-      const { fixture, el, marker } = await create([ONE], 1);
+    it('in the venue view, the map has none: touching a venue chooses it, without moving', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      const { fixture, el, marker, change } = await create([ONE, TWO], 1);
       fixture.componentInstance.focus(1);
       await fixture.whenStable();
+      const chosen: number[] = [];
+      fixture.componentInstance.venueSelect.subscribe((number) => chosen.push(number));
+
+      marker(2)!.click();
       expect(el.querySelector('.maplibregl-popup')).toBeNull();
-      expect(marker(1)!.classList).toContain('static');
+      expect(chosen).toEqual([2]);
+      // It becomes the venue (app.ts): already in sight, the map stays.
+      const moves = easeTo.mock.calls.length;
+      await change('routeTo', 2);
+      expect(easeTo).toHaveBeenCalledTimes(moves);
+      expect(marker(2)!.classList).toContain('active');
+      easeTo.mockRestore();
     });
+  });
+
+  it('in the venue view, it goes to the venue chosen below it, at the zoom it’s at', async () => {
+    const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+    const { fixture, change } = await create([ONE, TWO], 1);
+    await change('routeTo', 2);
+    expect(easeTo).toHaveBeenLastCalledWith({
+      center: [TWO.location!.lng, TWO.location!.lat],
+      duration: 250,
+      animate: false,
+    });
+    // On its way, already the one in the middle: its card's button doesn't come and go.
+    expect(fixture.componentInstance.centered()).toBe(2);
+    easeTo.mockRestore();
+  });
+
+  it('going to a venue is going to the middle, even before MapLibre arrives', async () => {
+    const fixture = TestBed.createComponent(VenueMap);
+    fixture.componentRef.setInput('venues', [ONE, TWO]);
+    fixture.componentRef.setInput('routeTo', 2);
+    fixture.componentInstance.focus(2);
+    expect(fixture.componentInstance.centered()).toBe(2);
+    await fixture.whenStable();
+  });
+
+  it('says which venue is in the middle of the map once it stops', async () => {
+    const { fixture } = await create([ONE, TWO], 1);
+    const map = FakeMap.of(fixture.nativeElement);
+    const center = vi.spyOn(map, 'getCenter');
+
+    center.mockReturnValue(TWO.location!);
+    map.endGesture();
+    expect(fixture.componentInstance.centered()).toBe(2);
+    center.mockReturnValue({ lat: 39, lng: 0 });
+    map.endGesture();
+    expect(fixture.componentInstance.centered()).toBeNull();
   });
 
   it('without WebGL2, it says there’s no map instead of leaving it empty', async () => {
@@ -796,6 +843,34 @@ describe('VenueMap', () => {
       await change('origin', { lat: 39.991, lng: -0.046 });
       await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(3));
       expect(fitBounds.mock.lastCall![1]).toMatchObject({ animate: true });
+    });
+
+    it('choosing another venue frames its route, without going to the venue first', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      arrivals.set(new Map([1, 2].map((number) => [number, walking(12)])));
+      const { change } = await create([ONE, TWO], 1);
+      await change('origin', { lat: 39.98, lng: -0.054 });
+      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(2));
+      const moves = easeTo.mock.calls.length;
+
+      await change('routeTo', 2);
+      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(3));
+      expect(easeTo).toHaveBeenCalledTimes(moves);
+      easeTo.mockRestore();
+    });
+
+    it('without a route to it, the map goes to the venue itself', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      arrivals.set(new Map([1, 2].map((number) => [number, walking(12)])));
+      const { change } = await create([ONE, TWO], 1);
+      const moves = easeTo.mock.calls.length;
+      request.mockResolvedValueOnce(new Response('', { status: 503 }));
+      await change('origin', { lat: 39.98, lng: -0.0545 });
+      await vi.waitFor(() => expect(easeTo).toHaveBeenCalledTimes(moves + 1));
+      expect(easeTo.mock.lastCall![0]).toMatchObject({
+        center: [ONE.location!.lng, ONE.location!.lat],
+      });
+      easeTo.mockRestore();
     });
 
     it('on leaving it, it asks for another one from there', async () => {

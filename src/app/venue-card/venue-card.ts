@@ -50,6 +50,8 @@ export class VenueCard {
   readonly venue = input.required<Venue>();
   /** Day chosen in the filters, to highlight its schedule. */
   readonly day = input<Weekday | ''>('');
+  /** See VenueHeader. */
+  readonly mapButton = input(true);
   readonly showOnMap = output<void>();
 
   private readonly clock = inject(Clock);

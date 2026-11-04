@@ -9,7 +9,12 @@
       [attr.aria-expanded]="menuOpen()"
       (click)="toggleMenu()"
     >
-      <app-icon [name]="menuOpen() ? 'close' : 'menu'" />
+      <!-- Its own, not an <app-icon>: its strokes turn one by one into the cross (app.scss). -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16" />
+        <path d="M4 12h16" />
+        <path d="M4 18h16" />
+      </svg>
     </button>
 
     <div class="menu-slot">

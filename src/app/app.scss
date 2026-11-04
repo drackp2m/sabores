@@ -1,3 +1,5 @@
+@use 'sass:list';
+@use 'sass:math';
 @use 'media';
 
 .content {
@@ -86,6 +88,78 @@
     &:hover:not(:disabled) {
       border-color: transparent;
       background: rgb(255 255 255 / 0.15);
+    }
+  }
+
+  // The same size and strokes as an <app-icon>.
+  svg {
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+}
+
+// From the center of the cross to its corners, on each axis: the strokes are 16 long.
+$corner: math.div(8px, math.sqrt(2));
+
+// A stroke turning $angle on its point $on (x y in the viewBox), which goes to $to.
+@function turn($on, $angle: 0deg, $to: $on) {
+  $x: list.nth($on, 1);
+  $y: list.nth($on, 2);
+  @return translate(list.nth($to, 1), list.nth($to, 2)) rotate($angle) translate(-$x, -$y);
+}
+
+// Its three strokes become the cross as the menu opens, while the whole icon turns half a turn. The
+// first one lowers its right end to the bottom right corner, turning on the left one, and the third
+// one raises its left end to the top left corner, turning on the right one: they meet on the same
+// diagonal, with the ends they turn on moving a little to its corners. The middle one turns 45° back
+// within the icon (forward, it would end up parallel to the other two): 135° on screen, so all of
+// them turn clockwise there. Calmer than the menu, with half a turn to give (at its pace, it was
+// abrupt), and on closing, in reverse, the curve too.
+.menu-button {
+  --turn: 0.3s ease-in;
+
+  svg {
+    transition: rotate var(--turn);
+  }
+
+  path {
+    transition: transform var(--turn);
+
+    &:nth-child(1) {
+      transform: turn(4px 6px);
+    }
+
+    &:nth-child(2) {
+      transform: turn(12px 12px);
+    }
+
+    &:nth-child(3) {
+      transform: turn(20px 18px);
+    }
+  }
+
+  &[aria-expanded='true'] {
+    --turn: 0.4s ease-out;
+
+    svg {
+      rotate: 180deg;
+    }
+
+    path:nth-child(1) {
+      transform: turn(4px 6px, 45deg, (12px - $corner) (12px - $corner));
+    }
+
+    path:nth-child(2) {
+      transform: turn(12px 12px, -45deg);
+    }
+
+    path:nth-child(3) {
+      transform: turn(20px 18px, 45deg, (12px + $corner) (12px + $corner));
     }
   }
 }
@@ -362,5 +436,10 @@ main {
   .menu,
   .scroll-top {
     animation: none !important;
+  }
+
+  .menu-button svg,
+  .menu-button path {
+    transition: none;
   }
 }

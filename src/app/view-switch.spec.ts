@@ -146,6 +146,54 @@ describe('view transitions', () => {
     expect(document.documentElement.style.getPropertyValue('--card-top')).toBe('');
   });
 
+  describe('the floating buttons', () => {
+    /** «Volver» on its way in, and «Subir» on its way out. */
+    const animations = () => {
+      const animation = () => ({
+        effect: { updateTiming: vi.fn() },
+        pause: vi.fn(),
+        play: vi.fn(),
+      });
+      const back = animation();
+      const scrollTop = animation();
+      vi.spyOn(Element.prototype, 'getAnimations').mockImplementation(function (this: Element) {
+        const of = this.matches('.back') ? back : this.matches('.scroll-top') ? scrollTop : null;
+        return of ? [of as unknown as Animation] : [];
+      });
+      return { back, scrollTop };
+    };
+
+    it('arriving, wait out of sight until the transition starts, and as long as what arrives', async () => {
+      const { back, scrollTop } = animations();
+      openVenue(3, scroller, toVenue, false);
+      // Its way in started inside the update, before the new picture was painted.
+      expect(back.effect.updateTiming).toHaveBeenCalledWith({ delay: 245, fill: 'backwards' });
+      expect(back.pause).toHaveBeenCalled();
+      expect(back.play).not.toHaveBeenCalled();
+      // What leaves, at once.
+      expect(scrollTop.pause).not.toHaveBeenCalled();
+
+      await Promise.resolve();
+      expect(back.play).toHaveBeenCalled();
+    });
+
+    it('don’t wait for a transition given up before the update', async () => {
+      const { back } = animations();
+      let update!: () => unknown;
+      const finished = Promise.resolve();
+      Object.assign(document, {
+        startViewTransition: (callback: () => unknown) => {
+          update = callback;
+          return { ready: Promise.reject(new Error('skipped')), finished };
+        },
+      });
+      openVenue(3, scroller, toVenue, false);
+      await Promise.resolve();
+      update();
+      expect(back.pause).not.toHaveBeenCalled();
+    });
+  });
+
   it('paints the photos of what arrives in the new picture, without waiting for them', async () => {
     openVenue(3, scroller, toVenue, false);
     const photo = document.querySelector('#card-3 img') as HTMLImageElement;

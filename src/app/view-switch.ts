@@ -12,6 +12,28 @@ const FIXED = {
 };
 
 /**
+ * The floating buttons arriving with the new view (animate.enter, in app.html). Their way in starts as
+ * soon as they're on the page, inside the update, before the new picture is captured and painted,
+ * which can take a while: on the screen, «Volver» came in already halfway, and not from beyond its
+ * edge. They wait out of sight until the transition starts, and from then on, as long as what
+ * arrives in it waits (styles/_view-switch.scss: $duration - $arriving, 700ms × 0.35).
+ */
+const ARRIVING = '.floating > .entering';
+const ARRIVE_AFTER = 245;
+
+/** The arrivals of the floating buttons, held out of sight until play. */
+function holdArrivals(): Animation[] {
+  const held = [...document.querySelectorAll<HTMLElement>(ARRIVING)].flatMap((button) =>
+    button.getAnimations(),
+  );
+  for (const animation of held) {
+    animation.effect?.updateTiming({ delay: ARRIVE_AFTER, fill: 'backwards' });
+    animation.pause();
+  }
+  return held;
+}
+
+/**
  * The menu, which choosing a view closes: it leaves from the old picture, on its own. In the header's,
  * its shadow (which goes well beyond the header) could move it.
  */
@@ -211,10 +233,15 @@ function moveCard({
   const menu = document.querySelector<HTMLElement>(MENU);
   name(menu, 'menu');
   const { top, bottom } = before.getBoundingClientRect();
+  // The floating buttons arriving wait for the transition to start (holdArrivals). Not if it was
+  // given up before the update: nothing would let them go.
+  let started = false;
+  let arrivals: Animation[] = [];
   const transition = document.startViewTransition(() => {
     // Those on the page in both views (filters, footer...) come back under another name.
     clear();
     update();
+    if (!started) arrivals = holdArrivals();
     // Closed, the menu stays in the page until its own way out ends: hidden, it isn't in the new
     // picture either. Gone from it halfway through, the transition would stop.
     menu?.style.setProperty('display', 'none');
@@ -230,8 +257,13 @@ function moveCard({
     nameAll(after, 'in');
     photosAtOnce(named);
   });
-  // If it can't be shown (the tab in the background, say), the view just changes.
-  transition.ready.catch(() => {});
+  // If it can't be shown (the tab in the background, say), the view just changes. The floating
+  // buttons come in anyway.
+  const arrive = () => {
+    started = true;
+    arrivals.forEach((animation) => animation.play());
+  };
+  transition.ready.then(arrive, arrive);
   const end = () => {
     clear();
     root.classList.remove(SAME_CARD);

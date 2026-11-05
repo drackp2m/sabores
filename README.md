@@ -38,6 +38,9 @@ scripts/
       "monday": [{ "open": "12:00", "close": "16:00" }, { "open": "19:00", "close": "22:00" }]
       // "close": null → "until closing time"
     },
+    "reviewedHours": {                   // the venue's own opening hours, reviewed; null if unknown
+      "monday": [{ "open": "09:00", "close": "23:00" }]  // like "schedule"; [] = closed that day
+    },
     "tapas": [{
       "number": 1,
       "name": "NIDO DE BOQUERÓN",
@@ -46,11 +49,7 @@ scripts/
       "glutenFree": "no",                // "yes" | "optional" (gluten-free on request) | "no"
       "photo": "photos/01-1.jpg"
     }],
-    "location": {                        // null if it couldn't be geocoded
-      "lat": 39.98, "lng": -0.03,
-      "source": "cartociudad",           // cartociudad | nominatim | manual
-      "precision": "portal"              // portal | street | place | manual
-    },
+    "location": { "lat": 39.98081, "lng": -0.03257 },  // reviewed, 5 decimals (~1 m); null if unknown
     "page": 4                            // page in the PDF
   }]
 }
@@ -64,6 +63,9 @@ The scripts only use Swift + PDFKit, which come with macOS (nothing to install):
 swift scripts/extract.swift "GUÍA OFICIAL 2026 DIGITAL.pdf" data
 swift scripts/geocode.swift data
 ```
+
+The locations and `reviewedHours` in `venues.json` are reviewed by hand: running these scripts again
+overwrites them.
 
 `extract.swift` overwrites `venues.json` without coordinates; `geocode.swift` adds them back from the cache.
 Drinks are normalized with the `drinkNames` table in `extract.swift`: if the guide brings a new one, the

@@ -26,11 +26,8 @@
       ],
       "instagram" : "@origen_castellon",
       "location" : {
-        "lat" : 39.980796505653025,
-        "lng" : -0.032586479586695617,
-        "match" : "CALLE CARCAGENTE 17",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98081,
+        "lng" : -0.03257
       },
       "name" : "ORIGEN",
       "notes" : [
@@ -39,6 +36,50 @@
       "number" : 1,
       "page" : 4,
       "phone" : "641986169",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "10:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -144,11 +185,8 @@
       ],
       "instagram" : "@somos.dosenverde",
       "location" : {
-        "lat" : 39.979110204604048,
-        "lng" : -0.03272025552219688,
-        "match" : "CALLE PARE RICARDO 27",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97922,
+        "lng" : -0.03287
       },
       "name" : "DOS EN VERDE",
       "notes" : [
@@ -157,6 +195,44 @@
       "number" : 2,
       "page" : 4,
       "phone" : "611993578",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -226,11 +302,8 @@
       ],
       "instagram" : "@_costadeoro",
       "location" : {
-        "lat" : 39.973420422781253,
-        "lng" : -0.055605810973685388,
-        "match" : "CALLE DESIERTO PALMAS 6",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97273,
+        "lng" : -0.05458
       },
       "name" : "COSTA DE ORO",
       "notes" : [
@@ -239,6 +312,67 @@
       "number" : 3,
       "page" : 5,
       "phone" : "624276914",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "10:00"
+          }
+        ],
+        "thursday" : [
+
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -310,11 +444,8 @@
       ],
       "instagram" : "@elporton_castellon",
       "location" : {
-        "lat" : 39.983971760699994,
-        "lng" : -0.039729715681832874,
-        "match" : "CALLE NAVARRA 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98402,
+        "lng" : -0.03973
       },
       "name" : "EL PORTÓN TASCA GASTRONÓMICA",
       "notes" : [
@@ -323,6 +454,58 @@
       "number" : 4,
       "page" : 5,
       "phone" : "606713281",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "12:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "00:00",
+            "open" : "18:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "00:00",
+            "open" : "18:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "18:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -401,11 +584,8 @@
       ],
       "instagram" : "@elalquimista.res",
       "location" : {
-        "lat" : 39.980371795817582,
-        "lng" : -0.029041980138371323,
-        "match" : "CALLE PINTOR SOLER BLASCO 26",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98193,
+        "lng" : -0.02832
       },
       "name" : "EL ALQUIMISTA",
       "notes" : [
@@ -414,6 +594,67 @@
       "number" : 5,
       "page" : 6,
       "phone" : "624258380",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "12:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "17:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "12:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -501,11 +742,8 @@
       ],
       "instagram" : "@atemporal_castellon",
       "location" : {
-        "lat" : 39.983911858117644,
-        "lng" : -0.039712045604662974,
-        "match" : "CALLE NAVARRA 3",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98402,
+        "lng" : -0.03973
       },
       "name" : "ATEMPORAL",
       "notes" : [
@@ -514,6 +752,7 @@
       "number" : 6,
       "page" : 6,
       "phone" : "606713281",
+      "reviewedHours" : null,
       "schedule" : {
         "friday" : [
           {
@@ -592,11 +831,8 @@
       ],
       "instagram" : "@madhur_gastrobar",
       "location" : {
-        "lat" : 39.987438743826637,
-        "lng" : -0.036136939092617781,
-        "match" : "CALLE CABALLEROS 20",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98742,
+        "lng" : -0.03609
       },
       "name" : "MADHUR GASTROBAR",
       "notes" : [
@@ -605,6 +841,59 @@
       "number" : 7,
       "page" : 7,
       "phone" : "604909139",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "10:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "10:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "10:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "10:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -695,11 +984,8 @@
       ],
       "instagram" : "@restaurantenorteno",
       "location" : {
-        "lat" : 39.993259692440411,
-        "lng" : -0.062933079911347153,
-        "match" : "CALLE JOSE MARIA MULET ORTIZ 26",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99337,
+        "lng" : -0.06304
       },
       "name" : "RESTAURANTE NORTEÑO",
       "notes" : [
@@ -708,6 +994,78 @@
       "number" : 8,
       "page" : 7,
       "phone" : "604803306",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "17:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -785,10 +1143,8 @@
       ],
       "instagram" : "@mejorana_gastrobar",
       "location" : {
-        "lat" : 39.99669391660467,
-        "lng" : -0.036249847164190024,
-        "precision" : "manual",
-        "source" : "manual"
+        "lat" : 39.99669,
+        "lng" : -0.03625
       },
       "name" : "MEJORANA GASTROBAR",
       "notes" : [
@@ -797,6 +1153,50 @@
       "number" : 9,
       "page" : 8,
       "phone" : "642282435",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:30",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "23:30",
+            "open" : "09:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
 
@@ -859,11 +1259,8 @@
       ],
       "instagram" : "@labelepoc_gastrobar",
       "location" : {
-        "lat" : 39.976741868690183,
-        "lng" : -0.058216576547365242,
-        "match" : "CALLE CAMP DE MORVEDRE 113",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97745,
+        "lng" : -0.05804
       },
       "name" : "LA BELEPOC",
       "notes" : [
@@ -872,6 +1269,44 @@
       "number" : 10,
       "page" : 8,
       "phone" : "622423694",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:30",
+            "open" : "12:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "00:30",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "00:30",
+            "open" : "12:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:30",
+            "open" : "12:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:30",
+            "open" : "12:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -967,11 +1402,8 @@
       ],
       "instagram" : "@cafeteria_blesa",
       "location" : {
-        "lat" : 39.98049870519533,
-        "lng" : -0.034678171962291039,
-        "match" : "CALLE MAESTRO FALLA 16",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98048,
+        "lng" : -0.03467
       },
       "name" : "CAFETERÍA BLESA",
       "notes" : [
@@ -980,6 +1412,47 @@
       "number" : 11,
       "page" : 10,
       "phone" : "964222037",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1062,11 +1535,8 @@
       ],
       "instagram" : null,
       "location" : {
-        "lat" : 39.979835327289813,
-        "lng" : -0.033928211623073572,
-        "match" : "CALLE DOCTOR FLEMING 24",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97980,
+        "lng" : -0.03391
       },
       "name" : "TABERNA MARINERA",
       "notes" : [
@@ -1075,6 +1545,67 @@
       "number" : 12,
       "page" : 10,
       "phone" : "964035831",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:30",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:30",
+            "open" : "20:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1173,11 +1704,8 @@
       ],
       "instagram" : "@cafeteriababys",
       "location" : {
-        "lat" : 39.991222056000787,
-        "lng" : 0.01410854477597177,
-        "match" : "CAMINO SERRADAL 13",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97876,
+        "lng" : 0.01277
       },
       "name" : "BABY’S TERRASSA",
       "notes" : [
@@ -1186,6 +1714,55 @@
       "number" : 13,
       "page" : 11,
       "phone" : "666211550",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "15:30",
+            "open" : "07:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "18:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "15:30",
+            "open" : "07:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "15:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:30",
+            "open" : "09:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "15:30",
+            "open" : "07:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:30",
+            "open" : "07:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1265,11 +1842,8 @@
       ],
       "instagram" : "@asensi_14",
       "location" : {
-        "lat" : 39.982958824310806,
-        "lng" : -0.036992155638039176,
-        "match" : "CALLE ASENSI 14",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98291,
+        "lng" : -0.03704
       },
       "name" : "ASENSI 14",
       "notes" : [
@@ -1278,6 +1852,7 @@
       "number" : 14,
       "page" : 11,
       "phone" : "711509856",
+      "reviewedHours" : null,
       "schedule" : {
         "friday" : [
           {
@@ -1358,11 +1933,8 @@
       ],
       "instagram" : "@tabernalidon20",
       "location" : {
-        "lat" : 39.989694481340393,
-        "lng" : -0.032805401042434214,
-        "match" : "AVENIDA VIRGEN DE LIDON 20",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98959,
+        "lng" : -0.03271
       },
       "name" : "TABERNA LIDÓN 20",
       "notes" : [
@@ -1371,6 +1943,56 @@
       "number" : 15,
       "page" : 12,
       "phone" : "646202850",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "11:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1452,11 +2074,8 @@
       ],
       "instagram" : "@jorge_malasana",
       "location" : {
-        "lat" : 39.985208778603003,
-        "lng" : -0.036476251937597286,
-        "match" : "CALLE OBISPO CLIMENT 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98514,
+        "lng" : -0.03647
       },
       "name" : "TASCA MALASAÑA",
       "notes" : [
@@ -1465,6 +2084,64 @@
       "number" : 16,
       "page" : 12,
       "phone" : "619503949",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1560,11 +2237,8 @@
       ],
       "instagram" : "@taperiabocateriamissdaisy",
       "location" : {
-        "lat" : 39.99047742794874,
-        "lng" : -0.034095961237608378,
-        "match" : "AVENIDA CAPUCHINOS 27",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99047,
+        "lng" : -0.03412
       },
       "name" : "MISS DAISY",
       "notes" : [
@@ -1573,6 +2247,78 @@
       "number" : 17,
       "page" : 13,
       "phone" : "642769745",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1690,11 +2436,8 @@
       ],
       "instagram" : "@barista.castellon",
       "location" : {
-        "lat" : 39.985243065353558,
-        "lng" : -0.036770671326647977,
-        "match" : "CALLE MAYOR 42",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98522,
+        "lng" : -0.03662
       },
       "name" : "CAFÉ BARISTA",
       "notes" : [
@@ -1703,6 +2446,47 @@
       "number" : 18,
       "page" : 13,
       "phone" : "964231371",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "02:00",
+            "open" : "08:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "21:30",
+            "open" : "07:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "02:00",
+            "open" : "08:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "21:30",
+            "open" : "07:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "20:30",
+            "open" : "07:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:30",
+            "open" : "07:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1773,11 +2557,8 @@
       ],
       "instagram" : "@lacomarca_taberna",
       "location" : {
-        "lat" : 39.987210167130975,
-        "lng" : -0.047547420699493706,
-        "match" : "PLAZA ESPAÑA 1",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98687,
+        "lng" : -0.04738
       },
       "name" : "TABERNA LA COMARCA",
       "notes" : [
@@ -1786,6 +2567,50 @@
       "number" : 19,
       "page" : 14,
       "phone" : "675974320",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "22:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "22:00",
+            "open" : "09:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "22:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "22:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1892,11 +2717,8 @@
       ],
       "instagram" : "@pizzeriadanubio",
       "location" : {
-        "lat" : 39.983609363812619,
-        "lng" : -0.03693276447750387,
-        "match" : "CALLE TEMPRADO 7",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98361,
+        "lng" : -0.03691
       },
       "name" : "DANUBIO PIZZERÍA",
       "notes" : [
@@ -1905,6 +2727,62 @@
       "number" : 20,
       "page" : 14,
       "phone" : "964220617",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -1998,11 +2876,8 @@
       ],
       "instagram" : "@comoencasacastellon",
       "location" : {
-        "lat" : 39.982780274237008,
-        "lng" : -0.039319022547205741,
-        "match" : "CALLE FOLA 2",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98273,
+        "lng" : -0.03931
       },
       "name" : "COMO EN CASA BOCATERÍA",
       "notes" : [
@@ -2011,6 +2886,67 @@
       "number" : 21,
       "page" : 16,
       "phone" : "603116166",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "14:00",
+            "open" : "09:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -2105,11 +3041,8 @@
       ],
       "instagram" : "@tasca.argentina.laloca",
       "location" : {
-        "lat" : 39.981895329351552,
-        "lng" : -0.034255933916969378,
-        "match" : "CALLE MAESTRO RIPOLLES 12",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98188,
+        "lng" : -0.03427
       },
       "name" : "LA LOCA TASCA ARGENTINA",
       "notes" : [
@@ -2118,6 +3051,51 @@
       "number" : 22,
       "page" : 16,
       "phone" : "604860830",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "01:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:30"
+          },
+          {
+            "close" : "01:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -2204,11 +3182,8 @@
       ],
       "instagram" : "@elpasotexmexx",
       "location" : {
-        "lat" : 39.984081582162204,
-        "lng" : -0.034844334263161345,
-        "match" : "PLAZA JUEZ BORRULL 5",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98406,
+        "lng" : -0.03468
       },
       "name" : "EL PASO TEX-MEX",
       "notes" : [
@@ -2217,6 +3192,44 @@
       "number" : 23,
       "page" : 17,
       "phone" : "635876809",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "12:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "12:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:00",
+            "open" : "12:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:00",
+            "open" : "12:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -2312,11 +3325,8 @@
       ],
       "instagram" : "@cupula.castellon",
       "location" : {
-        "lat" : 39.975727049336015,
-        "lng" : -0.047531317792218357,
-        "match" : "PLAZA VILANOVA D\"ALCOLEA 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97577,
+        "lng" : -0.04752
       },
       "name" : "CÚPULA",
       "notes" : [
@@ -2325,6 +3335,71 @@
       "number" : 24,
       "page" : 17,
       "phone" : "698447307",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
 
@@ -2391,11 +3466,8 @@
       ],
       "instagram" : null,
       "location" : {
-        "lat" : 39.980399108406296,
-        "lng" : -0.033366849703112607,
-        "match" : "CALLE DOCTOR FLEMING 9",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98037,
+        "lng" : -0.03329
       },
       "name" : "LA GRADA GASTROBAR",
       "notes" : [
@@ -2404,6 +3476,47 @@
       "number" : 25,
       "page" : 18,
       "phone" : "624442059",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "23:00",
+            "open" : "10:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "21:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "21:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "21:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -2502,11 +3615,8 @@
       ],
       "instagram" : null,
       "location" : {
-        "lat" : 39.981322686685466,
-        "lng" : -0.034047349866339019,
-        "match" : "CALLE CARCAGENTE 7",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98138,
+        "lng" : -0.03402
       },
       "name" : "FRAPPÉ GASTROTAPAS",
       "notes" : [
@@ -2515,6 +3625,7 @@
       "number" : 26,
       "page" : 18,
       "phone" : "624984299",
+      "reviewedHours" : null,
       "schedule" : {
         "friday" : [
           {
@@ -2604,11 +3715,8 @@
       ],
       "instagram" : "@eldespatarrao",
       "location" : {
-        "lat" : 39.989246486251886,
-        "lng" : -0.033566190018332831,
-        "match" : "AVENIDA VIRGEN DE LIDON 14",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98925,
+        "lng" : -0.03350
       },
       "name" : "EL DESPATARRAO",
       "notes" : [
@@ -2617,6 +3725,63 @@
       "number" : 27,
       "page" : 19,
       "phone" : "614113513",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "18:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "18:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "23:00",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "15:00",
+            "open" : "10:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "18:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "22:00",
+            "open" : "18:00"
+          }
+        ],
+        "wednesday" : [
+
+        ]
+      },
       "schedule" : {
         "friday" : [
 
@@ -2681,11 +3846,8 @@
       ],
       "instagram" : "@rustico.mmgrupo",
       "location" : {
-        "lat" : 39.980577468561975,
-        "lng" : -0.037537007415235878,
-        "match" : "AVENIDA CASALDUCH 28",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98059,
+        "lng" : -0.03755
       },
       "name" : "MM RÚSTICO",
       "notes" : [
@@ -2694,6 +3856,59 @@
       "number" : 28,
       "page" : 19,
       "phone" : "964269603",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -2778,11 +3993,8 @@
       ],
       "instagram" : "@bajo_32",
       "location" : {
-        "lat" : 39.987636373005174,
-        "lng" : -0.035704250841095936,
-        "match" : "CALLE ENSEÑANZA 3",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98769,
+        "lng" : -0.03560
       },
       "name" : "BAJO 32",
       "notes" : [
@@ -2791,6 +4003,53 @@
       "number" : 29,
       "page" : 20,
       "phone" : "621434982",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -2878,11 +4137,8 @@
       ],
       "instagram" : null,
       "location" : {
-        "lat" : 39.990540924887135,
-        "lng" : -0.032338027936122851,
-        "match" : "CALLE SANZ DE BREMOND 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99059,
+        "lng" : -0.03222
       },
       "name" : "EL TORICO",
       "notes" : [
@@ -2891,6 +4147,7 @@
       "number" : 30,
       "page" : 20,
       "phone" : "642290175",
+      "reviewedHours" : null,
       "schedule" : {
         "friday" : [
           {
@@ -2993,11 +4250,8 @@
       ],
       "instagram" : "@montecristo_restaurant",
       "location" : {
-        "lat" : 39.997676073925341,
-        "lng" : -0.038884547080648334,
-        "match" : "AVENIDA BENICASIM 5",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99675,
+        "lng" : -0.03752
       },
       "name" : "RESTAURANTE MONTECRISTO",
       "notes" : [
@@ -3006,6 +4260,60 @@
       "number" : 31,
       "page" : 22,
       "phone" : "864811911",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "20:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "20:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "20:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3101,11 +4409,8 @@
       ],
       "instagram" : "@nouescull",
       "location" : {
-        "lat" : 39.971769268551,
-        "lng" : 0.010383896213705057,
-        "match" : "CALLE ALCALA GALIANO 3",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97179,
+        "lng" : 0.01029
       },
       "name" : "NOU ESCULL",
       "notes" : [
@@ -3114,6 +4419,47 @@
       "number" : 32,
       "page" : 22,
       "phone" : "964281619",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:30",
+            "open" : "13:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3186,10 +4532,8 @@
       ],
       "instagram" : "@laparadadefadrell",
       "location" : {
-        "lat" : 39.981968137120333,
-        "lng" : -0.035559074150575812,
-        "precision" : "manual",
-        "source" : "manual"
+        "lat" : 39.98197,
+        "lng" : -0.03556
       },
       "name" : "LA PARADA DE FADRELL",
       "notes" : [
@@ -3198,6 +4542,7 @@
       "number" : 33,
       "page" : 23,
       "phone" : "681316666",
+      "reviewedHours" : null,
       "schedule" : {
         "friday" : [
           {
@@ -3307,11 +4652,8 @@
       ],
       "instagram" : "@casapena",
       "location" : {
-        "lat" : 39.978396251409478,
-        "lng" : -0.046733402561493026,
-        "match" : "PLAZA RIO ALBENTOSA 1",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97836,
+        "lng" : -0.04673
       },
       "name" : "CASA PEÑA",
       "notes" : [
@@ -3320,6 +4662,50 @@
       "number" : 34,
       "page" : 23,
       "phone" : "964179271",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3418,11 +4804,8 @@
       ],
       "instagram" : "@rokelincastellon",
       "location" : {
-        "lat" : 39.994115079250122,
-        "lng" : -0.033404678245067904,
-        "match" : "CALLE MARIA ROSA MOLAS 15",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99403,
+        "lng" : -0.03337
       },
       "name" : "ROKELÍN",
       "notes" : [
@@ -3431,6 +4814,78 @@
       "number" : 35,
       "page" : 24,
       "phone" : "964269087",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:30",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:30",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3500,11 +4955,8 @@
       ],
       "instagram" : "@bier_castello",
       "location" : {
-        "lat" : 39.981679922149731,
-        "lng" : -0.033259560485625152,
-        "match" : "CALLE MAESTRO RIPOLLES 7",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98171,
+        "lng" : -0.03320
       },
       "name" : "BIER CASTELLÓ",
       "notes" : [
@@ -3513,6 +4965,47 @@
       "number" : 36,
       "page" : 24,
       "phone" : "964250517",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "17:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "13:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "00:00",
+            "open" : "17:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "17:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "00:00",
+            "open" : "17:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "17:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3595,11 +5088,8 @@
       ],
       "instagram" : "@panderolabar",
       "location" : {
-        "lat" : 39.972216684751785,
-        "lng" : 0.010756582122619674,
-        "match" : "CALLE TRIPULANTS DE LA PACA 2",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97218,
+        "lng" : 0.01214
       },
       "name" : "LA PANDEROLA",
       "notes" : [
@@ -3608,6 +5098,56 @@
       "number" : 37,
       "page" : 25,
       "phone" : "614029025",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "13:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "13:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3699,11 +5239,8 @@
       ],
       "instagram" : "@ginvincastellon",
       "location" : {
-        "lat" : 39.985650795470576,
-        "lng" : -0.034790123423267143,
-        "match" : "CALLE GOBERNADOR BERMUDEZ CASTR 53",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98552,
+        "lng" : -0.03481
       },
       "name" : "GIN & VIN",
       "notes" : [
@@ -3712,6 +5249,47 @@
       "number" : 38,
       "page" : 25,
       "phone" : "964142497",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "01:30",
+            "open" : "08:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "17:00",
+            "open" : "08:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "01:30",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "17:00",
+            "open" : "08:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "22:00",
+            "open" : "08:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3781,11 +5359,8 @@
       ],
       "instagram" : "@benadressa_bar",
       "location" : {
-        "lat" : 39.990354764193803,
-        "lng" : -0.10729531563607839,
-        "match" : "CARRETERA RIBESALBES 52",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99033,
+        "lng" : -0.10735
       },
       "name" : "BAR RTE. BENADRESA",
       "notes" : [
@@ -3794,6 +5369,47 @@
       "number" : 39,
       "page" : 26,
       "phone" : "633164619",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "13:00",
+            "open" : "07:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "07:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3862,11 +5478,8 @@
       ],
       "instagram" : "@impalacafegrao",
       "location" : {
-        "lat" : 39.979142615627524,
-        "lng" : 0.020497901897568661,
-        "match" : "CALLE ASTRONOMO FRANSESC ARAGO 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97858,
+        "lng" : 0.02148
       },
       "name" : "IMPALA CAFÉ GRAO",
       "notes" : [
@@ -3875,6 +5488,50 @@
       "number" : 40,
       "page" : 26,
       "phone" : "672140003",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "08:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -3948,11 +5605,8 @@
       ],
       "instagram" : "@homenaje.cs",
       "location" : {
-        "lat" : 39.984494558472456,
-        "lng" : -0.036560417868218162,
-        "match" : "CALLE CAMPOAMOR 11",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98451,
+        "lng" : -0.03653
       },
       "name" : "HOMENAJE",
       "notes" : [
@@ -3961,6 +5615,52 @@
       "number" : 41,
       "page" : 28,
       "phone" : "642267554",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "18:00"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "18:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
 
@@ -4035,11 +5735,8 @@
       ],
       "instagram" : "@restcorporesano",
       "location" : {
-        "lat" : 39.978922214518605,
-        "lng" : -0.050577622673274335,
-        "match" : "CALLE ONDA 36",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97947,
+        "lng" : -0.05130
       },
       "name" : "CORPORE SANO",
       "notes" : [
@@ -4048,6 +5745,47 @@
       "number" : 42,
       "page" : 28,
       "phone" : "651405059",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "10:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "10:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:30"
+          }
+        ],
+        "wednesday" : [
+
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4136,11 +5874,8 @@
       ],
       "instagram" : "@aglio.nero.castellon",
       "location" : {
-        "lat" : 39.988149168957236,
-        "lng" : -0.038505865758620472,
-        "match" : "CALLE ALLOZA 163",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98854,
+        "lng" : -0.03818
       },
       "name" : "AGLIO NERO",
       "notes" : [
@@ -4149,6 +5884,59 @@
       "number" : 43,
       "page" : 29,
       "phone" : "614242393",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4230,11 +6018,8 @@
       ],
       "instagram" : "@linoterrace",
       "location" : {
-        "lat" : 39.984486671549469,
-        "lng" : -0.038762509526282588,
-        "match" : "PLAZA PUERTA DEL SOL 1",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98474,
+        "lng" : -0.03862
       },
       "name" : "LINO TERRACE",
       "notes" : [
@@ -4243,6 +6028,50 @@
       "number" : 44,
       "page" : 29,
       "phone" : "964225800",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "02:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "10:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "00:00",
+            "open" : "00:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "00:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4346,10 +6175,8 @@
       ],
       "instagram" : "@labancada",
       "location" : {
-        "lat" : 39.984607363423642,
-        "lng" : -0.037994114629110003,
-        "precision" : "manual",
-        "source" : "manual"
+        "lat" : 39.98461,
+        "lng" : -0.03799
       },
       "name" : "LA BANCADA",
       "notes" : [
@@ -4358,6 +6185,55 @@
       "number" : 45,
       "page" : 30,
       "phone" : "964035619",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4427,11 +6303,8 @@
       ],
       "instagram" : "@lodepepe_castellon",
       "location" : {
-        "lat" : 39.983841586055021,
-        "lng" : -0.036443583985921638,
-        "match" : "CALLE ESCULTOR VICIANO 13",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98387,
+        "lng" : -0.03651
       },
       "name" : "LO DE PEPE",
       "notes" : [
@@ -4440,6 +6313,71 @@
       "number" : 46,
       "page" : 30,
       "phone" : "964723787",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:30",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4522,11 +6460,8 @@
       ],
       "instagram" : "@elbartortilla",
       "location" : {
-        "lat" : 39.983087379617018,
-        "lng" : -0.038626610721953281,
-        "match" : "CALLE MOYANO 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98308,
+        "lng" : -0.03868
       },
       "name" : "BAR TORTILLA",
       "notes" : [
@@ -4535,6 +6470,66 @@
       "number" : 47,
       "page" : 31,
       "phone" : "677737463",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:30",
+            "open" : "19:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4632,11 +6627,8 @@
       ],
       "instagram" : "@arre_restaurant",
       "location" : {
-        "lat" : 39.987836076509552,
-        "lng" : -0.036373046236043295,
-        "match" : "CALLE ANTONIO MAURA 31",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98787,
+        "lng" : -0.03640
       },
       "name" : "ARRE",
       "notes" : [
@@ -4645,6 +6637,63 @@
       "number" : 48,
       "page" : 31,
       "phone" : "964183691",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:00"
+          }
+        ],
+        "wednesday" : [
+
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4717,11 +6766,8 @@
       ],
       "instagram" : "@barlamorena22",
       "location" : {
-        "lat" : 39.981107608937229,
-        "lng" : -0.033527878501768277,
-        "match" : "CALLE CARCAGENTE 9",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98114,
+        "lng" : -0.03356
       },
       "name" : "LA MORENA",
       "notes" : [
@@ -4730,6 +6776,47 @@
       "number" : 49,
       "page" : 32,
       "phone" : "678120598",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4817,11 +6904,8 @@
       ],
       "instagram" : "@alessandromaino_restaurant",
       "location" : {
-        "lat" : 39.985628375236878,
-        "lng" : -0.040826791522674565,
-        "match" : "AVENIDA REY DON JAIME 5",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98563,
+        "lng" : -0.04092
       },
       "name" : "ALESSANDRO MAINO RESTAURANT",
       "notes" : [
@@ -4830,6 +6914,59 @@
       "number" : 50,
       "page" : 32,
       "phone" : "695046814",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "00:30",
+            "open" : "12:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "17:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:30",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -4913,11 +7050,8 @@
       ],
       "instagram" : "@venecia_by_la_garnatxa",
       "location" : {
-        "lat" : 39.989432358377009,
-        "lng" : -0.033954890807310768,
-        "match" : "AVENIDA CAPUCHINOS 2",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98912,
+        "lng" : -0.03425
       },
       "name" : "VENECIA",
       "notes" : [
@@ -4926,6 +7060,63 @@
       "number" : 51,
       "page" : 34,
       "phone" : "634917568",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "23:30",
+            "open" : "19:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "09:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "09:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "19:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -5020,11 +7211,8 @@
       ],
       "instagram" : "@restaurante_portoles",
       "location" : {
-        "lat" : 39.99006964121255,
-        "lng" : -0.072635871173966457,
-        "match" : "AVENIDA ALCORA 247",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.99013,
+        "lng" : -0.07176
       },
       "name" : "RESTAURANTE PORTOLÉS",
       "notes" : [
@@ -5033,6 +7221,47 @@
       "number" : 52,
       "page" : 34,
       "phone" : "692604468",
+      "reviewedHours" : {
+        "friday" : [
+
+        ],
+        "monday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "17:00",
+            "open" : "12:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
 
@@ -5099,11 +7328,8 @@
       ],
       "instagram" : "@blancoroto_restaurante",
       "location" : {
-        "lat" : 39.98073709565098,
-        "lng" : -0.034107847816556881,
-        "match" : "PLAZA MAR MEDITERRANEO DEL 1",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98095,
+        "lng" : -0.03441
       },
       "name" : "BLANCO ROTO",
       "notes" : [
@@ -5112,6 +7338,50 @@
       "number" : 53,
       "page" : 35,
       "phone" : "964292471",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "18:00",
+            "open" : "11:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "11:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "18:00",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "18:00",
+            "open" : "11:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "23:30",
+            "open" : "11:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -5225,11 +7495,8 @@
       ],
       "instagram" : "@restauranteelbuensaborperuano",
       "location" : {
-        "lat" : 39.986021793463252,
-        "lng" : -0.042492973839765892,
-        "match" : "CALLE AMADEO I 9",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98721,
+        "lng" : -0.04180
       },
       "name" : "EL BUEN SABOR PERUANO",
       "notes" : [
@@ -5238,6 +7505,47 @@
       "number" : 54,
       "page" : 35,
       "phone" : "677074694",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "23:00",
+            "open" : "13:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "23:00",
+            "open" : "13:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "23:00",
+            "open" : "13:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "23:00",
+            "open" : "13:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "23:00",
+            "open" : "13:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "23:00",
+            "open" : "13:00"
+          }
+        ],
+        "wednesday" : [
+
+        ]
+      },
       "schedule" : {
         "friday" : [
 
@@ -5310,11 +7618,8 @@
       ],
       "instagram" : "@suglagu",
       "location" : {
-        "lat" : 39.975727049336015,
-        "lng" : -0.047531317792218357,
-        "match" : "PLAZA VILANOVA D\"ALCOLEA 4",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.97566,
+        "lng" : -0.04738
       },
       "name" : "SUGLAGU",
       "notes" : [
@@ -5323,6 +7628,56 @@
       "number" : 55,
       "page" : 36,
       "phone" : "634496900",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "monday" : [
+
+        ],
+        "saturday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          },
+          {
+            "close" : "23:00",
+            "open" : "20:30"
+          }
+        ],
+        "tuesday" : [
+
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:00",
+            "open" : "13:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -5385,11 +7740,8 @@
       ],
       "instagram" : "@barrita____",
       "location" : {
-        "lat" : 39.985075943874236,
-        "lng" : -0.036892771329188424,
-        "match" : "CALLE MAYOR 36",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98507,
+        "lng" : -0.03688
       },
       "name" : "BARRITA",
       "notes" : [
@@ -5398,6 +7750,70 @@
       "number" : 56,
       "page" : 36,
       "phone" : "864871911",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "00:00",
+            "open" : "11:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "16:30",
+            "open" : "11:00"
+          },
+          {
+            "close" : "00:00",
+            "open" : "19:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -5475,11 +7891,8 @@
       ],
       "instagram" : "@copacabanacs",
       "location" : {
-        "lat" : 39.983897879644502,
-        "lng" : -0.036844885713937632,
-        "match" : "CALLE ESCULTOR VICIANO 5",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98597,
+        "lng" : -0.04016
       },
       "name" : "COPACABANA",
       "notes" : [
@@ -5488,6 +7901,7 @@
       "number" : 57,
       "page" : 37,
       "phone" : "611398080",
+      "reviewedHours" : null,
       "schedule" : {
         "friday" : [
           {
@@ -5590,10 +8004,8 @@
       ],
       "instagram" : "@elbardelmercat__",
       "location" : {
-        "lat" : 39.985937042296591,
-        "lng" : -0.037222318328948387,
-        "precision" : "manual",
-        "source" : "manual"
+        "lat" : 39.98594,
+        "lng" : -0.03722
       },
       "name" : "BAR DEL MERCAT",
       "notes" : [
@@ -5602,6 +8014,47 @@
       "number" : 58,
       "page" : 37,
       "phone" : "625672824",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "15:00",
+            "open" : "08:35"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "15:00",
+            "open" : "08:35"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "15:00",
+            "open" : "08:35"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "15:00",
+            "open" : "08:35"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "15:00",
+            "open" : "08:35"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "15:00",
+            "open" : "08:35"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -5675,10 +8128,8 @@
       ],
       "instagram" : "@quioscodellago",
       "location" : {
-        "lat" : 39.978896425768582,
-        "lng" : -0.037762849014898001,
-        "precision" : "manual",
-        "source" : "manual"
+        "lat" : 39.97890,
+        "lng" : -0.03776
       },
       "name" : "QUIOSCO DEL LAGO",
       "notes" : [
@@ -5687,6 +8138,50 @@
       "number" : 59,
       "page" : 38,
       "phone" : "646889090",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ],
+        "sunday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ],
+        "thursday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "19:00",
+            "open" : "09:00"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {
@@ -5792,11 +8287,8 @@
       ],
       "instagram" : "@alvostregust",
       "location" : {
-        "lat" : 39.984748848268417,
-        "lng" : -0.043272858310510004,
-        "match" : "CALLE NAVARRA 125",
-        "precision" : "portal",
-        "source" : "cartociudad"
+        "lat" : 39.98476,
+        "lng" : -0.04329
       },
       "name" : "AL VOSTRE GUST",
       "notes" : [
@@ -5805,6 +8297,67 @@
       "number" : 60,
       "page" : 38,
       "phone" : "964210108",
+      "reviewedHours" : {
+        "friday" : [
+          {
+            "close" : "14:00",
+            "open" : "07:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "16:30"
+          }
+        ],
+        "monday" : [
+          {
+            "close" : "14:00",
+            "open" : "07:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "16:30"
+          }
+        ],
+        "saturday" : [
+          {
+            "close" : "14:00",
+            "open" : "08:00"
+          }
+        ],
+        "sunday" : [
+
+        ],
+        "thursday" : [
+          {
+            "close" : "14:00",
+            "open" : "07:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "16:30"
+          }
+        ],
+        "tuesday" : [
+          {
+            "close" : "14:00",
+            "open" : "07:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "16:30"
+          }
+        ],
+        "wednesday" : [
+          {
+            "close" : "14:00",
+            "open" : "07:30"
+          },
+          {
+            "close" : "20:30",
+            "open" : "16:30"
+          }
+        ]
+      },
       "schedule" : {
         "friday" : [
           {

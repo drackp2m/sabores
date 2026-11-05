@@ -38,9 +38,17 @@
 // right, «Subir» once the top of the list is out of sight (the footer leaves room for them). The
 // border, that of the cards, sets them apart from what passes beneath in their same color (buttons,
 // venue numbers). On a layer the size of the screen that lets everything else through (see app.html).
+//
+// On the left, the layer goes past the screen's edge as far as «Volver»'s whole way (its width,
+// stretched, the margin and its shadow; see below), with room to spare. In a transition between views
+// (view-switch.ts) the layer's picture is fit into its box: with «Volver» out of it, on its way, it
+// came in from the edge of the screen and not from beyond it.
+$reach: 12rem;
+
 .floating {
   position: fixed;
   inset: 0;
+  left: -$reach;
   z-index: 1050; // Above the map's buttons (1000); below the enlarged photo and the header.
   pointer-events: none;
 }
@@ -87,9 +95,10 @@ $stretch: 1.14;
 }
 
 // It comes in from the left, as far as its width, stretched, the margin and a little more for the
-// shadow. Deformed from that edge, as if resting on it.
+// shadow. Deformed from that edge, as if resting on it. On the layer, past what it has beyond the
+// screen.
 .back {
-  left: var(--gutter-left);
+  left: calc(#{$reach} + var(--gutter-left));
   padding: 0 1.2rem 0 1rem;
   border-radius: 999px;
   transform-origin: 0 50%;

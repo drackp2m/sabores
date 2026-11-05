@@ -46,6 +46,9 @@ const ICONS = {
   guide: ['M20 4L4 11l7 2 2 7z'],
   up: ['M12 19V5', 'M5 12l7-7 7 7'],
   down: ['M12 5v14', 'M19 12l-7 7-7-7'],
+  // Chevrons, and not arrows: the one on the left isn't «Volver»'s.
+  previous: ['M15 5l-7 7 7 7'],
+  next: ['M9 5l7 7-7 7'],
   sun: [
     'M12 8a4 4 0 1 1 0 8a4 4 0 1 1 0-8z',
     'M12 2v2',

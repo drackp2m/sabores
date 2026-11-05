@@ -223,6 +223,84 @@ describe('App', () => {
     scrollTo.mockRestore();
   });
 
+  describe('on desktop', () => {
+    /** Whether the window is that wide, and who hears when it changes. */
+    let wide = true;
+    let onDesktop: ((event: { matches: boolean }) => void)[] = [];
+    const DESKTOP = '(min-width: 960px)';
+
+    beforeEach(() => {
+      wide = true;
+      onDesktop = [];
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        get matches() {
+          return query === DESKTOP && wide;
+        },
+        addEventListener: (_: string, listener: (event: { matches: boolean }) => void) => {
+          if (query === DESKTOP) onDesktop.push(listener);
+        },
+        removeEventListener() {},
+      }));
+    });
+
+    const idle = (el: HTMLElement, number: number) =>
+      el.querySelector(MAP_BUTTON(number))!.classList.contains('idle');
+
+    it('the list and the gallery have the map beside them, which the map button takes to its venue', async () => {
+      const { el, press } = await start();
+      expect(el.querySelector('.results > app-map')).not.toBeNull();
+
+      await press(MAP_BUTTON(2));
+      expect(el.querySelector('.detail')).toBeNull();
+      expect(activeMarker(el)).toBe('2. CÚPULA');
+      expect(idle(el, 2)).toBe(true);
+      expect(idle(el, 1)).toBe(false);
+
+      await press('.menu-button');
+      await press('.menu button', 'Fotos');
+      expect(el.querySelector('app-gallery')).not.toBeNull();
+      expect(idle(el, 2)).toBe(true);
+      await press(MAP_BUTTON(1));
+      expect(el.querySelector('.detail')).toBeNull();
+      expect(activeMarker(el)).toBe('1. ORIGEN');
+      expect(idle(el, 1)).toBe(true);
+      expect(idle(el, 2)).toBe(false);
+    });
+
+    it('a marker takes the list to its card', async () => {
+      const { el, fixture } = await start();
+      const scrollBy = vi.spyOn(Element.prototype, 'scrollBy');
+      el.querySelector<HTMLElement>('.venue-marker[title^="2."]')!.click();
+      await fixture.whenStable();
+      expect(el.querySelector('.detail')).toBeNull();
+      expect(activeMarker(el)).toBe('2. CÚPULA');
+      expect(scrollBy.mock.instances.at(-1)).toBe(
+        document.scrollingElement ?? document.documentElement,
+      );
+      scrollBy.mockRestore();
+    });
+
+    it('turning an iPad in the venue view leaves it for the list on the venue, with the map on it', async () => {
+      wide = false;
+      const { el, fixture, press } = await start();
+      expect(el.querySelector('app-map')).toBeNull();
+      await press(MAP_BUTTON(2));
+      expect(el.querySelector('.detail')).not.toBeNull();
+
+      const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
+      wide = true;
+      onDesktop.forEach((listener) => listener({ matches: true }));
+      await fixture.whenStable();
+      await new Promise((r) => setTimeout(r));
+      await fixture.whenStable();
+      expect(el.querySelector('.detail')).toBeNull();
+      expect(el.querySelector('.results > app-map')).not.toBeNull();
+      expect(activeMarker(el)).toBe('2. CÚPULA');
+      expect(scrollIntoView.mock.instances.map((e) => (e as Element).id)).toContain('venue-2');
+      scrollIntoView.mockRestore();
+    });
+  });
+
   it('enlarges a photo on clicking it and closes it on clicking anywhere', async () => {
     const { fixture, el, press } = await start();
     await press('app-venue-card .photo');
@@ -791,6 +869,43 @@ describe('App', () => {
       await inMiddle(5);
       await inMiddle(6);
       expect(activeMarker(el)).toBe('6. LOCAL 6');
+    });
+
+    it('with a mouse, the buttons beside «Volver» bring the card before or after, and the map to it', async () => {
+      const { el, fixture, open, press, inMiddle } = await startFollowing();
+      await open(2);
+      const map = FakeMap.of(el.querySelector('app-map')!);
+      const easeTo = vi.spyOn(map, 'easeTo');
+      const scrollTo = vi.spyOn(Element.prototype, 'scrollTo');
+      await press("app-card-steps [aria-label='Local siguiente']");
+      expect(activeMarker(el)).toBe('3. LOCAL 3');
+      expect(scrollTo.mock.instances.at(-1)).toBe(el.querySelector('.cards'));
+      const { lat, lng } = venues[2].location;
+      expect(easeTo.mock.lastCall![0]).toMatchObject({ center: [lng, lat] });
+
+      // Twice in a row, before getting there: the one after that, without stopping on the way.
+      await press("app-card-steps [aria-label='Local siguiente']");
+      expect(activeMarker(el)).toBe('4. LOCAL 4');
+      await inMiddle(3);
+      expect(activeMarker(el)).toBe('4. LOCAL 4');
+
+      await press("app-card-steps [aria-label='Local anterior']");
+      expect(activeMarker(el)).toBe('3. LOCAL 3');
+      await fixture.whenStable();
+    });
+
+    it('at either end, the button with no card beyond it is disabled', async () => {
+      const { el, open, goBack } = await startFollowing();
+      const disabled = (label: string) =>
+        el.querySelector<HTMLButtonElement>(`app-card-steps [aria-label='${label}']`)!.disabled;
+      await open(1);
+      expect(disabled('Local anterior')).toBe(true);
+      expect(disabled('Local siguiente')).toBe(false);
+
+      await goBack();
+      await open(7);
+      expect(disabled('Local anterior')).toBe(false);
+      expect(disabled('Local siguiente')).toBe(true);
     });
 
     it('touching the cards on their way to one leaves them wherever they’re taken', async () => {

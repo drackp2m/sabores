@@ -8,7 +8,7 @@
 :host {
   display: block;
   background: var(--background);
-  // The height of the venue view's map.
+  // The map's height: the venue view's, below desktop; on desktop, that of the one beside the list.
   --map-height: 22.3rem;
 }
 
@@ -30,25 +30,26 @@
 // don't exist and nothing moves.
 .detail > .cards,
 .back,
+.card-steps,
 .footer {
   translate: 0 calc(var(--map-large) * var(--map-drop));
 }
 
 // Floating buttons: bottom left, «Volver» from the venue back to the list; at the same height on the
-// right, «Subir» once the top of the list is out of sight (the footer leaves room for them). The
-// border, that of the cards, sets them apart from what passes beneath in their same color (buttons,
-// venue numbers). On a layer the size of the screen that lets everything else through (see app.html).
+// right, «Subir» once the top of the list is out of sight and, in the venue view with a mouse, the
+// card before and the one after (the footer leaves room for them). The border, that of the cards,
+// sets them apart from what passes beneath in their same color (buttons, venue numbers). On a layer
+// the size of the screen that lets everything else through (see app.html).
 //
-// On the left, the layer goes past the screen's edge as far as «Volver»'s whole way (its width,
-// stretched, the margin and its shadow; see below), with room to spare. In a transition between views
-// (view-switch.ts) the layer's picture is fit into its box: with «Volver» out of it, on its way, it
-// came in from the edge of the screen and not from beyond it.
+// On the sides, the layer goes past the screen's edges as far as the whole way of those coming in from
+// there (their width, stretched, the margin and their shadow; see below), with room to spare. In a
+// transition between views (view-switch.ts) the layer's picture is fit into its box: with «Volver»
+// out of it, on its way, it came in from the edge of the screen and not from beyond it.
 $reach: 12rem;
 
 .floating {
   position: fixed;
-  inset: 0;
-  left: -$reach;
+  inset: 0 (-$reach);
   z-index: 1050; // Above the map's buttons (1000); below the enlarged photo and the header.
   pointer-events: none;
 }
@@ -56,7 +57,8 @@ $reach: 12rem;
 // How much they stretch along their way, out of sight.
 $stretch: 1.14;
 
-// Moved $by along their way (x for «Volver», y for «Subir»), and stretched $along it and $across it.
+// Moved $by along their way (x for «Volver» and the pill, y for «Subir»), and stretched $along it and
+// $across it.
 @function bounce($axis, $by, $along, $across) {
   @if $axis == x {
     @return translateX($by) scale($along, $across);
@@ -64,26 +66,26 @@ $stretch: 1.14;
   @return translateY($by) scale($across, $along);
 }
 
-// Where each one is on its way (see arrive and depart), along its axis: out of sight, at $offscreen;
-// still stretched once in place; and squashed.
-@mixin bounce($axis, $offscreen) {
-  --away: #{bounce($axis, $offscreen, $stretch, 0.9)};
+// Where each one is on its way (see arrive and depart), along its axis: out of sight, at $offscreen.
+@function away($axis, $offscreen) {
+  @return bounce($axis, $offscreen, $stretch, 0.9);
+}
+
+// And once in place: still stretched, and squashed.
+@mixin settle($axis) {
   --stretched: #{bounce($axis, 0, 1.06, 0.95)};
   --squashed: #{bounce($axis, 0, 0.93, 1.06)};
 }
 
 .back,
-.scroll-top {
+.scroll-top,
+.card-steps {
   position: absolute;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   height: 3rem;
   border-color: var(--border);
   box-shadow: 0 4px 14px rgb(42 33 27 / 0.3);
   pointer-events: auto;
-
-  &:hover:not(:disabled) {
-    border-color: var(--border);
-  }
 
   &.entering {
     animation: arrive 0.5s;
@@ -94,26 +96,45 @@ $stretch: 1.14;
   }
 }
 
-// It comes in from the left, as far as its width, stretched, the margin and a little more for the
-// shadow. Deformed from that edge, as if resting on it. On the layer, past what it has beyond the
-// screen.
+// Hovered, the same border (the pill's buttons are inside it, card-steps.ts).
+.back:hover:not(:disabled),
+.scroll-top:hover:not(:disabled) {
+  border-color: var(--border);
+}
+
+// Sideways: «Volver» from the left and, mirrored, the card before and the one after from the right,
+// the way their glyphs point. Deformed from the edge they come in from, as if resting on it.
+.back,
+.card-steps {
+  @include settle(x);
+}
+
+// It comes in as far as its width, stretched, the margin and a little more for the shadow. On the
+// layer, past what it has beyond the screen.
 .back {
   left: calc(#{$reach} + var(--gutter-left));
   padding: 0 1.2rem 0 1rem;
   border-radius: 999px;
   transform-origin: 0 50%;
-  @include bounce(x, calc(-1 * (#{$stretch * 100%} + var(--gutter-left) + 0.5rem)));
+  --away: #{away(x, calc(-1 * (#{$stretch * 100%} + var(--gutter-left) + 0.5rem)))};
 }
 
-// From below: its height, stretched, the margin and the safe area.
+.card-steps {
+  right: calc(#{$reach} + var(--gutter-right));
+  transform-origin: 100% 50%;
+  --away: #{away(x, calc(#{$stretch * 100%} + var(--gutter-right) + 0.5rem))};
+}
+
+// From below: its height, stretched, the margin and the safe area. Also on the layer, on the right.
 .scroll-top {
-  right: var(--gutter-right);
+  right: calc(#{$reach} + var(--gutter-right));
   width: 3rem;
   padding: 0;
   border-radius: 50%;
   font-size: 1.3rem;
   transform-origin: 50% 100%;
-  @include bounce(y, calc(#{$stretch * 100%} + 1.5rem + env(safe-area-inset-bottom, 0px)));
+  --away: #{away(y, calc(#{$stretch * 100%} + 1.5rem + env(safe-area-inset-bottom, 0px)))};
+  @include settle(y);
 }
 
 // They come in from the edge they're closest to, stretched along their way, squash a little on
@@ -199,22 +220,19 @@ main {
 }
 
 // The venue view's cards, side by side, one at a time, with a stop at each: the one in the middle is
-// the venue (app.ts). Each one as tall as it is. On a phone, from edge to edge of the screen, past
-// main's padding: they come in from it, and at rest the next ones peek on the sides. Without a
-// scroll bar, as on a phone; with a mouse it's the way to know they're there.
+// the venue (app.ts). Each one as tall as it is. From edge to edge of the screen (there's no venue
+// view on desktop), past main's padding: they come in from it, and at rest the next ones peek on the
+// sides. Without a scroll bar, as on a phone; with a mouse it's the way to know they're there.
 .cards {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
+  margin-inline: calc(-1 * var(--gutter-left)) calc(-1 * var(--gutter-right));
+  padding-inline: var(--gutter-left) var(--gutter-right);
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-
-  @include media.below-desktop {
-    margin-inline: calc(-1 * var(--gutter-left)) calc(-1 * var(--gutter-right));
-    padding-inline: var(--gutter-left) var(--gutter-right);
-  }
 
   @media (hover: hover) {
     padding-bottom: 0.5rem;
@@ -234,6 +252,11 @@ main {
 .scroll-top-mark {
   width: 1px;
   margin-bottom: -1rem; // Without adding main's gap.
+}
+
+// Below desktop the list has no map beside it: as if this weren't there, what's inside is main's.
+.results {
+  display: contents;
 }
 
 .list {
@@ -277,15 +300,22 @@ main {
     --map-height: calc(100vh - var(--header-bottom) - 2rem);
   }
 
-  .detail {
+  // The list, or the gallery and its message when it's empty, on the left; the map fixed on the right
+  // while scrolling, beside all of it. If the map is taller, the last row takes what's left over.
+  .results {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 1rem;
     align-items: start;
+
+    > * {
+      grid-column: 1;
+    }
   }
 
-  // The card on the left and the map fixed on the right while scrolling.
-  .detail .map {
-    order: 2;
+  .results > .map {
+    grid-area: 1 / 2 / span 2;
     position: sticky;
     top: calc(var(--header-bottom) + 1rem);
 
@@ -298,7 +328,8 @@ main {
 
 @include media.reduced-motion {
   .back,
-  .scroll-top {
+  .scroll-top,
+  .card-steps {
     animation: none !important;
   }
 }

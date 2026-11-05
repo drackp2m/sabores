@@ -11,7 +11,8 @@ import { Venue } from '../venues';
  * The «Fotos» view: each venue with the same heading as its card (number, name, address, how long it
  * takes to get there and the map button), the photos of its two tapas with their stars and, at the
  * bottom, whether it's open, its seals and the favorite heart, where the card has it. The map button
- * opens the venue and each photo enlarges (and gets rated there).
+ * opens the venue (on desktop, takes the map beside it there) and each photo enlarges (and gets rated
+ * there).
  */
 @Component({
   selector: 'app-gallery',
@@ -22,7 +23,11 @@ import { Venue } from '../venues';
         @let venue = card.venue;
         <li [attr.id]="'venue-' + venue.number">
           <span class="venue-mark"></span>
-          <app-venue-header [venue]="venue" (showOnMap)="showOnMap.emit(venue.number)" />
+          <app-venue-header
+            [venue]="venue"
+            [mapButton]="venue.number !== centered()"
+            (showOnMap)="showOnMap.emit(venue.number)"
+          />
           <div class="photos">
             @for (tapa of venue.tapas; track tapa.number) {
               <figure>
@@ -122,7 +127,9 @@ import { Venue } from '../venues';
 })
 export class Gallery {
   readonly venues = input.required<readonly Venue[]>();
-  /** The map button: the venue opens, on its map. */
+  /** On desktop, the venue in the middle of the map beside it: its map button has nothing to do. */
+  readonly centered = input<number | null>(null);
+  /** The map button: on phones the venue opens, on its map; on desktop, the map goes to it. */
   readonly showOnMap = output<number>();
 
   /** The venue's seals: gluten-free (or on request) and Ruta de Sabor, if any tapa has them. */

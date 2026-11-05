@@ -1,4 +1,4 @@
-import { isPhone, isTouch, reducedMotion } from './media';
+import { isTouch, oneColumn, reducedMotion } from './media';
 
 /**
  * Fixed on the screen, the same element in every view. The floating buttons go on a layer of their
@@ -12,8 +12,8 @@ const FIXED = {
 };
 
 /**
- * With a mouse (Safari's responsive mode on a Mac, a narrow window) the document scrolls, with the
- * header sticky at its top (styles/_base.scss). In the new picture of a page the update leaves
+ * With a mouse (on desktop, or in a narrow window like Safari's responsive mode on a Mac) the document
+ * scrolls, with the header sticky at its top (styles/_base.scss). In the new picture of a page the update leaves
  * scrolled, as on going back to the list, Safari left it out: its place there, but empty. Not on
  * opening a venue, with the new page at the top: sticky, it's where it would be anyway. Until the
  * transition ends, it doesn't stick: it's moved by hand to where it would, the top of the screen.
@@ -64,11 +64,19 @@ const MENU = '.menu';
 
 /**
  * The filters and what's above the list: the same elements in both list views. From one to the other
- * they stay where they are (as many as styles/_view-switch.scss has names for), instead of leaving and
- * coming back. With the card in its place on the screen, so are they: they're only in sight with the
+ * they stay where they are, instead of leaving and coming back. With the card in its place on the screen, so are they: they're only in sight with the
  * first venue, which has nothing else above it in either view.
  */
 const ABOVE_LIST = ['app-filters', 'main > .summary', 'main > .sort', 'main > app-origin'];
+
+/**
+ * On desktop, the map beside the list or the gallery: the same element in both, it stays too. Fixed
+ * while scrolling, it's where it was, unless the end of the list pushes it up: then it goes along.
+ */
+const BESIDE_LIST = '.results > .map';
+
+/** What both list views share (as many as styles/_view-switch.scss has names for). */
+const SHARED = [...ABOVE_LIST, BESIDE_LIST];
 
 /**
  * What comes and goes, top to bottom: what's above the list (except from one list view to the other),
@@ -181,9 +189,13 @@ function sameFraction(after: HTMLElement, top: number): void {
   holder.style.marginTop = `${margin + rest}px`;
 }
 
-/** Whether there can be one: the browser has them, on a phone and without reduced motion. */
+/**
+ * Whether there can be one: the browser has them, the list and the gallery in a single column (on a
+ * phone or on desktop, see oneColumn), and without reduced motion. In several columns, the cards
+ * beside the venue's would come and go upwards and downwards, as if they were above and below it.
+ */
 function canTransition(): boolean {
-  return 'startViewTransition' in document && isPhone() && !reducedMotion();
+  return 'startViewTransition' in document && oneColumn() && !reducedMotion();
 }
 
 interface CardMove {
@@ -197,8 +209,8 @@ interface CardMove {
   place: (after: HTMLElement, top: number) => void;
   /** What the card shows changes: it leaves to the right and the new one comes in from there. */
   slide: boolean;
-  /** What's above the list stays where it is: from one list view to the other. */
-  keepAboveList?: boolean;
+  /** What both list views share stays where it is (SHARED): from one to the other. */
+  keepShared?: boolean;
 }
 
 /**
@@ -214,7 +226,7 @@ function moveCard({
   after: find,
   place,
   slide,
-  keepAboveList = false,
+  keepShared = false,
 }: CardMove): void {
   const named: HTMLElement[] = [];
   const name = (element: HTMLElement | null, value: string) => {
@@ -227,8 +239,8 @@ function moveCard({
     for (const [key, selector] of Object.entries(FIXED)) {
       name(document.querySelector<HTMLElement>(selector), key);
     }
-    const staying = keepAboveList
-      ? ABOVE_LIST.map((selector) => document.querySelector<HTMLElement>(selector))
+    const staying = keepShared
+      ? SHARED.map((selector) => document.querySelector<HTMLElement>(selector))
       : [];
     staying.forEach((element, i) => name(element, `stay-${i + 1}`));
     name(card, 'card');
@@ -313,9 +325,10 @@ function keepInPlace(scroller: Element): CardMove['place'] {
 }
 
 /**
- * From one list view to the other on a phone: the venue's card stays where it is on the screen, and
- * what it shows changes. What's above the list stays too. False, with nothing done, if it can't: no
- * transitions in the browser, not a phone, reduced motion or no card to keep.
+ * From one list view to the other, on a phone or on desktop: the venue's card stays where it is on the
+ * screen, and what it shows changes. What's above the list stays too, and on desktop the map beside
+ * it. False, with nothing done, if it can't: no transitions in the browser, the gallery in several
+ * columns, reduced motion or no card to keep.
  */
 export function switchView(number: number | null, scroller: Element, update: () => void): boolean {
   const before = number === null ? null : cardOf(number);
@@ -326,7 +339,7 @@ export function switchView(number: number | null, scroller: Element, update: () 
     after: () => cardOf(number!),
     place: keepInPlace(scroller),
     slide: true,
-    keepAboveList: true,
+    keepShared: true,
   });
   return true;
 }

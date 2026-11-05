@@ -101,6 +101,19 @@ describe('view transitions', () => {
     expect(captured.after).toEqual({ ...around, 'in-up-1': 'card-3', 'in-down-1': 'footer' });
   });
 
+  it('on desktop, the map beside the list stays where it is too', () => {
+    const list = document.querySelector('.list')!;
+    const results = document.createElement('div');
+    results.className = 'results';
+    results.innerHTML = '<div class="map" id="map"></div>';
+    list.replaceWith(results);
+    results.prepend(list);
+    switchView(4, scroller, () => {});
+    // The fifth of those shared: the filters, the three above the list (not here) and the map.
+    expect(captured.before).toMatchObject({ 'stay-5': 'map', card: 'card-4' });
+    expect(captured.after).toMatchObject({ 'stay-5': 'map', card: 'card-4' });
+  });
+
   const toVenue = () => (document.body.innerHTML = VENUE);
 
   it('on opening a venue, its card goes under the map, which arrives from above', async () => {
@@ -361,7 +374,7 @@ describe('view transitions', () => {
     expect(sameCard).toBe(false);
   });
 
-  it('there is none without a phone, with reduced motion or without the card', () => {
+  it('there is none in several columns, with reduced motion or without the card', () => {
     const update = vi.fn();
     vi.stubGlobal('matchMedia', () => ({ matches: false }));
     expect(openVenue(3, scroller, update, false)).toBe(false);

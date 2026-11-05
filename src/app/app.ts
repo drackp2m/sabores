@@ -1,6 +1,7 @@
 import {
   ApplicationRef,
   Component,
+  DestroyRef,
   ElementRef,
   Injector,
   afterNextRender,
@@ -9,17 +10,19 @@ import {
   effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 
+import { CardSteps } from './card-steps/card-steps';
 import { Clock } from './clock';
 import { FiltersPanel } from './filters/filters';
 import { Gallery } from './gallery/gallery';
 import { Header, View } from './header/header';
 import { Icon } from './icon/icon';
 import { legacyView } from './legacy-storage';
-import { VenueMap } from './map/map';
-import { isTouch, reducedMotion, remInPx } from './media';
+import { VenueMap, loadMapLibre } from './map/map';
+import { desktop, isTouch, reducedMotion, remInPx } from './media';
 import { OriginPanel } from './origin/origin';
 import { ScrollPosition } from './scroll-position';
 import { Seal } from './seal/seal';
@@ -43,9 +46,16 @@ import { PhotoViewer } from './viewer/viewer';
 
 type Sort = 'number' | 'nearest' | 'closing';
 
+/**
+ * How long the map beside the list waits for typing in the search box to stop before it rearranges
+ * itself.
+ */
+const MAP_DELAY = 500;
+
 @Component({
   selector: 'app-root',
   imports: [
+    CardSteps,
     FiltersPanel,
     Gallery,
     Header,
@@ -77,6 +87,16 @@ export class App {
   /** The scroll-to-top button, once the top of the list or the gallery has gone under the header. */
   protected readonly showScrollTop = signal(false);
   private readonly scrollTopMark = viewChild<ElementRef<HTMLElement>>('scrollTopMark');
+  private readonly desktopQuery = desktop();
+  /**
+   * On desktop the list or the gallery has the map beside it, and its map buttons take it to their
+   * venue: there's no venue view. A signal, for turning an iPad.
+   */
+  protected readonly desktop = signal(this.desktopQuery.matches);
+  /** The map beside the list or the gallery, on desktop. */
+  private readonly listMap = viewChild<VenueMap>('listMap');
+  /** The venue in the middle of the map beside the list: its map button has nothing to do. */
+  protected readonly centeredBeside = computed(() => this.listMap()?.centered() ?? null);
   /** The venue view's map. */
   private readonly detailMap = viewChild<VenueMap>('detailMap');
   /** The venue view's cards, side by side. */
@@ -110,6 +130,13 @@ export class App {
   private cardOnItsWay: number | null = null;
 
   protected readonly filtered = computed(() => this.filter(this.filters()));
+  private readonly searchText = computed(() => this.filters().text);
+  /** The search text for the map beside the list: the one from when typing stops (MAP_DELAY). */
+  private readonly mapText = signal(this.filters().text);
+  /** The same ones, but with the text in mapText (the map doesn't care about the order). */
+  protected readonly onMap = computed(() =>
+    this.filter({ ...this.filters(), text: this.mapText() }),
+  );
 
   protected readonly visible = computed(() => {
     const venues = this.filtered();
@@ -137,6 +164,28 @@ export class App {
   private listScroll: number | null = 0;
 
   constructor() {
+    // On desktop it will be needed: download it along with the data, without waiting for it. If it
+    // fails, the map will say so.
+    if (this.desktop()) loadMapLibre().catch(() => {});
+    const onDesktop = ({ matches }: MediaQueryListEvent) => this.desktop.set(matches);
+    this.desktopQuery.addEventListener('change', onDesktop);
+    inject(DestroyRef).onDestroy(() => this.desktopQuery.removeEventListener('change', onDesktop));
+    // Turning an iPad (or widening the window) in the venue view: on desktop there is none. Back in
+    // the list on that venue, with the map beside it on it.
+    effect(() => {
+      if (this.desktop()) untracked(() => this.leaveForDesktop());
+    });
+    effect((onCleanup) => {
+      const text = this.searchText();
+      // With the search empty («Limpiar», say) there's no more typing to wait for.
+      if (!text) {
+        this.mapText.set('');
+        return;
+      }
+      const delay = setTimeout(() => this.mapText.set(text), MAP_DELAY);
+      onCleanup(() => clearTimeout(delay));
+    });
+
     effect(() => this.store.saveSetting('filters', this.filters()));
     // «Horarios revisados» changes the schedules everywhere: cards, statuses, map, filters and sorting.
     effect(() => this.tapasRoute.reviewedHours.set(this.filters().reviewedHours));
@@ -270,9 +319,9 @@ export class App {
   }
 
   /**
-   * From one list view to the other, on the venue the scroll is on. On a phone, as a transition that
-   * keeps it in place on the screen (view-switch.ts), with the new view rendered at once; otherwise,
-   * landing on it.
+   * From one list view to the other, on the venue the scroll is on. On a phone or on desktop, as a
+   * transition that keeps it in place on the screen (view-switch.ts), with the new view rendered at
+   * once; otherwise (the gallery in several columns), landing on it.
    */
   private switchTo(view: View): void {
     const venue = this.position.current();
@@ -319,11 +368,47 @@ export class App {
   }
 
   /**
-   * From a venue's map button, in either view: it opens with its map showing it once it's on the
-   * page, and the list's cards side by side below it, with its own in the middle. Not as a history
-   * entry: the browser's back button doesn't return from it, only «Volver» (goBack). On a phone, as a
-   * transition that takes the card to its place under the map (view-switch.ts), with the venue
-   * rendered at once.
+   * A venue's map button, in either list view: on desktop, the map beside it goes to the venue (whole
+   * in sight, see VenueMap.focus); on phones, the venue opens (openVenue).
+   */
+  protected locate(number: number): void {
+    const map = this.listMap();
+    if (map) map.focus(number);
+    else this.openVenue(number);
+  }
+
+  /**
+   * On desktop, clicking a marker takes the list to its card, but no lower than where the list ends
+   * next to the map: any further, the footer would come in and push the map up. The last cards stay
+   * lower on the screen, still in sight.
+   */
+  protected showInList(number: number): void {
+    const card = this.card(number);
+    const results = card?.closest('.results');
+    const map = results?.querySelector<HTMLElement>(':scope > .map');
+    if (!card || !map) return;
+    // Where the card would stay, and the map stays: below the header (scroll-padding-top).
+    const top = this.headerHeight + remInPx();
+    const lowest = results!.getBoundingClientRect().bottom - (top + map.offsetHeight);
+    const by = Math.min(card.getBoundingClientRect().top - top, lowest);
+    this.scroller.scrollBy({ top: by, behavior: this.scrollBehavior });
+  }
+
+  /** On desktop there's no venue view (see desktop): in the list on the venue, the map on it. */
+  private leaveForDesktop(): void {
+    const number = this.detail();
+    if (number === null) return;
+    this.closeDetail();
+    this.landOn(number);
+    afterNextRender(() => this.listMap()?.focus(number), { injector: this.injector });
+  }
+
+  /**
+   * From a venue's map button, in either view, below desktop (see locate): it opens with its map
+   * showing it once it's on the page, and the list's cards side by side below it, with its own in the
+   * middle. Not as a history entry: the browser's back button doesn't return from it, only «Volver»
+   * (goBack). On a phone, as a transition that takes the card to its place under the map
+   * (view-switch.ts), with the venue rendered at once.
    */
   protected openVenue(number: number): void {
     this.listScroll = this.scroller.scrollTop;
@@ -356,7 +441,11 @@ export class App {
     this.choose(number);
   }
 
-  /** On the map, its marker: its card comes to the middle, and the map stays where it is. */
+  /**
+   * On the map, its marker: its card comes to the middle, and the map stays where it is (map.ts knows
+   * it was touched there). The same with a mouse from the buttons for the card before or after
+   * (card-steps.ts), with the map going to it.
+   */
   protected selectVenue(number: number): void {
     if (number === this.detail()) return;
     this.cardOnItsWay = number;
@@ -409,20 +498,22 @@ export class App {
   protected goBack(): void {
     const number = this.detail();
     const top = this.listScroll;
-    const back = () => {
-      this.detail.set(null);
-      this.detailVenues.set([]);
-      this.cardOnItsWay = null;
-    };
     const render = () => {
-      back();
+      this.closeDetail();
       this.appRef.tick();
     };
     const inList = this.visible().some((venue) => venue.number === number);
     const toGallery = this.view() === 'photos';
     if (number !== null && inList && closeVenue(number, this.scroller, render, toGallery)) return;
-    back();
+    this.closeDetail();
     if (top === null) this.landOn(number);
     else afterNextRender(() => this.scroller.scrollTo({ top }), { injector: this.injector });
+  }
+
+  /** Out of the venue view. */
+  private closeDetail(): void {
+    this.detail.set(null);
+    this.detailVenues.set([]);
+    this.cardOnItsWay = null;
   }
 }

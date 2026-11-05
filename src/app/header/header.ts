@@ -15,7 +15,8 @@ const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
 
 /**
  * The page's header, always in sight: the name, and the menu with the view and the theme. The view is
- * App's, which changes it (on a phone, as a transition: view-switch.ts); the theme, the menu's own.
+ * App's, which changes it (on a phone or on desktop, as a transition: view-switch.ts); the theme, the
+ * menu's own.
  */
 @Component({
   selector: 'app-header',
@@ -246,8 +247,8 @@ const THEMES: readonly { theme: Theme; name: string; icon: IconName }[] = [
     }
 
     // Dropdown, in the page's colors. It comes down from behind the header and goes back up behind it,
-    // fading (menu-drop, in styles/_view-switch.scss: on a phone, choosing a view also takes it away
-    // that way).
+    // fading (menu-drop, in styles/_view-switch.scss: on a phone or on desktop, choosing a view also
+    // takes it away that way).
     .menu {
       display: grid;
       grid-template-columns: minmax(0, 1fr); // Within the maximum width, even if it's a tight fit.
@@ -345,8 +346,8 @@ export class Header {
   }
 
   /**
-   * Closed first: on a phone, the new view arrives as a transition in which the menu goes back up
-   * (view-switch.ts).
+   * Closed first: on a phone or on desktop, the new view arrives as a transition in which the menu
+   * goes back up (view-switch.ts).
    */
   protected chooseView(view: View): void {
     this.menuOpen.set(false);

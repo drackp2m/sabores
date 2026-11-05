@@ -130,16 +130,22 @@ under the days says which schedule it is, and pressing it switches between the g
 underlined) and the corrected one (what gets cut, highlighted; what's closed, crossed out).
 
 The header switches between the «Detalles» view and the «Fotos» view: each venue with the same heading
-as its card, the photos, the status, its seals and its heart, with the same filters. Neither view has a
-map: each venue's map button opens its card with the map above it (on desktop, next to it). The map
-shows all the list's venues and, below it, their cards side by side, one at a time: the one in the
-middle is the venue, which the map goes to (with a starting point, to its whole route); touching a
-venue on the map brings its card. A card's map button is only there while its venue isn't in the middle
-of the map and, without a starting point, only on the card in the middle. The floating «Volver» button
+as its card, the photos, the status, its seals and its heart, with the same filters. On desktop (960 px
+or wider) both have the map fixed beside them: each venue's map button takes it there, touching a venue
+on the map takes the list to its card, and the map button is only there while its venue isn't in the
+middle of the map. Below that, neither view has a map: each venue's map button opens its card with the
+map above it. The map shows all the list's venues and, below it, their cards side by side, one at a
+time: the one in the middle is the venue, which the map goes to (with a starting point, to its whole
+route); touching a venue on the map brings its card; with a mouse, where they can't be swiped, so do the
+floating buttons for the card before and the one after. Widening the window (or turning an iPad) there
+goes back to the list on the venue, with the map beside it on it. A card's map button is only there
+while its venue isn't in the middle of the map and, without a starting point, only on the card in the
+middle. The floating «Volver» button
 returns to the list or the gallery where it was left, or on the venue if another one was chosen (on a
 phone, around the card, which stays where it is; opening a venue isn't a history entry: the browser's
-back button doesn't return from it). Switching view keeps the scroll on the same venue; from a venue it
-stays there, and the new view shows on going back.
+back button doesn't return from it). Switching view keeps the scroll on the same venue (on a phone and
+on desktop, its card stays where it is, and so does the map beside it); from a venue it stays there, and
+the new view shows on going back.
 
 Code, comments, file names and commands are in English; only the text the app shows is in Spanish.
 
@@ -158,6 +164,7 @@ src/app/
   media.ts           media queries for the code (the styles' are in src/styles/_media.scss)
   animate-height.ts  height animation, for the schedule and «Ver más»
   venue-card/        a venue's card with its tapas, notices and schedule
+  card-steps/        with a mouse, the buttons for the card before and after in the venue view
   gallery/           the «Fotos» view
   map/               MapLibre map with the filtered venues
   filters/           the filters' form

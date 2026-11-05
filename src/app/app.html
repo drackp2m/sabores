@@ -1,7 +1,7 @@
 <app-header [view]="view()" (viewSelect)="changeView($event)" />
 
 @if (detail() !== null) {
-  <!-- On phones the map on top; on desktop, fixed on the right of the cards. -->
+  <!-- Only below desktop (app.ts): the map on top. -->
   <main class="detail content">
     <app-map
       #detailMap
@@ -51,25 +51,42 @@
       }
 
       <div #scrollTopMark class="scroll-top-mark"></div>
-      @if (view() === 'details') {
-        <section class="list" aria-label="Locales">
-          @for (venue of visible(); track venue.number) {
-            <app-venue-card
-              [attr.id]="'venue-' + venue.number"
-              [venue]="venue"
-              [day]="filters().day"
-              (showOnMap)="openVenue(venue.number)"
-            />
-          } @empty {
+      <!-- On desktop, the map fixed on the right of the list or the gallery; on phones, no map. -->
+      <div class="results">
+        @if (view() === 'details') {
+          <section class="list" aria-label="Locales">
+            @for (venue of visible(); track venue.number) {
+              <app-venue-card
+                [attr.id]="'venue-' + venue.number"
+                [venue]="venue"
+                [day]="filters().day"
+                [mapButton]="venue.number !== centeredBeside()"
+                (showOnMap)="locate(venue.number)"
+              />
+            } @empty {
+              <p class="message">Ningún local cumple los filtros.</p>
+            }
+          </section>
+        } @else {
+          <app-gallery
+            [venues]="visible()"
+            [centered]="centeredBeside()"
+            (showOnMap)="locate($event)"
+          />
+          @if (!visible().length) {
             <p class="message">Ningún local cumple los filtros.</p>
           }
-        </section>
-      } @else {
-        <app-gallery [venues]="visible()" (showOnMap)="openVenue($event)" />
-        @if (!visible().length) {
-          <p class="message">Ningún local cumple los filtros.</p>
         }
-      }
+        @if (desktop()) {
+          <app-map
+            #listMap
+            class="map"
+            [venues]="onMap()"
+            [origin]="location.origin()"
+            (venueSelect)="showInList($event)"
+          />
+        }
+      </div>
     </main>
   } @else if (tapasRoute.error()) {
     <p class="message error">No se han podido cargar los datos (<code>data/venues.json</code>).</p>
@@ -94,6 +111,18 @@
     >
       <app-icon name="back" />Volver
     </button>
+  }
+
+  <!-- With a mouse, where the cards can't be swiped: the one before and the one after. -->
+  @if (detail() !== null) {
+    <app-card-steps
+      class="card-steps"
+      [venues]="detailVenues()"
+      [current]="detail()"
+      animate.enter="entering"
+      animate.leave="leaving"
+      (venueSelect)="selectVenue($event)"
+    />
   }
 
   @if (showScrollTop()) {

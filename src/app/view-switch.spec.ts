@@ -263,6 +263,39 @@ describe('view transitions', () => {
     expect(sameCard).toBe(true);
   });
 
+  describe('the header', () => {
+    /** Going back to the list, scrolled 650px: not sticking, the header would be that far up. */
+    function goBack(): HTMLElement {
+      toVenue();
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        if (!this.matches('app-header')) return at(this, 100);
+        return at(this, (parseFloat((this as HTMLElement).style.top) || 0) - 650);
+      });
+      closeVenue(3, scroller, () => (document.body.innerHTML = LIST), false);
+      return document.querySelector('app-header')!;
+    }
+
+    it('with a mouse, stays at the top of the screen without sticking until the end', async () => {
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: !query.includes('reduce') && !query.includes('hover'),
+      }));
+      const header = goBack();
+      expect(header.style.position).toBe('relative');
+      expect(header.style.top).toBe('650px');
+
+      finish();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(header.style.cssText).toBe('');
+    });
+
+    it('on touch screens, fixed out of what scrolls, is left as it is', () => {
+      expect(goBack().style.position).toBe('');
+    });
+  });
+
   describe('between two pixels', () => {
     const holder = (card: Element) => card.closest('[id^="venue-"]')!.parentElement!;
     const nudge = (card: Element) => parseFloat(holder(card).style.marginTop) || 0;

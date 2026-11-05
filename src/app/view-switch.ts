@@ -1,4 +1,4 @@
-import { isPhone, reducedMotion } from './media';
+import { isPhone, isTouch, reducedMotion } from './media';
 
 /**
  * Fixed on the screen, the same element in every view. The floating buttons go on a layer of their
@@ -10,6 +10,29 @@ const FIXED = {
   header: 'app-header',
   floating: '.floating',
 };
+
+/**
+ * With a mouse (Safari's responsive mode on a Mac, a narrow window) the document scrolls, with the
+ * header sticky at its top (styles/_base.scss). In the new picture of a page the update leaves
+ * scrolled, as on going back to the list, Safari left it out: its place there, but empty. Not on
+ * opening a venue, with the new page at the top: sticky, it's where it would be anyway. Until the
+ * transition ends, it doesn't stick: it's moved by hand to where it would, the top of the screen.
+ * On touch screens it's fixed, out of what scrolls (app.scss).
+ */
+function holdHeader(): HTMLElement | null {
+  const header = isTouch() ? null : document.querySelector<HTMLElement>(FIXED.header);
+  if (!header) return null;
+  header.style.setProperty('position', 'relative');
+  header.style.setProperty('top', '0px');
+  const below = -header.getBoundingClientRect().top;
+  header.style.setProperty('top', `${Math.max(0, below)}px`);
+  return header;
+}
+
+function releaseHeader(header: HTMLElement | null): void {
+  header?.style.removeProperty('position');
+  header?.style.removeProperty('top');
+}
 
 /**
  * The floating buttons arriving with the new view (animate.enter, in app.html). Their way in starts as
@@ -229,6 +252,7 @@ function moveCard({
   root.classList.toggle(SAME_CARD, !slide);
   const kept = mapButton(before)?.classList.contains('idle') ? KEPT.hidden : KEPT.shown;
   let keptButton: HTMLElement | null | undefined;
+  let header: HTMLElement | null = null;
   nameAll(before, 'out');
   const menu = document.querySelector<HTMLElement>(MENU);
   name(menu, 'menu');
@@ -251,6 +275,7 @@ function moveCard({
     keptButton?.classList.add(kept);
     place(after, top);
     sameFraction(after, top);
+    header = holdHeader();
     const edges = after.getBoundingClientRect();
     shift('top', edges.top - top);
     shift('bottom', edges.bottom - bottom);
@@ -268,6 +293,7 @@ function moveCard({
     clear();
     root.classList.remove(SAME_CARD);
     keptButton?.classList.remove(kept);
+    releaseHeader(header);
     root.style.removeProperty('--card-top');
     root.style.removeProperty('--card-bottom');
   };

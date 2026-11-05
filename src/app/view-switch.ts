@@ -101,9 +101,11 @@ const SAME_CARD = 'same-card';
 /**
  * On the new card's map button while it arrives: as it was in the view it comes from, so that the
  * card looks the same in both pictures (in the venue view the one in the middle may have none, see
- * VenueHeader). Once there, it comes or goes.
+ * VenueHeader). From the moment the transition starts, it comes or goes along with all of it
+ * (SWITCHING), until it ends.
  */
 const KEPT = { shown: 'kept-shown', hidden: 'kept-hidden' };
+const SWITCHING = 'switching';
 
 function mapButton(card: HTMLElement | null): HTMLElement | null | undefined {
   return card?.querySelector<HTMLElement>('.map-button');
@@ -295,16 +297,20 @@ function moveCard({
     photosAtOnce(named);
   });
   // If it can't be shown (the tab in the background, say), the view just changes. The floating
-  // buttons come in anyway.
+  // buttons come in anyway; the map button, as it always does once the card is there.
   const arrive = () => {
     started = true;
     arrivals.forEach((animation) => animation.play());
   };
-  transition.ready.then(arrive, arrive);
+  const start = () => {
+    arrive();
+    keptButton?.classList.replace(kept, SWITCHING);
+  };
+  transition.ready.then(start, arrive);
   const end = () => {
     clear();
     root.classList.remove(SAME_CARD);
-    keptButton?.classList.remove(kept);
+    keptButton?.classList.remove(kept, SWITCHING);
     releaseHeader(header);
     root.style.removeProperty('--card-top');
     root.style.removeProperty('--card-bottom');

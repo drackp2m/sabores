@@ -344,23 +344,53 @@ describe('view transitions', () => {
     });
   });
 
-  it('the card arriving keeps its map button as it was in the other view, until it’s there', async () => {
+  it('the card arriving keeps its map button as it was in the other view, until the transition starts', async () => {
     // In the list it has it; in the middle of the venue view, with its venue in the middle of the map,
     // it wouldn't.
     openVenue(3, scroller, toVenue, false);
     const button = document.querySelector('#card-3 .map-button')!;
     expect(button.classList).toContain('kept-shown');
 
+    // From then on, it goes along with the whole of it.
+    await Promise.resolve();
+    expect(button.classList).not.toContain('kept-shown');
+    expect(button.classList).toContain('switching');
+
+    finish();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button.classList).not.toContain('switching');
+  });
+
+  it('and back to the list, without it as it was in the venue view, and then coming', async () => {
+    toVenue();
+    closeVenue(3, scroller, () => (document.body.innerHTML = LIST), false);
+    const button = document.querySelector('#card-3 .map-button')!;
+    expect(button.classList).toContain('kept-hidden');
+
+    await Promise.resolve();
+    expect(button.classList).not.toContain('kept-hidden');
+    expect(button.classList).toContain('switching');
+  });
+
+  it('with no transition to see, the map button stays as it was until the view has changed', async () => {
+    const finished = new Promise<void>((resolve) => (finish = resolve));
+    Object.assign(document, {
+      startViewTransition: (update: () => unknown) => {
+        update();
+        return { ready: Promise.reject(new Error('skipped')), finished };
+      },
+    });
+    openVenue(3, scroller, toVenue, false);
+    const button = document.querySelector('#card-3 .map-button')!;
+    await Promise.resolve();
+    expect(button.classList).toContain('kept-shown');
+    expect(button.classList).not.toContain('switching');
+
     finish();
     await Promise.resolve();
     await Promise.resolve();
     expect(button.classList).not.toContain('kept-shown');
-  });
-
-  it('and back to the list, without it as it was in the venue view', () => {
-    toVenue();
-    closeVenue(3, scroller, () => (document.body.innerHTML = LIST), false);
-    expect(document.querySelector('#card-3 .map-button')!.classList).toContain('kept-hidden');
   });
 
   it('into the gallery, what the card shows changes', () => {

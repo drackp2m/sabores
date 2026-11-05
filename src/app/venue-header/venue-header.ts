@@ -77,7 +77,8 @@ import { Venue } from '../venues';
         opacity: 0;
       }
 
-      // While its card arrives from another view, as it was there (view-switch.ts).
+      // While its card arrives from another view, as it was there until the transition starts
+      // (view-switch.ts).
       &.kept-shown {
         visibility: visible;
         opacity: 1;
@@ -88,6 +89,13 @@ import { Venue } from '../venues';
         visibility: hidden;
         opacity: 0;
         transition: none;
+      }
+
+      // From then on, it comes or goes evenly along the whole of it, and is there as it ends.
+      &.switching {
+        transition:
+          opacity var(--view-switch) linear,
+          visibility var(--view-switch) linear;
       }
     }
   `,

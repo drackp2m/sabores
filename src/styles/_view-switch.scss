@@ -34,6 +34,12 @@ $arriving: $duration * $arrive;
 // How the card's edges move, and with them what's around it.
 $curve: ease-in-out;
 
+// The whole of it, for what goes along with it on the page: the map button of the card arriving
+// comes or goes from start to end (venue-header.ts).
+:root {
+  --view-switch: #{$duration};
+}
+
 ::view-transition-group(*) {
   animation-duration: $resizing;
   animation-timing-function: $curve;

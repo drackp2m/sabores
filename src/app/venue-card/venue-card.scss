@@ -117,18 +117,79 @@ summary {
   }
 }
 
+// The reviewed hours take part of the schedule away.
+.reviewed {
+  display: inline-flex;
+  color: var(--warning);
+}
+
+// What unfolds, the days and the note below them. On the sides it sticks out as much as the cells are
+// padded, so the text stays aligned with the rest and today's highlight has some room.
+.schedule {
+  margin: 0 -0.5rem;
+  overflow: hidden;
+}
+
 // Five-column grid: the day; the morning slot, right-aligned; the dot, centered; the afternoon slot,
 // left-aligned (so the dot always stays in the same place), and a filler with the rest of the width,
 // so that today's highlight reaches the end. A column with nothing on any day (no mornings, say) takes
-// up nothing. On the sides it sticks out as much as the cells are padded, so the text stays aligned
-// with the rest and the highlight has some room.
+// up nothing.
 dl {
   display: grid;
   grid-template-columns: repeat(4, max-content) 1fr;
   row-gap: 0.15rem;
-  margin: 0 -0.5rem;
-  overflow: hidden;
+  margin: 0;
   font-variant-numeric: tabular-nums;
+
+  // In the guide's schedule, what doesn't fit the reviewed hours is underlined; corrected, what they
+  // cut is highlighted and what they close, crossed out.
+  .trimmed,
+  .closed {
+    text-decoration: underline dotted var(--warning);
+    text-underline-offset: 0.2em;
+  }
+
+  &.corrected {
+    .trimmed {
+      color: var(--warning);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .closed {
+      color: var(--warning);
+      text-decoration: line-through;
+      opacity: 0.75;
+    }
+  }
+}
+
+// Under the days, which schedule it is: the whole notice switches it. Like the card's notes, inside the
+// schedule's sides, with a little room below for the focus ring. The exclamation mark, as big as the
+// one in the summary.
+.notice {
+  display: flex;
+  justify-content: flex-start;
+  width: calc(100% - 1rem);
+  height: auto;
+  margin: 0.5rem 0.5rem 0.2rem;
+  padding: 0.4rem 0.6rem;
+  border-color: transparent;
+  background: var(--warning-soft);
+  color: var(--warning);
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  text-align: left;
+  white-space: normal;
+
+  &:hover:not(:disabled) {
+    border-color: var(--warning);
+    background: var(--warning-soft);
+  }
+
+  app-icon {
+    font-size: 0.88rem;
+  }
 }
 
 // Each day shares the columns of the list, in an element of its own so that it can fade as a whole.

@@ -122,6 +122,13 @@ soonest; then those opening soonest). Each card says how long until it closes or
 
 If it closes before you can get there, the status shows in red.
 
+When a venue's reviewed hours close part of its tapas schedule, an exclamation mark goes between «Horario
+de tapas» and the status. The same mark, in the filters, is «Horarios revisados»: on, each schedule keeps
+only the slots (or the parts of them) when the venue is open, and the statuses, the filters by time and the
+sorting go by that. The reviewed hours never add tapas: the guide's schedule rules. In a card, a notice
+under the days says which schedule it is, and pressing it switches between the guide's (what doesn't fit,
+underlined) and the corrected one (what gets cut, highlighted; what's closed, crossed out).
+
 The header switches between the «Detalles» view and the «Fotos» view: each venue with the same heading
 as its card, the photos, the status, its seals and its heart, with the same filters. Neither view has a
 map: each venue's map button opens its card with the map above it (on desktop, next to it). The map

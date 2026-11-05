@@ -7,15 +7,18 @@ import {
   Venue,
   Weekday,
   arrivalFrom,
+  changeKind,
   closingKey,
   describeStatus,
   drinkTypes,
   filterVenues,
   formatDistance,
   formatDuration,
+  limitedSchedule,
   nextHour,
   openBetween,
   photoUrl,
+  scheduleChanges,
   scheduleStatus,
   sortBy,
   sortDrinks,
@@ -24,6 +27,7 @@ import {
   statusKind,
   tapaKey,
   timeRange,
+  unchanged,
   weekdayOf,
 } from './venues';
 
@@ -134,6 +138,73 @@ describe('openBetween', () => {
       expect(openBetween(friday, '', '19:00', '02:00')).toBe(true);
       expect(openBetween(friday, '', '21:00', '02:00')).toBe(false);
     });
+  });
+});
+
+describe('scheduleChanges and limitedSchedule', () => {
+  const slot = (open: string, close: string | null): TimeSlot => ({ open, close });
+  const schedule = week([slot('12:00', '14:00'), slot('20:00', '22:00')]);
+  const changes = (
+    reviewedHours: Partial<Record<Weekday, TimeSlot[]>>,
+    tapas: Partial<Record<Weekday, TimeSlot[]>> = schedule,
+  ) =>
+    scheduleChanges(
+      testVenue({
+        schedule: { ...week(), ...tapas },
+        reviewedHours: { ...week(), ...reviewedHours },
+      }),
+    );
+  const limit = (...args: Parameters<typeof changes>) => limitedSchedule(changes(...args)!);
+
+  it('there are none without reviewed hours, or if they take nothing away', () => {
+    expect(scheduleChanges(testVenue({ schedule }))).toBeNull();
+    expect(changes(week([slot('11:00', '23:30')]))).toBeNull();
+  });
+
+  it('tell what happens to each slot: nothing, cut or closed', () => {
+    const monday = changes({ monday: [slot('13:00', '18:00')] })!.monday;
+    expect(monday).toEqual([
+      { slot: slot('12:00', '14:00'), parts: [slot('13:00', '14:00')] },
+      { slot: slot('20:00', '22:00'), parts: [] },
+    ]);
+    expect(monday.map(changeKind)).toEqual(['trimmed', 'closed']);
+    expect(changeKind({ slot: slot('12:00', '14:00'), parts: [slot('12:00', '14:00')] })).toBe(
+      'none',
+    );
+  });
+
+  it('only leaves the slots, or the parts of them, when the venue is open', () => {
+    const limited = limit({
+      ...week([slot('11:00', '18:00')]),
+      friday: [slot('13:00', '21:00')],
+      sunday: [],
+    })!;
+    expect(limited.monday).toEqual([slot('12:00', '14:00')]);
+    expect(limited.friday).toEqual([slot('13:00', '14:00'), slot('20:00', '21:00')]);
+    expect(limited.sunday).toEqual([]);
+  });
+
+  it('never adds tapas: a venue open all day keeps its slots as they are', () => {
+    const limited = limit({ ...week([slot('00:00', '00:00')]), monday: [] })!;
+    expect(limited.tuesday).toEqual(schedule.tuesday);
+    expect(limited.monday).toEqual([]);
+  });
+
+  it('ends "until closing time" when the venue closes, if that is before midnight', () => {
+    const limited = limit(
+      { ...week([slot('09:00', '23:00')]), saturday: [slot('09:00', '02:00')] },
+      week([slot('20:00', null)]),
+    )!;
+    expect(limited.friday).toEqual([slot('20:00', '23:00')]);
+    expect(limited.saturday).toEqual([slot('20:00', null)]);
+  });
+
+  it('counts what the night before goes on after midnight', () => {
+    const limited = limit(
+      { saturday: [slot('20:00', '02:00')] },
+      { sunday: [slot('00:30', '03:00')] },
+    )!;
+    expect(limited.sunday).toEqual([slot('00:30', '02:00')]);
   });
 });
 
@@ -469,18 +540,36 @@ describe('formats', () => {
 
   it('splits a day’s slots into morning and afternoon', () => {
     const slot = (open: string, close: string | null): TimeSlot => ({ open, close });
-    expect(splitSlots([slot('12:00', '16:00'), slot('19:00', null)])).toEqual({
-      morning: '12:00–16:00',
-      afternoon: '19:00–cierre',
+    const text = (text: string) => ({ text, change: 'none' });
+    const split = (...slots: TimeSlot[]) => splitSlots(unchanged(slots));
+    expect(split(slot('12:00', '16:00'), slot('19:00', null))).toEqual({
+      morning: [text('12:00–16:00')],
+      afternoon: [text('19:00–cierre')],
     });
-    expect(splitSlots([slot('13:00', '15:00')])).toEqual({
-      morning: '13:00–15:00',
-      afternoon: null,
+    expect(split(slot('13:00', '15:00'))).toEqual({
+      morning: [text('13:00–15:00')],
+      afternoon: [],
     });
-    expect(splitSlots([slot('19:00', '21:00')])).toEqual({
-      morning: null,
-      afternoon: '19:00–21:00',
+    expect(split(slot('19:00', '21:00'))).toEqual({
+      morning: [],
+      afternoon: [text('19:00–21:00')],
     });
-    expect(splitSlots([])).toEqual({ morning: null, afternoon: null });
+    expect(split()).toEqual({ morning: [], afternoon: [] });
+  });
+
+  it('with the corrections, shows what is left of each slot, in the same column', () => {
+    const slot = (open: string, close: string | null): TimeSlot => ({ open, close });
+    const day = [
+      { slot: slot('12:00', '14:00'), parts: [] },
+      { slot: slot('19:00', '22:00'), parts: [slot('19:00', '21:00')] },
+    ];
+    expect(splitSlots(day)).toEqual({
+      morning: [{ text: '12:00–14:00', change: 'closed' }],
+      afternoon: [{ text: '19:00–22:00', change: 'trimmed' }],
+    });
+    expect(splitSlots(day, true)).toEqual({
+      morning: [{ text: '12:00–14:00', change: 'closed' }],
+      afternoon: [{ text: '19:00–21:00', change: 'trimmed' }],
+    });
   });
 });

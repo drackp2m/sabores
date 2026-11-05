@@ -74,6 +74,12 @@ import { UserLocation } from '../user-location';
       strong {
         color: var(--text);
       }
+
+      // «Quitar»: the cross only takes up the middle half of its canvas (6 to 18 of 24). Cropped by
+      // about 3 of those on each side, it stays the same size, closer to the text and to the edge.
+      app-icon {
+        margin-inline: -0.15em;
+      }
     }
 
     .message {

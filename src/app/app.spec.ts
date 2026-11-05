@@ -843,6 +843,65 @@ describe('App', () => {
     expect(el.querySelector<HTMLSelectElement>('.sort select')!.value).toBe('closing');
   });
 
+  it('«Horarios revisados» limits the schedules their reviewed hours close part of', async () => {
+    const reviewed = {
+      ...DATA.venues[0],
+      reviewedHours: week([{ open: '09:00', close: '18:00' }]),
+    };
+    const { fixture, el, press } = await start({ ...DATA, venues: [reviewed, DATA.venues[1]] });
+    const mark = (number: number) => el.querySelector(`#venue-${number} summary .reviewed`);
+    const slots = (number: number) => el.querySelector(`#venue-${number} dd.morning span`)!;
+    const notice = () => el.querySelector('#venue-1 .notice')!.textContent!.trim();
+    // Only says so: it's not a button.
+    expect(mark(1)!.tagName).toBe('SPAN');
+    expect(mark(2)).toBeNull();
+    for (const summary of el.querySelectorAll<HTMLElement>('app-venue-card summary')) {
+      summary.click();
+    }
+    await fixture.whenStable();
+    // The guide's, with what doesn't fit underlined.
+    expect(slots(1).textContent).toBe('00:00–cierre');
+    expect(slots(1).className).toBe('trimmed');
+    expect(notice()).toBe(
+      'El horario original no coincide con el horario revisado. Pulsa este aviso para ver la revisión.',
+    );
+    // Out of the grid of the days.
+    expect(el.querySelector('#venue-1 dl .notice')).toBeNull();
+
+    await press('.hours label', 'Horarios revisados');
+    expect(slots(1).textContent).toBe('09:00–18:00');
+    expect(notice()).toBe(
+      'Estás viendo el horario revisado. Pulsa este aviso para ver el horario original.',
+    );
+    expect(slots(2).textContent).toBe('00:00–cierre');
+    expect(el.querySelector('#venue-2 .notice')).toBeNull();
+
+    await press('.actions button', 'Limpiar');
+    expect(slots(1).textContent).toBe('00:00–cierre');
+  });
+
+  it('the notice under the schedule switches it between the original and the revised one', async () => {
+    const reviewed = {
+      ...DATA.venues[0],
+      reviewedHours: week([{ open: '09:00', close: '18:00' }]),
+    };
+    const { fixture, el, press } = await start({ ...DATA, venues: [reviewed, DATA.venues[1]] });
+    const schedule = el.querySelector<HTMLDetailsElement>('#venue-1 details')!;
+    const slots = () => el.querySelector('#venue-1 dd.morning')!.textContent!.trim();
+    // The mark in the summary opens and closes the schedule, like the rest of it.
+    el.querySelector<HTMLElement>('#venue-1 summary .reviewed')!.click();
+    await fixture.whenStable();
+    expect(schedule.open).toBe(true);
+    expect(slots()).toBe('00:00–cierre');
+
+    await press('#venue-1 .notice');
+    expect(slots()).toBe('09:00–18:00');
+    await press('#venue-1 .notice');
+    expect(slots()).toBe('00:00–cierre');
+    expect(schedule.open).toBe(true);
+    expect(el.querySelector<HTMLInputElement>('.hours input')!.checked).toBe(false);
+  });
+
   it('creates the schedule the first time it opens and keeps it', async () => {
     const { fixture, el } = await start();
     const cards = el.querySelectorAll('app-venue-card');

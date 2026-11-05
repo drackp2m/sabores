@@ -36,33 +36,71 @@
   <details #scheduleDetails [open]="startsOpen()">
     <summary [class.open]="scheduleOpen()" (click)="toggleSchedule($event, scheduleDetails)">
       <span>Horario de tapas</span>
+      <!-- Only says so: the notice under the days switches the schedule. -->
+      @if (changes()) {
+        <span
+          class="reviewed"
+          role="img"
+          aria-label="El horario original no coincide con el horario revisado"
+        >
+          <app-icon name="alert" />
+        </span>
+      }
       <app-schedule-status [venue]="venue().number" />
     </summary>
     @if (scheduleCreated()) {
-      <dl>
-        <!-- Grid: day · morning (right-aligned) · dot · afternoon (left-aligned) · filler up to the end. -->
-        @for (d of week(); track d.id) {
-          @let isToday = d.id === today();
-          <div class="day" [class.today]="isToday">
-            <dt [class.active]="d.id === day()" [attr.aria-current]="isToday ? 'date' : null">
-              {{ d.name }}
-            </dt>
-            @if (d.morning || d.afternoon) {
-              <dd class="morning">{{ d.morning }}</dd>
-              <!-- The dot, with its padding, only with two slots: if no day has one, the column takes up nothing. -->
-              <dd class="separator" aria-hidden="true">
-                @if (d.morning && d.afternoon) {
-                  <span>·</span>
-                }
-              </dd>
-              <dd class="afternoon">{{ d.afternoon }}</dd>
-            } @else {
-              <dd class="no-tapas">Sin tapas</dd>
-            }
-            <dd class="filler" aria-hidden="true"></dd>
-          </div>
+      <!-- What unfolds: the days and, below them, the note about the reviewed hours. -->
+      <div class="schedule">
+        <!-- Corrected, what the reviewed hours cut is highlighted and what they close, crossed out. -->
+        <dl [class.corrected]="corrected()">
+          <!-- Grid: day · morning (right-aligned) · dot · afternoon (left-aligned) · filler up to the end. -->
+          @for (d of week(); track d.id) {
+            @let isToday = d.id === today();
+            <div class="day" [class.today]="isToday">
+              <dt [class.active]="d.id === day()" [attr.aria-current]="isToday ? 'date' : null">
+                {{ d.name }}
+              </dt>
+              @if (d.morning.length || d.afternoon.length) {
+                <dd class="morning">
+                  @for (slot of d.morning; track $index) {
+                    <span
+                      [class]="slot.change"
+                      [attr.role]="corrected() && slot.change === 'closed' ? 'deletion' : null"
+                      >{{ slot.text }}</span
+                    >
+                  }
+                </dd>
+                <!-- The dot, with its padding, only with two slots: if no day has one, the column takes up nothing. -->
+                <dd class="separator" aria-hidden="true">
+                  @if (d.morning.length && d.afternoon.length) {
+                    <span>·</span>
+                  }
+                </dd>
+                <dd class="afternoon">
+                  @for (slot of d.afternoon; track $index) {
+                    @if (!$first) {
+                      ·
+                    }
+                    <span
+                      [class]="slot.change"
+                      [attr.role]="corrected() && slot.change === 'closed' ? 'deletion' : null"
+                      >{{ slot.text }}</span
+                    >
+                  }
+                </dd>
+              } @else {
+                <dd class="no-tapas">Sin tapas</dd>
+              }
+              <dd class="filler" aria-hidden="true"></dd>
+            </div>
+          }
+        </dl>
+        @if (changes()) {
+          <button type="button" class="notice" (click)="toggleCorrected()">
+            <app-icon name="alert" />{{ notice() }}
+          </button>
         }
-      </dl>
+      </div>
     }
   </details>
 

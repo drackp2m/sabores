@@ -41,6 +41,11 @@ export interface Venue {
   notes: string[];
   /** A day with no slots serves no tapas. */
   schedule: Record<Weekday, TimeSlot[]>;
+  /**
+   * The venue's own opening hours, reviewed by hand, like schedule: [] = closed that day, and a slot
+   * closing after midnight goes on into the following day. Null if unknown. See limitedSchedule().
+   */
+  reviewedHours: Record<Weekday, TimeSlot[]> | null;
   tapas: Tapa[];
   location: Coordinates | null;
 }
@@ -85,6 +90,11 @@ export interface Filters {
   to: string;
   /** «Abierto ahora»: the day and both ends follow the clock (nextHour()) until one is changed. */
   openNow: boolean;
+  /**
+   * «Horarios revisados»: each venue's schedule, only while it's open according to its reviewed hours
+   * (limitedSchedule()), everywhere: cards, statuses, filters and sorting.
+   */
+  reviewedHours: boolean;
   /** 'yes': some gluten-free tapa; 'optional': "gluten-free on request" counts too. */
   glutenFree: '' | 'yes' | 'optional';
   /** Drink type (Drink.type). */
@@ -110,6 +120,7 @@ export const NO_FILTERS: Filters = {
   from: '',
   to: '',
   openNow: false,
+  reviewedHours: false,
   glutenFree: '',
   drink: '',
   flavorRoute: false,
@@ -213,6 +224,85 @@ function nextDay(day: Weekday): Weekday {
   return WEEKDAYS[(WEEKDAYS.findIndex((d) => d.id === day) + 1) % WEEKDAYS.length].id;
 }
 
+/** A slot of the guide's schedule and what the venue's reviewed hours leave of it. */
+export interface SlotChange {
+  slot: TimeSlot;
+  /** Its parts while the venue is open: the whole slot if nothing changes, none if it's closed. */
+  parts: TimeSlot[];
+}
+
+/** What the reviewed hours do to a slot: nothing, cut part of it or close all of it. */
+export type ChangeKind = 'none' | 'trimmed' | 'closed';
+
+export function changeKind({ slot, parts }: SlotChange): ChangeKind {
+  if (!parts.length) return 'closed';
+  const [part] = parts;
+  return parts.length === 1 && part.open === slot.open && part.close === slot.close
+    ? 'none'
+    : 'trimmed';
+}
+
+/**
+ * What the reviewed hours leave of each slot: only while the venue is open. They never add tapas,
+ * they only take away the slots (or the parts of them) when it's closed; "until closing time" ends when
+ * it closes, if that's before midnight. Null if it has no reviewed hours or they take nothing away.
+ */
+export function scheduleChanges(venue: Venue): Record<Weekday, SlotChange[]> | null {
+  const hours = venue.reviewedHours;
+  if (!hours) return null;
+  const changes = {} as Record<Weekday, SlotChange[]>;
+  WEEKDAYS.forEach(({ id }, i) => {
+    const open = openSpans(hours[id], hours[WEEKDAYS[(i + 6) % 7].id]);
+    changes[id] = venue.schedule[id].map((slot) => {
+      const [start, end] = bounds(slot);
+      const parts = open
+        .map(([opens, closes]) => [Math.max(start, opens), Math.min(end, closes)])
+        .filter(([from, to]) => from < to)
+        .map(([from, to]) => ({
+          open: from === start ? slot.open : fromMinutes(from),
+          close: to === end ? slot.close : fromMinutes(to),
+        }));
+      return { slot, parts };
+    });
+  });
+  const changed = WEEKDAYS.some(({ id }) => changes[id].some((c) => changeKind(c) !== 'none'));
+  return changed ? changes : null;
+}
+
+/** The schedule as the reviewed hours leave it. */
+export function limitedSchedule(
+  changes: Record<Weekday, SlotChange[]>,
+): Record<Weekday, TimeSlot[]> {
+  return Object.fromEntries(
+    WEEKDAYS.map(({ id }) => [id, changes[id].flatMap((change) => change.parts)]),
+  ) as Record<Weekday, TimeSlot[]>;
+}
+
+/** A day's slots with nothing changed: the venues without reviewed hours, or whose hours fit. */
+export function unchanged(slots: readonly TimeSlot[]): SlotChange[] {
+  return slots.map((slot) => ({ slot, parts: [slot] }));
+}
+
+/**
+ * When the venue is open on a day, in minutes since midnight and with the spans that touch joined: its
+ * slots (up to 24:00) and what the day before goes on after midnight.
+ */
+function openSpans(day: readonly TimeSlot[], dayBefore: readonly TimeSlot[]): [number, number][] {
+  const spans = [
+    ...day.map((slot) => bounds(slot)),
+    ...dayBefore
+      .filter((slot) => slot.close !== null && toMinutes(slot.close) < toMinutes(slot.open))
+      .map((slot): [number, number] => [0, toMinutes(slot.close!)]),
+  ].sort((a, b) => a[0] - b[0]);
+  const joined: [number, number][] = [];
+  for (const [opens, closes] of spans) {
+    const last = joined.at(-1);
+    if (last && opens <= last[1]) last[1] = Math.max(last[1], closes);
+    else joined.push([opens, closes]);
+  }
+  return joined;
+}
+
 /**
  * The range that applies when only one end is filled in. Without "to", up to tonight's midnight.
  * Without "from", from now on if it's for today and "to" is still to come; if not, since the day began.
@@ -240,28 +330,35 @@ function formatSlot(slot: TimeSlot): string {
   return `${slot.open}–${slot.close ?? 'cierre'}`;
 }
 
+/** A slot as the card's schedule shows it, with what the reviewed hours do to it. */
+export interface SlotText {
+  text: string;
+  change: ChangeKind;
+}
+
 /** A day's slots in two columns: morning (or midday) and afternoon (or evening). */
 export interface DaySlots {
-  morning: string | null;
-  afternoon: string | null;
+  morning: SlotText[];
+  afternoon: SlotText[];
 }
 
 /**
  * Splits a day's slots so that they line up in columns: with two, one in each; with just one, in the
- * morning column if it starts before 15:00 and in the afternoon one otherwise.
+ * morning column if it starts before 15:00 and in the afternoon one otherwise. Corrected, a slot cut
+ * by the reviewed hours shows what's left of it, and a closed one stays, to be crossed out; if not, as
+ * the guide has them. Either way each slot stays in its column.
  */
-export function splitSlots(slots: readonly TimeSlot[]): DaySlots {
-  if (!slots.length) return { morning: null, afternoon: null };
-  if (slots.length === 1) {
-    const text = formatSlot(slots[0]);
-    return slots[0].open < '15:00'
-      ? { morning: text, afternoon: null }
-      : { morning: null, afternoon: text };
+export function splitSlots(changes: readonly SlotChange[], corrected = false): DaySlots {
+  const texts = (column: readonly SlotChange[]) =>
+    column.map((c): SlotText => {
+      const change = changeKind(c);
+      const slots = corrected && change === 'trimmed' ? c.parts : [c.slot];
+      return { text: slots.map(formatSlot).join(' · '), change };
+    });
+  if (changes.length === 1 && changes[0].slot.open >= '15:00') {
+    return { morning: [], afternoon: texts(changes) };
   }
-  return {
-    morning: formatSlot(slots[0]),
-    afternoon: slots.slice(1).map(formatSlot).join(' · '),
-  };
+  return { morning: texts(changes.slice(0, 1)), afternoon: texts(changes.slice(1)) };
 }
 
 /** Drink types with how many venues serve them: the most common first. */
@@ -464,6 +561,12 @@ function bounds({ open, close }: TimeSlot): [number, number] {
 function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + (m || 0);
+}
+
+/** 'HH:MM' of so many minutes since midnight (24:00 is 00:00). */
+function fromMinutes(minutes: number): string {
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${two(Math.floor(minutes / 60) % 24)}:${two(minutes % 60)}`;
 }
 
 function isoDate(date: Date): string {

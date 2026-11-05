@@ -138,6 +138,8 @@ export class App {
 
   constructor() {
     effect(() => this.store.saveSetting('filters', this.filters()));
+    // «Horarios revisados» changes the schedules everywhere: cards, statuses, map, filters and sorting.
+    effect(() => this.tapasRoute.reviewedHours.set(this.filters().reviewedHours));
     // «Abierto ahora» goes on with the clock: every minute, and on opening the app or coming back.
     effect(() => {
       const hour = nextHour(this.clock.now());

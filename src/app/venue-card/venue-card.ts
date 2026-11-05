@@ -19,16 +19,19 @@ import { reducedMotion } from '../media';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
+import { TapasRoute } from '../tapas-route';
 import { VenueHeader } from '../venue-header/venue-header';
-import { Venue, WEEKDAYS, Weekday, formatSlots, splitSlots, weekdayOf } from '../venues';
+import { Venue, WEEKDAYS, Weekday, formatSlots, splitSlots, unchanged, weekdayOf } from '../venues';
 
 /**
- * The venues whose schedule is open, for the visit: the card in the list and the one in the venue view
- * are different ones, and it stays as it was left from one to the other.
+ * The venues whose schedule is open, and how it's shown, for the visit: the card in the list and the
+ * one in the venue view are different ones, and it stays as it was left from one to the other.
  */
 @Injectable({ providedIn: 'root' })
 export class OpenSchedules {
   private readonly open = new Set<number>();
+  /** The schedules switched with the exclamation mark, with what «Horarios revisados» was then. */
+  private readonly switched = new Map<number, { corrected: boolean; reviewedHours: boolean }>();
 
   has(venue: number): boolean {
     return this.open.has(venue);
@@ -37,6 +40,16 @@ export class OpenSchedules {
   set(venue: number, open: boolean): void {
     if (open) this.open.add(venue);
     else this.open.delete(venue);
+  }
+
+  /** Corrected or not: as «Horarios revisados» says, unless switched since it last changed. */
+  corrected(venue: number, reviewedHours: boolean): boolean {
+    const switched = this.switched.get(venue);
+    return switched?.reviewedHours === reviewedHours ? switched.corrected : reviewedHours;
+  }
+
+  setCorrected(venue: number, corrected: boolean, reviewedHours: boolean): void {
+    this.switched.set(venue, { corrected, reviewedHours });
   }
 }
 
@@ -56,13 +69,42 @@ export class VenueCard {
 
   private readonly clock = inject(Clock);
   private readonly openSchedules = inject(OpenSchedules);
+  private readonly tapasRoute = inject(TapasRoute);
   protected readonly weekdays = WEEKDAYS;
+  /**
+   * What the reviewed hours take away from the guide's schedule (TapasRoute.changes): with it, the
+   * exclamation mark between «Horario de tapas» and its status. Null if nothing.
+   */
+  protected readonly changes = computed(
+    () => this.tapasRoute.changes().get(this.venue().number) ?? null,
+  );
+  /**
+   * Whether the schedule shows the corrections: as «Horarios revisados» says, until the exclamation
+   * mark switches it.
+   */
+  protected readonly corrected = linkedSignal(() =>
+    this.openSchedules.corrected(this.venue().number, this.tapasRoute.reviewedHours()),
+  );
+  /** The notice under the schedule: which one it is, and pressing it switches to the other. */
+  protected readonly notice = computed(() =>
+    this.corrected()
+      ? 'Estás viendo el horario revisado. Pulsa este aviso para ver el horario original.'
+      : 'El horario original no coincide con el horario revisado. Pulsa este aviso para ver la revisión.',
+  );
   /** To highlight today in the schedule. */
   protected readonly today = computed(() => weekdayOf(this.clock.now()));
-  /** Each day with its slots split into columns (morning · afternoon). */
-  protected readonly week = computed(() =>
-    WEEKDAYS.map((day) => ({ ...day, ...splitSlots(this.venue().schedule[day.id]) })),
-  );
+  /**
+   * Each day with its slots split into columns (morning · afternoon). Without changes, venue().schedule
+   * is still the guide's.
+   */
+  protected readonly week = computed(() => {
+    const changes = this.changes();
+    const corrected = this.corrected();
+    return WEEKDAYS.map((day) => ({
+      ...day,
+      ...splitSlots(changes?.[day.id] ?? unchanged(this.venue().schedule[day.id]), corrected),
+    }));
+  });
   /** Whether the schedule starts open: as it was left in the venue's other card. */
   protected readonly startsOpen = computed(() => this.openSchedules.has(this.venue().number));
   /**
@@ -88,6 +130,17 @@ export class VenueCard {
       .join(' · '),
   );
 
+  /** The notice under the schedule: switches it between the guide's and the corrected one. */
+  protected toggleCorrected(): void {
+    const corrected = !this.corrected();
+    this.corrected.set(corrected);
+    this.openSchedules.setCorrected(
+      this.venue().number,
+      corrected,
+      this.tapasRoute.reviewedHours(),
+    );
+  }
+
   /**
    * Opens the schedule making room day by day, with each one appearing as soon as it fits; on closing,
    * the same backwards.
@@ -101,21 +154,29 @@ export class VenueCard {
     event.preventDefault();
     this.folding = !open;
     if (this.unfolding.turnBack()) return;
-    const list = details.querySelector('dl');
-    if (list) this.animateSchedule(details, list, open);
+    if (details.querySelector('.schedule')) this.animateSchedule(details, open);
     else {
       // The first time, as soon as it's on the page (before it gets painted).
-      afterNextRender(() => this.animateSchedule(details, details.querySelector('dl')!, open), {
-        injector: this.injector,
-      });
+      afterNextRender(() => this.animateSchedule(details, open), { injector: this.injector });
     }
   }
 
-  private animateSchedule(details: HTMLDetailsElement, list: HTMLElement, open: boolean): void {
+  /** Line by line: each day and, below them, the note about the reviewed hours. */
+  private animateSchedule(details: HTMLDetailsElement, open: boolean): void {
     details.open = true;
-    this.unfolding.play(list, 0, list.getBoundingClientRect().height, open, () => {
-      details.open = !this.folding;
-      this.folding = false;
-    });
+    const schedule = details.querySelector<HTMLElement>('.schedule')!;
+    const lines = [...schedule.querySelectorAll('.day, .notice')];
+    const height = schedule.getBoundingClientRect().height;
+    this.unfolding.play(
+      schedule,
+      0,
+      height,
+      open,
+      () => {
+        details.open = !this.folding;
+        this.folding = false;
+      },
+      lines,
+    );
   }
 }

@@ -26,10 +26,10 @@ function accelerated(time: number, growing: number): number {
   return time + wave * Math.sin((2 * Math.PI * time) / growing);
 }
 
-/** The children that don't fit in a height, with where they end. */
-function linesBelow(element: HTMLElement, height: number) {
+/** The lines that don't fit in the element's height, with where they end. */
+function linesBelow(element: HTMLElement, height: number, lines: readonly Element[]) {
   const { top } = element.getBoundingClientRect();
-  return [...element.children]
+  return lines
     .map((line) => ({ line, bottom: line.getBoundingClientRect().bottom - top }))
     .filter(({ bottom }) => bottom > height + 1);
 }
@@ -49,8 +49,9 @@ function timeline(
   from: number,
   to: number,
   direction: PlaybackDirection,
+  allLines: readonly Element[],
 ): Animation[] {
-  const lines = linesBelow(element, from);
+  const lines = linesBelow(element, from, allLines);
   const growing = lines.length * LINE_TIME;
   const total = growing + LINE_FADE;
   const offset = (time: number) => Math.min(1, accelerated(time, growing) / total);
@@ -74,7 +75,10 @@ function timeline(
   return animations;
 }
 
-/** Opens an element by lines (its children) and closes it with the same effect played backwards. */
+/**
+ * Opens an element by lines (its children, or those given, even deeper down) and closes it with the
+ * same effect played backwards.
+ */
 export class Unfolding {
   private animations: Animation[] = [];
 
@@ -85,8 +89,15 @@ export class Unfolding {
   }
 
   /** `done` leaves the element as it has to stay: until then, the last frame holds. */
-  play(element: HTMLElement, from: number, to: number, open: boolean, done: () => void): void {
-    const animations = timeline(element, from, to, open ? 'normal' : 'reverse');
+  play(
+    element: HTMLElement,
+    from: number,
+    to: number,
+    open: boolean,
+    done: () => void,
+    lines: readonly Element[] = [...element.children],
+  ): void {
+    const animations = timeline(element, from, to, open ? 'normal' : 'reverse', lines);
     animations[0].onfinish = () => {
       done();
       for (const animation of animations) animation.cancel();

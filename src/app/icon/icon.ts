@@ -66,6 +66,9 @@ const ICONS = {
   expand: ['M15 3h6v6', 'M9 21H3v-6', 'M21 3l-7 7', 'M3 21l7-7'],
   collapse: ['M4 14h6v6', 'M20 10h-6V4', 'M14 10l7-7', 'M3 21l7-7'],
   external: ['M14 4h6v6', 'M20 4l-9 9', 'M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'],
+  clock: ['M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18z', 'M12 7.5V12l3 2'],
+  // An exclamation mark in a circle: the reviewed hours take part of the schedule away.
+  alert: ['M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18z', 'M12 7.5v5', 'M12 16.5h.01'],
   plus: ['M12 5v14', 'M5 12h14'],
   minus: ['M5 12h14'],
   star: [

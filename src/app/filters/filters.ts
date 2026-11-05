@@ -102,7 +102,22 @@ import { TimeField } from './time-field';
                 [formField]="form.openNow"
                 (change)="changeOpenNow(openNow.checked)"
               />
+              <app-icon class="clock" name="clock" />
               Abierto ahora
+            </label>
+          </div>
+        </div>
+
+        <div class="field hours" role="group" aria-labelledby="hours-label">
+          <span id="hours-label">Tener en cuenta</span>
+          <div class="checkboxes">
+            <label
+              class="control"
+              title="Las tapas, solo mientras el local abre según los horarios revisados"
+            >
+              <input type="checkbox" [formField]="form.reviewedHours" />
+              <app-icon class="alert" name="alert" />
+              Horarios revisados
             </label>
           </div>
         </div>
@@ -152,7 +167,8 @@ import { TimeField } from './time-field';
         flex: 1 1 12.5rem; // Next to the day, also on a 375 px phone.
       }
 
-      &.only {
+      &.only,
+      &.hours {
         flex: 1 1 auto;
       }
     }
@@ -173,6 +189,16 @@ import { TimeField } from './time-field';
     .heart {
       color: var(--heart);
       --icon-fill: currentColor;
+    }
+
+    // Green, like the status of the venues serving tapas now.
+    .clock {
+      color: var(--green);
+    }
+
+    // The same as in the cards' schedule.
+    .alert {
+      color: var(--warning);
     }
 
     .range {

@@ -36,6 +36,7 @@ export function testVenue(extra: Partial<Venue> = {}): Venue {
     drinks: [],
     notes: [],
     schedule: week(),
+    reviewedHours: null,
     tapas: [],
     // No coordinates: the map doesn't have to frame anything (jsdom has no sizes).
     location: null,

@@ -215,6 +215,41 @@ describe('view transitions', () => {
     expect(sameCard).toBe(true);
   });
 
+  describe('between two pixels', () => {
+    const holder = (card: Element) => card.closest('[id^="venue-"]')!.parentElement!;
+    const nudge = (card: Element) => parseFloat(holder(card).style.marginTop) || 0;
+    const top = () => document.getElementById('card-3')!.getBoundingClientRect().top;
+
+    /** Card 3 that far from the top in the venue view, and in the list with the scroll at 500. */
+    function card3(inVenue: number, inList: number): void {
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        if (this.id !== 'card-3') return at(this, 100);
+        const where = this.closest('.detail') ? inVenue : inList - (scroller.scrollTop - 500);
+        return at(this, where + nudge(this));
+      });
+    }
+
+    it('on going back, the card is exactly where it was, the fraction too', () => {
+      toVenue();
+      card3(300.75, 451.125);
+      closeVenue(3, scroller, () => (document.body.innerHTML = LIST), false);
+      // 150.375px up: 150 scrolling, and the rest moving the list.
+      expect(scroller.scrollTop).toBe(650);
+      expect(holder(document.getElementById('card-3')!).style.marginTop).toBe('-0.375px');
+      expect(top()).toBe(300.75);
+    });
+
+    it('on opening a venue, the card goes whole pixels away, the closest to its place', () => {
+      card3(388.75, 100.125);
+      openVenue(3, scroller, toVenue, false);
+      // 288.625px down: the cards a bit lower, rather than more than half a pixel higher.
+      expect(holder(document.getElementById('card-3')!).style.marginTop).toBe('0.375px');
+      expect(top()).toBe(389.125);
+    });
+  });
+
   it('the card arriving keeps its map button as it was in the other view, until it’s there', async () => {
     // In the list it has it; in the middle of the venue view, with its venue in the middle of the map,
     // it wouldn't.

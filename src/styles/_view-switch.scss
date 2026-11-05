@@ -114,6 +114,20 @@ $curve: ease-in-out;
   z-index: 1;
 }
 
+// The same in every view: the new ones at once, live, without the old ones fading under them. Safari's
+// still picture of the heading came out squeezed, 1.5% shorter around its middle (the name half a
+// pixel lower, the address half a pixel higher), and it got back to its size as it faded into the
+// new one: the address, dancing.
+::view-transition-old(card-heading),
+::view-transition-old(card-favorite) {
+  display: none;
+}
+
+::view-transition-new(card-heading),
+::view-transition-new(card-favorite) {
+  animation: none;
+}
+
 // At their size, not stretched to that of the group.
 ::view-transition-old(card),
 ::view-transition-new(card) {

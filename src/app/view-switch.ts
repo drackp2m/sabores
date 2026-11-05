@@ -119,6 +119,23 @@ function photosAtOnce(elements: readonly HTMLElement[]): void {
   }
 }
 
+/**
+ * Leaves the card on the same fraction of a pixel it was on: cards can start between two pixels (in
+ * the venue view, under a map 22.3rem tall, always) and the browser only scrolls whole ones. Each line
+ * of text rounds to the screen's pixels its own way: on another fraction, the card would end up to
+ * half a pixel away, with some of its lines a pixel off. What holds the cards moves by what's left
+ * over, half a pixel at most: on going back or switching view the card is exactly where it was; on
+ * opening a venue, whole pixels away, its lines on the same pixels as in the list.
+ */
+function sameFraction(after: HTMLElement, top: number): void {
+  const holder = after.closest('[id^="venue-"]')?.parentElement;
+  let rest = (top - after.getBoundingClientRect().top) % 1;
+  if (Math.abs(rest) > 0.5) rest -= Math.sign(rest);
+  if (!holder || !rest) return;
+  const margin = parseFloat(getComputedStyle(holder).marginTop) || 0;
+  holder.style.marginTop = `${margin + rest}px`;
+}
+
 /** Whether there can be one: the browser has them, on a phone and without reduced motion. */
 function canTransition(): boolean {
   return 'startViewTransition' in document && isPhone() && !reducedMotion();
@@ -206,6 +223,7 @@ function moveCard({
     keptButton = mapButton(after);
     keptButton?.classList.add(kept);
     place(after, top);
+    sameFraction(after, top);
     const edges = after.getBoundingClientRect();
     shift('top', edges.top - top);
     shift('bottom', edges.bottom - bottom);
@@ -227,7 +245,8 @@ function moveCard({
 /**
  * Scrolls the new page so that the card stays where it was on the screen, as far as the page lets it:
  * no higher than the top, no lower than the end. In whole pixels, rounded here: left to the browser,
- * which can drop the fraction always the same way, everything went down a pixel on every switch.
+ * which can drop the fraction always the same way, everything went down a pixel on every switch. The
+ * fraction left over, sameFraction makes up for.
  */
 function keepInPlace(scroller: Element): CardMove['place'] {
   return (after, top) => {

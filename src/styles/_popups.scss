@@ -67,8 +67,8 @@
   padding: 0.5em;
 }
 
-// Like a card's header, but with the button in the corner. The number comes out of the left edge,
-// past the padding and covering the border.
+// Like a card's header. The number comes out of the left edge, past the padding and covering the
+// border.
 .popup-header {
   display: flex;
   align-items: center;
@@ -79,22 +79,6 @@
     height: 2em;
     margin-left: calc(-0.5em - 1px);
     padding: 0 0.5em 0 0.4em;
-  }
-
-  .icon {
-    flex: none;
-    align-self: flex-start;
-    width: 2.25em;
-    height: 2.25em;
-    border-radius: 0.5em;
-    font-size: inherit;
-
-    // A loose icon (createIcon): without an app-icon around it, nothing else gives it a size.
-    svg {
-      flex: none;
-      width: 1.25em;
-      height: 1.25em;
-    }
   }
 }
 
@@ -122,11 +106,6 @@
 
   &:empty {
     display: none;
-  }
-
-  .arrival-time svg {
-    width: 1.1em;
-    height: 1.1em;
   }
 
   .schedule-status {

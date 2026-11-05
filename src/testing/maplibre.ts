@@ -297,10 +297,14 @@ export class Popup extends Evented {
     return this;
   }
 
+  /** As in MapLibre, it says it closed only if it was open. */
   readonly remove = (): this => {
     this.container?.remove();
-    this.map?.off('remove', this.remove).off('click', this.remove);
+    const map = this.map;
+    if (!map) return this;
+    map.off('remove', this.remove).off('click', this.remove);
     this.map = undefined;
+    this.fire('close');
     return this;
   };
 }

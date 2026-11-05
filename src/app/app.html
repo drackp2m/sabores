@@ -7,7 +7,8 @@
       #detailMap
       class="map"
       [venues]="detailVenues()"
-      [routeTo]="detail()"
+      [routeTo]="destination()"
+      [current]="detail()"
       [origin]="location.origin()"
       (venueSelect)="selectVenue($event)"
     />
@@ -18,7 +19,7 @@
           [attr.id]="'venue-' + venue.number"
           [venue]="venue"
           [day]="filters().day"
-          [mapButton]="mapButton(venue.number, detailMap.centered())"
+          [mapButton]="venue.number !== destination()"
           (showOnMap)="showOnMap(venue.number)"
         />
       }

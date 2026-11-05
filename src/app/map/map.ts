@@ -17,10 +17,10 @@ import {
 } from '@angular/core';
 import type * as ml from 'maplibre-gl';
 
-import { ArrivalTime, createArrivalTime } from '../arrival-time/arrival-time';
+import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
 import { Icon, createIcon } from '../icon/icon';
-import { desktop, isTouch, reducedMotion, remInPx } from '../media';
+import { isTouch, reducedMotion, remInPx } from '../media';
 import {
   Route,
   directionsLink,
@@ -174,8 +174,8 @@ const SMALL_MAP = [
 
 /**
  * OpenStreetMap map with one marker per venue; it fits the filtered venues. With a starting point, it
- * draws the route to the chosen venue (or the one selected on the map, which gets highlighted). It
- * can go full screen and open the venue in the maps app.
+ * draws the route to the chosen venue, which gets highlighted. It can go full screen, where touching a
+ * venue shows its popup, and open the venue in the maps app.
  */
 @Component({
   selector: 'app-map',
@@ -497,21 +497,23 @@ export class VenueMap {
   /** Starting point, if one was chosen. */
   readonly origin = input<Coordinates | null>(null);
   /**
-   * Venue to always draw the route to (in the venue view, which has no popups: its data is already on
-   * the page); otherwise, the one selected on the map. In the venue view it's the one whose card is
-   * in sight below: when it changes (scrolling the cards), the map goes to it (see follow).
+   * In the venue view, the venue to always draw the route to: the one chosen with its card's map
+   * button (app.ts). Otherwise, beside the list, the one chosen there (see selected).
    */
   readonly routeTo = input<number | null>(null);
-  /** Number of the venue whose marker was clicked. */
+  /**
+   * In the venue view, the venue whose card is in the middle below: when it changes (scrolling the
+   * cards), the map goes to it (see follow), and the route stays where it was going.
+   */
+  readonly current = input<number | null>(null);
+  /** Number of the venue whose marker was touched. */
   readonly venueSelect = output<number>();
   /**
    * The venue whose point is in the middle of the map, to within a pixel (that of routeTo first), if
-   * any, or on its way there (see goTo): its card's map button has nothing to do. Measured again
-   * each time the map stops.
+   * any, or on its way there (see goTo): beside the list, its card's map button has nothing to do.
+   * Measured again each time the map stops.
    */
   readonly centered = signal<number | null>(null);
-  /** Number of the venue to open, from the button on its popup. */
-  readonly venueOpen = output<number>();
 
   private readonly host: HTMLElement = inject(ElementRef).nativeElement;
   private readonly tapasRoute = inject(TapasRoute);
@@ -526,22 +528,31 @@ export class VenueMap {
   /** Going full screen or back, while it lasts. */
   private resizing?: Animation;
   private readonly injector = inject(Injector);
-  private readonly desktopQuery = desktop();
-  private readonly desktop = signal(this.desktopQuery.matches);
   /**
-   * Only in the list (the venue view has its data on the page), and not on desktop: there the list is
-   * next to the map, and clicking a marker takes it to its card.
+   * Only full screen, which hides the cards below (venue view): touching a venue shows what it is,
+   * without changing where the route goes. Otherwise its card comes to the middle (venue view) or the
+   * list goes to it (beside it, on desktop, where the map doesn't get enlarged). As asked for: on
+   * reducing it, the one open closes at once.
    */
-  private readonly popups = computed(() => this.routeTo() === null && !this.desktop());
+  private readonly popups = computed(() => this.enlarged());
   /** The whole map on screen, below the header. */
   private readonly inSight = signal(false);
   /**
-   * Venue selected on opening its popup (or, without popups, on clicking its marker or going to it).
-   * When closed (by clicking outside) it stays selected, with its route; clicking outside again
-   * deselects it.
+   * Beside the list, the venue chosen with its card's map button (see focus), which the route goes
+   * to. Touching the map doesn't change it.
    */
   private readonly selected = signal<number | null>(null);
-  private readonly active = computed(() => this.routeTo() ?? this.selected());
+  /** The venue whose popup is open, or was last: once closed, its popup says so (see openPopup). */
+  private readonly opened = signal<number | null>(null);
+  /**
+   * The guide was on when a popup opened, which needs the map to make room for it: once it closes,
+   * the guide goes on, unless the map gets moved by hand meanwhile (see stopGuiding).
+   */
+  private resumeGuide = false;
+  /** The venue the route goes to: in the venue view, routeTo; beside the list, selected. */
+  private readonly chosen = computed(() => this.routeTo() ?? this.selected());
+  /** Its marker's pin (styles/_map.scss), created the first time there's one. */
+  private pin?: SVGSVGElement;
   /**
    * Those with a marker. It only changes when which ones they are changes: the list arrives in a new
    * array on reordering it, marking a favorite or rating a tapa, and the map doesn't have to move.
@@ -550,7 +561,7 @@ export class VenueMap {
     equal: sameVenues,
   });
   private readonly destination = computed(() => {
-    const number = this.active();
+    const number = this.chosen();
     return this.venues().find((venue) => venue.number === number && venue.location);
   });
   /**
@@ -661,6 +672,11 @@ export class VenueMap {
   private style = this.themeStyle();
   /** The route drawn, from the starting point itself: it may be some way off the street it begins on. */
   private readonly route = signal<Route | undefined>(undefined);
+  /**
+   * The venue the route was last asked for (with one in route, or none to be found), once the answer
+   * arrives: until then, it's on its way.
+   */
+  private routedTo: number | null = null;
   private readonly markers = new Map<number, ml.Marker>();
   private resizeObserver?: ResizeObserver;
   /** The venue asked to be focused before MapLibre arrived. */
@@ -731,29 +747,32 @@ export class VenueMap {
       const fixed = this.routeTo() !== null;
       if (!map) return;
       this.route.set(undefined);
+      this.routedTo = null;
       untracked(() => this.drawRoute(map));
       if (!origin || !venue?.location || !mode) return;
-      let current = true;
-      onCleanup(() => (current = false));
+      let stale = false;
+      onCleanup(() => (stale = true));
       void findRoute(origin, venue.location, mode).then((route) => {
-        if (!current) return;
-        // Without one, in the venue view, the map goes to the venue itself (see follow).
+        if (stale) return;
+        this.routedTo = venue.number;
+        // In the venue view, with its card in the middle (with another's, the map is on that one, see
+        // follow) and no popup open: without a route, the map goes to the venue itself; with one, it
+        // shows all of it. Guided, it looks along it (see the effect below).
+        const inSight = fixed && this.current() === venue.number && !this.openPopup;
         if (!route) {
-          if (fixed) this.goTo(map, venue.number);
+          if (inSight) this.goTo(map, venue.number);
           return;
         }
         this.route.set([[origin.lng, origin.lat], ...route]);
         this.drawRoute(map);
-        // In the venue view, show the whole route; with a popup open the map doesn't move. Guided, it
-        // looks along it (see the effect below).
-        if (fixed) this.frame(map, this.route()!, 16);
+        if (inSight) this.frame(map, this.route()!, 16);
       });
     });
 
     // In the venue view, the map goes along with the cards below it (see follow).
     effect(() => {
       const map = this.map();
-      const number = this.routeTo();
+      const number = this.current();
       if (map && number !== null) untracked(() => this.follow(map, number));
     });
 
@@ -778,9 +797,10 @@ export class VenueMap {
       });
     });
 
-    // The open popup keeps up with the arrival time and the schedule status.
+    // The open popup keeps up with the schedule status.
     effect(() => {
-      const venue = this.destination();
+      const number = this.opened();
+      const venue = this.placed().find((venue) => venue.number === number);
       const status = venue && this.popupStatus(venue);
       const popup = venue && this.markers.get(venue.number)?.getPopup();
       if (!status || !popup?.isOpen()) return;
@@ -790,11 +810,13 @@ export class VenueMap {
         .replaceChildren(...status);
     });
 
-    const onDesktop = ({ matches }: MediaQueryListEvent) => this.desktop.set(matches);
-    this.desktopQuery.addEventListener('change', onDesktop);
+    // What the user's point is: where they are, moving with the phone, or where they said they'd start.
+    effect(() => {
+      if (!this.map()) return;
+      this.originTooltip.setText(this.location.live() ? 'Tu ubicación' : 'Punto de partida');
+    });
 
     this.destroyRef.onDestroy(() => {
-      this.desktopQuery.removeEventListener('change', onDesktop);
       this.resizeObserver?.disconnect();
       this.map()?.remove();
       clearTimeout(this.hideHint);
@@ -802,11 +824,13 @@ export class VenueMap {
     });
 
     // One marker per venue, in the color of its schedule badge (open, about to close, no time to get
-    // there, closed); the active one, golden (like the stars) and above the others.
+    // there, closed). Above the others and in the accent color: the one the route goes to, a pin, and
+    // in the venue view the one whose card is in sight, if it's another one.
     effect(() => {
       const map = this.map();
       const venues = this.placed();
-      const active = this.active();
+      const chosen = this.chosen();
+      const current = this.current();
       const kinds = this.kinds();
       const popups = this.popups();
       if (!map) return;
@@ -818,7 +842,14 @@ export class VenueMap {
         const kind = kinds.get(number);
         const classes = marker.getElement().classList;
         for (const other of STATUS_KINDS) classes.toggle(other, other === kind);
-        classes.toggle('active', number === active);
+        classes.toggle('destination', number === chosen);
+        classes.toggle('current', number === current && number !== chosen);
+      }
+      // Only one pin, which goes from marker to marker.
+      const destination = chosen === null ? undefined : this.markers.get(chosen)?.getElement();
+      if (!destination) this.pin?.remove();
+      else if (this.pin?.parentElement !== destination) {
+        destination.append((this.pin ??= createIcon('pin')));
       }
       const number = this.pendingFocus;
       this.pendingFocus = null;
@@ -947,12 +978,12 @@ export class VenueMap {
   }
 
   /**
-   * Zooms in on a venue and opens its popup; with no popup, it just centers it. At once before it's
-   * painted (see shown).
+   * Zooms in on a venue, in the middle, and chooses it (see selected). At once before it's painted
+   * (see shown).
    */
   focus(number: number): void {
-    // Without a popup, it goes to the middle: already the one there (see goTo), even before MapLibre.
-    if (!this.popups()) this.centered.set(number);
+    // Already the one in the middle (see goTo), even before MapLibre.
+    this.centered.set(number);
     const map = this.map();
     if (!map) {
       this.pendingFocus = number;
@@ -960,30 +991,40 @@ export class VenueMap {
     }
     const marker = this.markers.get(number);
     if (!marker) return;
-    this.guiding.set(false);
+    this.stopGuiding();
     this.reached = number;
     // The component, not its container: the page gives it its scroll-margin-top (app.scss).
     this.host.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    const zoom = 16;
-    const popup = marker.getPopup();
-    if (popup) {
-      if (!popup.isOpen()) marker.togglePopup();
-      this.placePopup(marker, zoom);
-    } else {
-      this.selected.set(number);
-      map.easeTo({ center: marker.getLngLat(), zoom, duration: MOVE_TIME, animate: this.shown });
-    }
+    this.selected.set(number);
+    map.easeTo({ center: marker.getLngLat(), zoom: 16, duration: MOVE_TIME, animate: this.shown });
   }
 
   /**
-   * To the venue chosen below the map (scrolling the cards). Not if it already went there (focus) or
-   * was touched on it, in sight. With a route to it, framing it takes the map there once it arrives
-   * (see the route's effect): going to the venue first, it would move twice.
+   * In the venue view, a card's map button: the route goes to its venue from now on (routeTo, which
+   * app.ts changes). With a way to get there, the map frames the route once it arrives (see the
+   * route's effect): going to the venue first, it would move twice. Without one, it goes to the venue.
+   */
+  showRoute(number: number): void {
+    if (!this.origin() || !this.tapasRoute.arrivals().get(number)?.mode) this.focus(number);
+  }
+
+  /**
+   * To the venue whose card came to the middle (scrolling them). Not if it already went there (focus)
+   * or was touched on it, in sight. If the route goes to it, framing the route: once it arrives if
+   * it's on its way (see the route's effect), and without one, to the venue itself.
    */
   private follow(map: ml.Map, number: number): void {
     if (number === this.reached) return;
     this.reached = number;
-    if (!this.origin() || !this.routeMode()) this.goTo(map, number);
+    const route = this.route();
+    if (number === this.routeTo() && this.origin() && this.routeMode()) {
+      if (this.routedTo !== number) return;
+      if (route) {
+        this.frame(map, route, 16);
+        return;
+      }
+    }
+    this.goTo(map, number);
   }
 
   /**
@@ -1005,8 +1046,8 @@ export class VenueMap {
       const marker = this.markers.get(number);
       return !!marker && center.dist(map.project(marker.getLngLat())) < 1;
     };
-    const active = this.active();
-    if (active !== null && inMiddle(active)) this.centered.set(active);
+    const chosen = this.chosen();
+    if (chosen !== null && inMiddle(chosen)) this.centered.set(chosen);
     else this.centered.set([...this.markers.keys()].find(inMiddle) ?? null);
   }
 
@@ -1021,22 +1062,29 @@ export class VenueMap {
     this.onOrigin.set(true);
   }
 
-  /** Its popup would hide the way ahead: it gets closed, and its venue stays selected. */
+  /** A popup open would hide the way ahead: it gets closed. */
   protected startGuiding(): void {
+    this.resumeGuide = false;
     this.openPopup?.remove();
     this.guiding.set(true);
+  }
+
+  /** Moved by hand, or taken somewhere by the app: no more guide, not even after a popup. */
+  private stopGuiding(): void {
+    this.guiding.set(false);
+    this.resumeGuide = false;
   }
 
   // These buttons move the map by hand too, and stop guiding.
 
   protected zoomBy(levels: number): void {
     const map = this.map()!;
-    this.guiding.set(false);
+    this.stopGuiding();
     map.zoomTo(map.getZoom() + levels, { duration: MOVE_TIME });
   }
 
   protected resetNorth(): void {
-    this.guiding.set(false);
+    this.stopGuiding();
     this.northBound.set(true);
     this.map()!.resetNorth({ duration: MOVE_TIME });
   }
@@ -1098,15 +1146,11 @@ export class VenueMap {
       closeOnClick: false,
       focusAfterOpen: false,
       offset: 7,
-    }).setText('Punto de partida');
+    });
     origin.addEventListener('mouseenter', () => this.originTooltip.addTo(map));
     origin.addEventListener('mouseleave', () => this.originTooltip.remove());
-    // The click that closes a popup leaves its venue selected; with none open, it deselects it. Not on
-    // a marker: that one gets selected, on opening its popup or, without one, on clicking it.
+    // On touch screens there's no hovering: touching it shows the tooltip, and elsewhere hides it.
     map.on('click', ({ originalEvent }) => {
-      const target = originalEvent.target as Element;
-      if (!this.openPopup && !target.closest('.venue-marker')) this.selected.set(null);
-      // On touch screens there's no hovering: touching it shows the tooltip, and elsewhere hides it.
       if (originalEvent.target === origin) this.originTooltip.addTo(map);
       else this.originTooltip.remove();
     });
@@ -1119,7 +1163,7 @@ export class VenueMap {
     // Moved by hand (with the fingers, the mouse or the keyboard), it stops guiding. When the app
     // moves it, there's no original event.
     map.on('movestart', ({ originalEvent }) => {
-      if (originalEvent) this.guiding.set(false);
+      if (originalEvent) this.stopGuiding();
     });
     // A turn that ends near north goes back to it. MapLibre does it within the momentum the fingers or
     // the mouse leave on letting go, as long as that lasts: after a slow turn, a few hundredths of a
@@ -1158,7 +1202,7 @@ export class VenueMap {
       const popup = this.openPopup;
       if (popup) {
         this.fitPopup(popup);
-        this.placePopup(this.markers.get(this.selected()!)!);
+        this.placePopup(this.markers.get(this.opened()!)!);
       }
     });
     this.resizeObserver.observe(container);
@@ -1376,9 +1420,9 @@ export class VenueMap {
       element.role = 'button';
       const marker = new this.maplibre.Marker({ element });
       marker.setLngLat([venue.location.lng, venue.location.lat]);
-      // Touched, it's already in sight: the map stays where it is (see follow).
+      // Touched, it's already in sight: the map stays where it is (see follow). Full screen, MapLibre
+      // opens its popup, which moves it (see showPopup).
       marker.on('click', () => {
-        if (!marker.getPopup()) this.selected.set(venue.number);
         this.reached = venue.number;
         this.venueSelect.emit(venue.number);
       });
@@ -1408,30 +1452,44 @@ export class VenueMap {
         focusAfterOpen: false,
       });
       popup.on('open', () => this.showPopup(venue, marker));
+      popup.on('close', () => this.popupClosed());
       marker.setPopup(popup);
     }
   }
 
-  /** The only one open: the selected venue's, if it hasn't been closed. */
+  /** The only one open: the last one opened, if it hasn't been closed. */
   private get openPopup(): ml.Popup | undefined {
-    const popup = this.markers.get(this.selected()!)?.getPopup();
+    const popup = this.markers.get(this.opened()!)?.getPopup();
     return popup?.isOpen() ? popup : undefined;
   }
 
   /**
    * The content is generated just before measuring it, with the schedule status of that moment. The
-   * popup goes among the markers so that what starts on it reaches the map: dragging it moves the map
-   * (which also keeps the button from being clicked on letting go). Clicks are still only its own.
+   * popup goes among the markers so that what starts on it reaches the map: dragging it moves the map.
+   * Clicks are still only its own. It moves the map to make room for it: guided, the guide waits for
+   * it to close (see popupClosed).
    */
   private showPopup(venue: Venue, marker: ml.Marker): void {
     const popup = marker.getPopup()!;
-    if (this.openPopup !== popup) this.openPopup?.remove();
-    this.guiding.set(false); // It moves the map to make room for it.
-    this.selected.set(venue.number);
+    const previous = this.openPopup;
+    this.opened.set(venue.number);
+    if (previous !== popup) previous?.remove();
+    if (this.guiding()) this.resumeGuide = true;
+    this.guiding.set(false);
     this.fitPopup(popup);
     popup.setDOMContent(this.popup(venue));
     this.map()!.getCanvasContainer().append(popup.getElement());
     this.placePopup(marker);
+  }
+
+  /**
+   * Closed (touching the map elsewhere, its marker again or reducing the map) with no other one in its
+   * place: if it paused the guide, the guide goes on.
+   */
+  private popupClosed(): void {
+    if (this.openPopup || !this.resumeGuide) return;
+    this.resumeGuide = false;
+    if (this.canGuide()) this.guiding.set(true);
   }
 
   /**
@@ -1444,31 +1502,28 @@ export class VenueMap {
   }
 
   /**
-   * Moves the map to leave an open popup in its place, at the zoom given (the current one if none).
-   * Its venue, always in the middle, which leaves the popup centered between the buttons: enlarged, a
-   * third of the way down, or lower if the popup doesn't fit above; otherwise, with the popup as high
-   * as it goes, as far from the top as the buttons.
+   * Moves the map, at the zoom it's at, to leave an open popup in its place (full screen, see popups).
+   * Its venue, always in the middle, which leaves the popup centered between the buttons, a third of
+   * the way down, or lower if the popup doesn't fit above: as far from the top as the buttons.
    */
-  private placePopup(marker: ml.Marker, zoom = this.map()!.getZoom()): void {
+  private placePopup(marker: ml.Marker): void {
     const map = this.map()!;
     const icon = marker.getElement().getBoundingClientRect();
     const popup = marker.getPopup()!.getElement().getBoundingClientRect();
     const highest = icon.top + icon.height / 2 - popup.top + BUTTON_MARGIN;
     const { clientHeight: height } = map.getContainer();
-    const y = this.large() ? Math.max(height / 3, highest) : highest;
     map.easeTo({
       center: marker.getLngLat(),
-      zoom,
-      offset: [0, y - height / 2],
+      offset: [0, Math.max(height / 3, highest) - height / 2],
       duration: MOVE_TIME,
       animate: this.shown,
     });
   }
 
   /**
-   * Laid out like a card: number, name and address, with a button to the venue on the right. Below,
-   * arrival time, schedule status and tapa photos (styles in styles/_popups.scss: MapLibre paints it
-   * outside the component).
+   * Laid out like a card: number, name and address. Below, the schedule status and the tapa photos
+   * (styles in styles/_popups.scss: MapLibre paints it outside the component). Only what the venue
+   * is: going there is up to its card's map button, once the map is back in its place.
    */
   private popup(venue: Venue): HTMLElement {
     const div = document.createElement('div');
@@ -1488,7 +1543,7 @@ export class VenueMap {
     const address = document.createElement('span');
     address.textContent = venue.address;
     heading.append(title, address);
-    header.append(number, heading, this.openButton(venue));
+    header.append(number, heading);
     div.append(header);
     const row = document.createElement('div');
     row.className = 'popup-status';
@@ -1512,30 +1567,19 @@ export class VenueMap {
     return div;
   }
 
-  /** Arrival time and schedule status, right now. */
+  /**
+   * The schedule status, right now: when it closes or opens, without how long it takes to get there.
+   * In the color of its marker, which does count it (see kinds).
+   */
   private popupStatus(venue: Venue): HTMLElement[] {
-    const arrival = this.tapasRoute.arrivals().get(venue.number);
     const status = this.tapasRoute.statuses().get(venue.number);
-    const row: HTMLElement[] = arrival ? [createArrivalTime(arrival)] : [];
-    if (status) {
-      const { text, kind, warning } = statusBadge(status, this.clock.now(), arrival);
-      const badge = document.createElement('span');
-      badge.className = `schedule-status ${kind}`;
-      badge.textContent = text;
-      if (warning) badge.title = warning;
-      row.push(badge);
-    }
-    return row;
-  }
-
-  private openButton(venue: Venue): HTMLElement {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'secondary icon';
-    button.title = 'Ver los detalles del local';
-    button.setAttribute('aria-label', button.title);
-    button.append(createIcon('list'));
-    button.addEventListener('click', () => this.venueOpen.emit(venue.number));
-    return button;
+    if (!status) return [];
+    const arrival = this.tapasRoute.arrivals().get(venue.number);
+    const { text, kind, warning } = statusBadge(status, this.clock.now(), arrival);
+    const badge = document.createElement('span');
+    badge.className = `schedule-status ${kind}`;
+    badge.textContent = text;
+    if (warning) badge.title = warning;
+    return [badge];
   }
 }

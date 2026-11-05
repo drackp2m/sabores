@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { Arrival } from '../venues';
-import { ArrivalTime, createArrivalTime } from './arrival-time';
+import { ArrivalTime } from './arrival-time';
 
 const WALK: Arrival = { meters: 1200, minutes: 16, mode: 'walking' };
 
@@ -30,12 +30,5 @@ describe('ArrivalTime', () => {
     const element = create(WALK, true);
     expect(element.textContent!.trim()).toBe('16 min · 1,2 km');
     expect(element.hasAttribute('title')).toBe(false);
-  });
-
-  it('has a version for the DOM of the map popups, with just the time', () => {
-    const element = createArrivalTime(WALK);
-    expect(element.className).toBe('arrival-time');
-    expect(element.textContent).toBe('16 min');
-    expect(element.querySelector('use')!.getAttribute('href')).toBe('#icon-walking');
   });
 });

@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { By } from '@angular/platform-browser';
 
 import { stubIntersections } from '../testing/intersections';
 import { Map as FakeMap } from '../testing/maplibre';
@@ -53,9 +54,9 @@ const DATA: RouteData = {
 /** A venue's map button, in either view. */
 const MAP_BUTTON = (number: number) => `#venue-${number} button[aria-label='Ver en el mapa']`;
 
-/** The venue of the venue view, by its marker on the map: number and name. */
-const activeMarker = (el: HTMLElement) =>
-  el.querySelector('.venue-marker.active')?.getAttribute('title');
+/** The venue the route goes to, by its marker on the map: number and name. */
+const destinationMarker = (el: HTMLElement) =>
+  el.querySelector('.venue-marker.destination')?.getAttribute('title');
 
 describe('App', () => {
   beforeEach(() => {
@@ -151,7 +152,7 @@ describe('App', () => {
     const names = [...el.querySelectorAll('.cards app-venue-card h2')].map((h) => h.textContent);
     expect(names).toEqual(['ORIGEN', 'CÚPULA']);
     expect(el.querySelectorAll('.venue-marker').length).toBe(2);
-    expect(activeMarker(el)).toBe('2. CÚPULA');
+    expect(destinationMarker(el)).toBe('2. CÚPULA');
     // The browser's back button doesn't return from it: only «Volver».
     expect(history.length).toBe(entries);
     // On the floating buttons' layer, out of the venue view: on its way out, it would hold it.
@@ -175,39 +176,33 @@ describe('App', () => {
     expect(el.querySelector('.list')).toBeNull();
     expect(el.querySelectorAll('.cards app-venue-card').length).toBe(2);
     expect(el.querySelector('app-map')).not.toBeNull();
-    expect(activeMarker(el)).toBe('1. ORIGEN');
+    expect(destinationMarker(el)).toBe('1. ORIGEN');
   });
 
-  it('in the venue view, a card’s map button is gone while its venue is in the middle', async () => {
+  it('in the venue view, only the card of the venue the route goes to has no map button', async () => {
     const { el, press, fixture } = await start();
     await press(MAP_BUTTON(1));
+    const idle = (number: number) =>
+      el.querySelector(MAP_BUTTON(number))!.classList.contains('idle');
+    expect(idle(1)).toBe(true);
+    expect(idle(2)).toBe(false);
+
+    // Neither the map on the other venue nor touching it changes that.
     const map = FakeMap.of(el.querySelector('app-map')!);
     const { lat, lng } = DATA.venues[1].location!;
     vi.spyOn(map, 'getCenter').mockReturnValue({ lat, lng });
     map.endGesture();
+    el.querySelector<HTMLElement>('.venue-marker[title^="2."]')!.click();
     await fixture.whenStable();
-    const idle = (number: number) =>
-      el.querySelector(MAP_BUTTON(number))!.classList.contains('idle');
-    expect(idle(2)).toBe(true);
-    expect(idle(1)).toBe(false);
-  });
-
-  it('without a starting point, only the card in the middle has its map button, once moved', async () => {
-    const { el, press, fixture } = await start();
-    await press(MAP_BUTTON(1));
-    const idle = (number: number) =>
-      el.querySelector(MAP_BUTTON(number))!.classList.contains('idle');
-    // The map goes to the venue; once the other one's card is in the middle, it will go to it.
     expect(idle(1)).toBe(true);
-    expect(idle(2)).toBe(true);
+    expect(idle(2)).toBe(false);
+    expect(destinationMarker(el)).toBe('1. ORIGEN');
 
-    // Moved off it by hand.
-    const map = FakeMap.of(el.querySelector('app-map')!);
-    vi.spyOn(map, 'getCenter').mockReturnValue({ lat: 39, lng: 0 });
-    map.endGesture();
-    await fixture.whenStable();
+    // Its button does: the route goes there from now on.
+    await press(MAP_BUTTON(2));
     expect(idle(1)).toBe(false);
     expect(idle(2)).toBe(true);
+    expect(destinationMarker(el)).toBe('2. CÚPULA');
   });
 
   it('in the venue view, a card’s map button brings its venue to the middle and the map to it', async () => {
@@ -216,7 +211,7 @@ describe('App', () => {
     const focus = vi.spyOn(VenueMap.prototype, 'focus');
     const scrollTo = vi.spyOn(Element.prototype, 'scrollTo');
     await press(MAP_BUTTON(2));
-    expect(activeMarker(el)).toBe('2. CÚPULA');
+    expect(destinationMarker(el)).toBe('2. CÚPULA');
     expect(scrollTo.mock.instances.at(-1)).toBe(el.querySelector('.cards'));
     expect(focus).toHaveBeenCalledWith(2);
     focus.mockRestore();
@@ -252,7 +247,7 @@ describe('App', () => {
 
       await press(MAP_BUTTON(2));
       expect(el.querySelector('.detail')).toBeNull();
-      expect(activeMarker(el)).toBe('2. CÚPULA');
+      expect(destinationMarker(el)).toBe('2. CÚPULA');
       expect(idle(el, 2)).toBe(true);
       expect(idle(el, 1)).toBe(false);
 
@@ -262,18 +257,18 @@ describe('App', () => {
       expect(idle(el, 2)).toBe(true);
       await press(MAP_BUTTON(1));
       expect(el.querySelector('.detail')).toBeNull();
-      expect(activeMarker(el)).toBe('1. ORIGEN');
+      expect(destinationMarker(el)).toBe('1. ORIGEN');
       expect(idle(el, 1)).toBe(true);
       expect(idle(el, 2)).toBe(false);
     });
 
-    it('a marker takes the list to its card', async () => {
+    it('a marker takes the list to its card, without choosing it', async () => {
       const { el, fixture } = await start();
       const scrollBy = vi.spyOn(Element.prototype, 'scrollBy');
       el.querySelector<HTMLElement>('.venue-marker[title^="2."]')!.click();
       await fixture.whenStable();
       expect(el.querySelector('.detail')).toBeNull();
-      expect(activeMarker(el)).toBe('2. CÚPULA');
+      expect(destinationMarker(el)).toBeUndefined();
       expect(scrollBy.mock.instances.at(-1)).toBe(
         document.scrollingElement ?? document.documentElement,
       );
@@ -295,7 +290,7 @@ describe('App', () => {
       await fixture.whenStable();
       expect(el.querySelector('.detail')).toBeNull();
       expect(el.querySelector('.results > app-map')).not.toBeNull();
-      expect(activeMarker(el)).toBe('2. CÚPULA');
+      expect(destinationMarker(el)).toBe('2. CÚPULA');
       expect(scrollIntoView.mock.instances.map((e) => (e as Element).id)).toContain('venue-2');
       scrollIntoView.mockRestore();
     });
@@ -719,8 +714,14 @@ describe('App', () => {
         report((target) => !!target.closest('.cards') && target.id !== `venue-${number}`);
         await fixture.whenStable();
       };
+      /** In the venue view, the venue: the one whose card is in the middle, as the map has it. */
+      const venueInView = () =>
+        (
+          fixture.debugElement.query(By.directive(VenueMap)).componentInstance as VenueMap
+        ).current();
       return {
         inMiddle,
+        venueInView,
         ...started,
         scrollTo,
         switchTo,
@@ -794,7 +795,7 @@ describe('App', () => {
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
       await switchTo('Detalles');
-      expect(activeMarker(el)).toBe('5. LOCAL 5');
+      expect(destinationMarker(el)).toBe('5. LOCAL 5');
       expect(el.querySelector('app-gallery, .list')).toBeNull();
       expect(scrollIntoView).not.toHaveBeenCalled();
       expect(TestBed.inject(Store).setting('view')).toBe('details');
@@ -811,7 +812,7 @@ describe('App', () => {
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
       await switchTo('Fotos');
-      expect(activeMarker(el)).toBe('5. LOCAL 5');
+      expect(destinationMarker(el)).toBe('5. LOCAL 5');
       expect(scrollIntoView).not.toHaveBeenCalled();
 
       await goBack();
@@ -837,14 +838,16 @@ describe('App', () => {
     });
 
     it('in the venue view, the venue is the card in the middle, and «Volver» lands on it', async () => {
-      const { el, open, inMiddle, goBack } = await startFollowing();
+      const { el, open, inMiddle, goBack, venueInView } = await startFollowing();
       await open(2);
-      expect(activeMarker(el)).toBe('2. LOCAL 2');
+      expect(venueInView()).toBe(2);
 
       await inMiddle(3);
-      expect(activeMarker(el)).toBe('3. LOCAL 3');
+      expect(venueInView()).toBe(3);
       await inMiddle(4);
-      expect(activeMarker(el)).toBe('4. LOCAL 4');
+      expect(venueInView()).toBe(4);
+      // The route still goes to the one opened.
+      expect(destinationMarker(el)).toBe('2. LOCAL 2');
 
       const scrollIntoView = vi.spyOn(Element.prototype, 'scrollIntoView');
       await goBack();
@@ -852,45 +855,48 @@ describe('App', () => {
     });
 
     it('a venue touched on the map brings its card to the middle, not those on the way', async () => {
-      const { el, fixture, open, inMiddle } = await startFollowing();
+      const { el, fixture, open, inMiddle, venueInView } = await startFollowing();
       await open(2);
       const scrollTo = vi.spyOn(Element.prototype, 'scrollTo');
       el.querySelector<HTMLElement>('.venue-marker[title^="5."]')!.click();
       await fixture.whenStable();
-      expect(activeMarker(el)).toBe('5. LOCAL 5');
+      expect(venueInView()).toBe(5);
       expect(scrollTo.mock.instances.at(-1)).toBe(el.querySelector('.cards'));
 
       // On its way, those it passes by stay as they are.
       await inMiddle(3);
-      expect(activeMarker(el)).toBe('5. LOCAL 5');
+      expect(venueInView()).toBe(5);
       await inMiddle(4);
-      expect(activeMarker(el)).toBe('5. LOCAL 5');
+      expect(venueInView()).toBe(5);
       // Once there, scrolling chooses again.
       await inMiddle(5);
       await inMiddle(6);
-      expect(activeMarker(el)).toBe('6. LOCAL 6');
+      expect(venueInView()).toBe(6);
+      // And the route, all along, to the one opened.
+      expect(destinationMarker(el)).toBe('2. LOCAL 2');
     });
 
     it('with a mouse, the buttons beside «Volver» bring the card before or after, and the map to it', async () => {
-      const { el, fixture, open, press, inMiddle } = await startFollowing();
+      const { el, fixture, open, press, inMiddle, venueInView } = await startFollowing();
       await open(2);
       const map = FakeMap.of(el.querySelector('app-map')!);
       const easeTo = vi.spyOn(map, 'easeTo');
       const scrollTo = vi.spyOn(Element.prototype, 'scrollTo');
       await press("app-card-steps [aria-label='Local siguiente']");
-      expect(activeMarker(el)).toBe('3. LOCAL 3');
+      expect(venueInView()).toBe(3);
       expect(scrollTo.mock.instances.at(-1)).toBe(el.querySelector('.cards'));
       const { lat, lng } = venues[2].location;
       expect(easeTo.mock.lastCall![0]).toMatchObject({ center: [lng, lat] });
 
       // Twice in a row, before getting there: the one after that, without stopping on the way.
       await press("app-card-steps [aria-label='Local siguiente']");
-      expect(activeMarker(el)).toBe('4. LOCAL 4');
+      expect(venueInView()).toBe(4);
       await inMiddle(3);
-      expect(activeMarker(el)).toBe('4. LOCAL 4');
+      expect(venueInView()).toBe(4);
 
       await press("app-card-steps [aria-label='Local anterior']");
-      expect(activeMarker(el)).toBe('3. LOCAL 3');
+      expect(venueInView()).toBe(3);
+      expect(destinationMarker(el)).toBe('2. LOCAL 2');
       await fixture.whenStable();
     });
 
@@ -909,13 +915,28 @@ describe('App', () => {
     });
 
     it('touching the cards on their way to one leaves them wherever they’re taken', async () => {
-      const { el, fixture, open, inMiddle } = await startFollowing();
+      const { el, fixture, open, inMiddle, venueInView } = await startFollowing();
       await open(2);
       el.querySelector<HTMLElement>('.venue-marker[title^="6."]')!.click();
       await fixture.whenStable();
       el.querySelector('.cards')!.dispatchEvent(new Event('pointerdown'));
       await inMiddle(4);
-      expect(activeMarker(el)).toBe('4. LOCAL 4');
+      expect(venueInView()).toBe(4);
+    });
+
+    it('a card’s map button is only gone on the venue the route goes to, wherever the cards are', async () => {
+      const { el, open, press, inMiddle } = await startFollowing();
+      const idle = (number: number) =>
+        el.querySelector(MAP_BUTTON(number))!.classList.contains('idle');
+      await open(2);
+      expect([1, 2, 3].map(idle)).toEqual([false, true, false]);
+
+      await inMiddle(3);
+      expect([1, 2, 3].map(idle)).toEqual([false, true, false]);
+
+      await press(MAP_BUTTON(3));
+      expect([1, 2, 3].map(idle)).toEqual([false, false, true]);
+      expect(destinationMarker(el)).toBe('3. LOCAL 3');
     });
 
     it('from a venue opened in the gallery, going back leaves it where it was', async () => {

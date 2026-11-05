@@ -102,7 +102,10 @@ import { Venue } from '../venues';
 })
 export class VenueHeader {
   readonly venue = input.required<Venue>();
-  /** Whether the map button has something to do: not with the venue in the middle of the map. */
+  /**
+   * Whether the map button has something to do: not on the venue the route already goes to (venue
+   * view), nor with it in the middle of the map beside the list.
+   */
   readonly mapButton = input(true);
   readonly showOnMap = output<void>();
 

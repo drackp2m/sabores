@@ -177,7 +177,7 @@ export class Icon {
   }
 }
 
-/** The same icon as a loose element, for DOM created outside Angular (the map's popups). */
+/** The same icon as a loose element, for DOM created outside Angular (the map's markers). */
 export function createIcon(name: IconName): SVGSVGElement {
   addSprite();
   const svg = document.createElementNS(SVG, 'svg');

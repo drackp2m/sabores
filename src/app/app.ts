@@ -115,9 +115,15 @@ export class App {
   protected readonly view = signal<View>(this.store.setting<View>('view') ?? legacyView());
   /**
    * In the venue view, the venue: the one opened with its map button, from either view, and then the
-   * one whose card is in the middle (see selectVenue).
+   * one whose card is in the middle (see selectVenue). The route doesn't follow it (see destination).
    */
   protected readonly detail = signal<number | null>(null);
+  /**
+   * In the venue view, the venue the route goes to: the one opened, and then the one chosen with its
+   * card's map button (showOnMap). Scrolling the cards or touching the map doesn't change it: its
+   * card is the only one without that button.
+   */
+  protected readonly destination = signal<number | null>(null);
   /**
    * The venue view's, on the map and side by side below it: the list's as it was on opening a venue,
    * which stays the same while there (sorted by distance, the list follows the user's steps).
@@ -394,13 +400,17 @@ export class App {
     this.scroller.scrollBy({ top: by, behavior: this.scrollBehavior });
   }
 
-  /** On desktop there's no venue view (see desktop): in the list on the venue, the map on it. */
+  /**
+   * On desktop there's no venue view (see desktop): in the list on the venue, with the map beside it
+   * on the one the route went to.
+   */
   private leaveForDesktop(): void {
     const number = this.detail();
-    if (number === null) return;
+    const destination = this.destination() ?? number;
+    if (number === null || destination === null) return;
     this.closeDetail();
     this.landOn(number);
-    afterNextRender(() => this.listMap()?.focus(number), { injector: this.injector });
+    afterNextRender(() => this.listMap()?.focus(destination), { injector: this.injector });
   }
 
   /**
@@ -415,6 +425,7 @@ export class App {
     const open = () => {
       this.detailVenues.set(this.visible());
       this.detail.set(number);
+      this.destination.set(number);
       this.scroller.scrollTo({ top: 0 });
     };
     const show = () => {
@@ -443,8 +454,9 @@ export class App {
 
   /**
    * On the map, its marker: its card comes to the middle, and the map stays where it is (map.ts knows
-   * it was touched there). The same with a mouse from the buttons for the card before or after
-   * (card-steps.ts), with the map going to it.
+   * it was touched there; full screen, it opens its popup). The same with a mouse from the buttons for
+   * the card before or after (card-steps.ts), with the map going to it. The route stays where it was
+   * going (see destination).
    */
   protected selectVenue(number: number): void {
     if (number === this.detail()) return;
@@ -454,20 +466,14 @@ export class App {
   }
 
   /**
-   * Whether a card has its map button, in the venue view: not with its venue in the middle of the map
-   * (or on its way there). Without a starting point, not on the others either: once their card is
-   * in the middle the map goes to them, and the button would come and go. With one, the map frames
-   * the route instead, and the button takes it to the venue.
+   * A card's map button, in the venue view: the route goes to its venue from now on, framed on the
+   * map (or the venue itself, without one: see VenueMap.showRoute), and its card comes to the middle
+   * if it wasn't.
    */
-  protected mapButton(number: number, centered: number | null): boolean {
-    if (number === centered) return false;
-    return number === this.detail() || !!this.location.origin();
-  }
-
-  /** A card's map button: the map goes to its venue, and its card to the middle if it wasn't. */
   protected showOnMap(number: number): void {
+    this.destination.set(number);
     this.selectVenue(number);
-    this.detailMap()?.focus(number);
+    this.detailMap()?.showRoute(number);
   }
 
   /** Another venue, which «Volver» leaves the list on (see listScroll). */
@@ -513,6 +519,7 @@ export class App {
   /** Out of the venue view. */
   private closeDetail(): void {
     this.detail.set(null);
+    this.destination.set(null);
     this.detailVenues.set([]);
     this.cardOnItsWay = null;
   }

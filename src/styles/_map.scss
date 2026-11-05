@@ -124,10 +124,11 @@
   }
 }
 
-// Venue markers (map.ts): the dot, in the middle of its area to click on; the selected one, golden
-// like the stars.
+// Venue markers (map.ts): the dot, in the middle of its area to click on. The one whose card is in
+// sight, in the accent color; the one the route goes to, a pin in that color instead, with its tip on
+// the point.
 .venue-marker {
-  z-index: 1; // Above the user's point; the selected and the hovered one, above the others.
+  z-index: 1; // Above the user's point; those two and the hovered one, above the others.
   display: grid;
   place-items: center;
   width: 1.875rem;
@@ -135,8 +136,34 @@
   border-radius: 50%;
   cursor: pointer;
 
-  &.active {
+  &.current,
+  &.destination {
     z-index: 2;
+  }
+
+  // Outlined in white, like the dots, and with their shadow. Only in the destination's (map.ts).
+  svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    fill: var(--accent);
+    stroke: #fff;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+    transform-origin: 50% calc(100% * 21.5 / 24);
+    translate: -50% calc(-100% * 21.5 / 24); // The tip, at y = 21.5 of 24.
+    transition: scale 0.15s;
+  }
+
+  &.destination::after {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    &:hover svg {
+      scale: 1.1;
+    }
   }
 
   @media (hover: hover) {
@@ -181,8 +208,8 @@
     --marker-color: var(--muted);
   }
 
-  &.active::after {
-    background: var(--star);
+  &.current::after {
+    background: var(--accent);
     transform: scale(1.25);
   }
 }

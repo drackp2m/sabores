@@ -1,6 +1,6 @@
 import { Component, booleanAttribute, computed, input } from '@angular/core';
 
-import { Icon, createIcon } from '../icon/icon';
+import { Icon } from '../icon/icon';
 import { Arrival, formatDistance, formatDuration } from '../venues';
 
 /**
@@ -35,12 +35,4 @@ export class ArrivalTime {
     if (this.distance()) return null;
     return `≈ ${formatDistance(meters)} en línea recta, ${mode === 'walking' ? 'a pie' : 'en coche'}`;
   });
-}
-
-/** The same as a loose element, without the distance, for the map's popups. */
-export function createArrivalTime({ mode, minutes }: Arrival): HTMLElement {
-  const time = document.createElement('span');
-  time.className = 'arrival-time';
-  time.append(createIcon(mode), formatDuration(minutes));
-  return time;
 }

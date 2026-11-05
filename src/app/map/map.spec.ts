@@ -41,10 +41,12 @@ describe('VenueMap', () => {
   });
   afterEach(() => fitBounds.mockRestore());
 
-  async function create(venues: Venue[], routeTo: number | null = null) {
+  /** In the venue view (routeTo), with the card of the venue the route goes to in the middle. */
+  async function create(venues: Venue[], routeTo: number | null = null, current = routeTo) {
     const fixture = TestBed.createComponent(VenueMap);
     fixture.componentRef.setInput('venues', venues);
     fixture.componentRef.setInput('routeTo', routeTo);
+    fixture.componentRef.setInput('current', current);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
     const change = async (name: string, value: unknown) => {
@@ -53,7 +55,20 @@ describe('VenueMap', () => {
     };
     const marker = (number: number) =>
       el.querySelector<HTMLElement>(`.venue-marker[title^="${number}."]`);
-    return { fixture, el, change, marker };
+    const touch = async (number: number) => {
+      marker(number)!.click();
+      await fixture.whenStable();
+    };
+    const clickMap = async () => {
+      el.querySelector<HTMLElement>('.maplibregl-canvas-container')!.click();
+      await fixture.whenStable();
+    };
+    /** Full screen, or back. */
+    const toggleLarge = async () => {
+      el.querySelector<HTMLElement>('.expand')!.click();
+      await fixture.whenStable();
+    };
+    return { fixture, el, change, marker, touch, clickMap, toggleLarge };
   }
 
   it('with the same venues in another order it neither recreates the markers nor frames', async () => {
@@ -80,9 +95,9 @@ describe('VenueMap', () => {
   });
 
   it('the open popup stays open while its venue stays on the map', async () => {
-    const { fixture, el, change } = await create([ONE, TWO, THREE]);
-    fixture.componentInstance.focus(2);
-    await fixture.whenStable();
+    const { change, el, touch, toggleLarge } = await create([ONE, TWO, THREE], 1);
+    await toggleLarge();
+    await touch(2);
     const popup = () => el.querySelector('.maplibregl-popup strong')?.textContent;
     expect(popup()).toBe('VENUE 2');
 
@@ -94,7 +109,6 @@ describe('VenueMap', () => {
 
   it('goes straight to the venue before the map is painted, and on its way once it is', async () => {
     const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
-    // In the venue view: without popups, it only centers it.
     const { fixture } = await create([ONE, TWO], 1);
     fixture.componentInstance.focus(1);
     expect(easeTo.mock.lastCall![0]).toMatchObject({ zoom: 16, animate: false });
@@ -106,28 +120,47 @@ describe('VenueMap', () => {
   });
 
   it('if asked to focus a venue before MapLibre arrives, does it as soon as it’s there', async () => {
+    const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
     const fixture = TestBed.createComponent(VenueMap);
     fixture.componentRef.setInput('venues', [ONE, TWO]);
     fixture.componentInstance.focus(2);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 2');
+    expect(easeTo.mock.lastCall![0]).toMatchObject({ center: TWO.location, zoom: 16 });
+    expect(el.querySelector('.venue-marker.destination')?.getAttribute('title')).toBe('2. VENUE 2');
+    easeTo.mockRestore();
   });
 
   describe('popup', () => {
+    /** Full screen in the venue view, with the route to venue 1: venue 2's, open. */
     async function openPopup() {
-      const created = await create([ONE, TWO]);
-      created.fixture.componentInstance.focus(2);
-      await created.fixture.whenStable();
+      const created = await create([ONE, TWO], 1);
+      await created.toggleLarge();
+      await created.touch(2);
       const popup = created.el.querySelector<HTMLElement>('.maplibregl-popup')!;
-      return { ...created, popup, button: popup.querySelector('button')! };
+      return { ...created, popup };
     }
 
-    it('has the number, the name, the address and a button to the venue', async () => {
-      const { popup, button } = await openPopup();
+    it('only full screen: small, touching a venue only says it was touched', async () => {
+      const { fixture, el, touch, toggleLarge } = await create([ONE, TWO], 1);
+      const touched = vi.fn();
+      fixture.componentInstance.venueSelect.subscribe(touched);
+
+      await touch(2);
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+      expect(touched).toHaveBeenCalledExactlyOnceWith(2);
+
+      await toggleLarge();
+      await touch(2);
+      expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 2');
+      expect(touched).toHaveBeenCalledTimes(2);
+    });
+
+    it('has the number, the name and the address, without buttons', async () => {
+      const { popup } = await openPopup();
       expect(popup.querySelector('.venue-number')?.textContent).toBe('2');
       expect(popup.querySelector('.popup-heading strong')?.textContent).toBe('VENUE 2');
-      expect(button.getAttribute('aria-label')).toBe('Ver los detalles del local');
+      expect(popup.querySelector('button')).toBeNull();
     });
 
     it('takes up all the width between the map’s buttons, keeping their margin', async () => {
@@ -152,56 +185,53 @@ describe('VenueMap', () => {
         };
       }
 
-      it('in the small map it goes as high as it can, with the venue in the middle', async () => {
-        const { easeTo, restore } = watchCamera(300);
+      it('its venue goes a third of the way down, in the middle, at the zoom it’s at', async () => {
+        const { easeTo, restore } = watchCamera(900);
         await openPopup();
 
-        // jsdom measures nothing: the popup is left with no height, only with the top margin.
         const { center, offset, zoom } = easeTo.mock.lastCall![0];
         expect(center).toEqual({ lng: TWO.location!.lng, lat: TWO.location!.lat });
-        expect(offset).toEqual([0, 10 - 300 / 2]);
-        expect(zoom).toBe(16);
+        expect(offset).toEqual([0, 900 / 3 - 900 / 2]);
+        expect(zoom).toBeUndefined();
         restore();
       });
 
-      it('enlarged, the venue goes a third of the way down', async () => {
+      it('lower if the popup doesn’t fit above it, as far from the top as the buttons', async () => {
         const { easeTo, restore } = watchCamera(900);
-        const { fixture, el } = await create([ONE, TWO]);
-        el.querySelector<HTMLElement>('.expand')!.click();
-        fixture.componentInstance.focus(2);
-        await fixture.whenStable();
+        // The marker's middle, 415 px below the top of the popup.
+        const rects = vi
+          .spyOn(Element.prototype, 'getBoundingClientRect')
+          .mockImplementation(function (this: Element) {
+            const marker = this.classList.contains('venue-marker');
+            return { top: marker ? 400 : 0, height: marker ? 30 : 0 } as DOMRect;
+          });
+        await openPopup();
 
-        expect(easeTo.mock.lastCall![0].offset).toEqual([0, 900 / 3 - 900 / 2]);
+        expect(easeTo.mock.lastCall![0].offset).toEqual([0, 415 + 10 - 900 / 2]);
+        rects.mockRestore();
         restore();
       });
     });
 
-    it('keeps up with the arrival time and the schedule status while open', async () => {
-      const arrival: Arrival = { meters: 900, mode: 'walking', minutes: 12 };
-      arrivals.set(new Map([[2, arrival]]));
+    it('keeps up with the schedule status while open, without how long it takes to get there', async () => {
+      arrivals.set(new Map([[2, { meters: 900, mode: 'walking', minutes: 12 }]]));
       statuses.set(new Map([[2, { open: true, minutes: 120 }]]));
       const { fixture, popup } = await openPopup();
       const image = popup.querySelector('img');
       const status = () => popup.querySelector('.popup-status')!.textContent;
-      expect(status()).toContain('12 min');
+      expect(status()).toBe('cierra en 2 h');
+      expect(popup.querySelector('.arrival-time')).toBeNull();
 
-      arrivals.set(new Map([[2, { ...arrival, minutes: 7 }]]));
+      statuses.set(new Map([[2, { open: true, minutes: 25 }]]));
       await fixture.whenStable();
-      expect(status()).toContain('7 min');
+      expect(status()).toBe('cierra en 25 min');
+      expect(popup.querySelector('.schedule-status')!.classList).toContain('soon');
       expect(popup.querySelector('img')).toBe(image); // The photos aren't loaded again.
 
       arrivals.set(new Map());
       statuses.set(new Map());
       await fixture.whenStable();
       expect(status()).toBe('');
-    });
-
-    it('its button opens the venue', async () => {
-      const { fixture, button } = await openPopup();
-      const open = vi.fn();
-      fixture.componentInstance.venueOpen.subscribe(open);
-      button.click();
-      expect(open).toHaveBeenCalledExactlyOnceWith(2);
     });
 
     it('what starts on it reaches the map, to drag it, but clicks stay on it', async () => {
@@ -228,104 +258,86 @@ describe('VenueMap', () => {
       expect(doubleClickZoom.isEnabled()).toBe(true);
     });
 
-    it('clicking outside closes it and leaves its venue selected, until the next click', async () => {
-      const { fixture, el, marker } = await openPopup();
-      const clickMap = async () => {
-        el.querySelector<HTMLElement>('.maplibregl-canvas-container')!.click();
-        await fixture.whenStable();
-      };
+    it('clicking outside closes it, and the route still goes where it went', async () => {
+      const { el, marker, clickMap } = await openPopup();
+      expect(marker(1)!.classList).toContain('destination');
+      expect(marker(2)!.classList).not.toContain('destination');
 
       await clickMap();
       expect(el.querySelector('.maplibregl-popup')).toBeNull();
-      expect(marker(2)!.classList).toContain('active');
-
-      await clickMap();
-      expect(marker(2)!.classList).not.toContain('active');
+      expect(marker(1)!.classList).toContain('destination');
+      expect(marker(2)!.classList).not.toContain('destination');
     });
 
-    it('its marker opens and closes it, and it stays selected', async () => {
-      const { fixture, el, marker } = await create([ONE, TWO]);
-      const select = vi.fn();
-      fixture.componentInstance.venueSelect.subscribe(select);
-      const clickMarker = async () => {
-        marker(2)!.click();
-        await fixture.whenStable();
-      };
+    it('its marker opens and closes it', async () => {
+      const { el, touch } = await openPopup();
 
-      await clickMarker();
+      await touch(2);
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+      await touch(2);
       expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 2');
-      expect(select).toHaveBeenCalledExactlyOnceWith(2);
-
-      await clickMarker();
-      expect(el.querySelector('.maplibregl-popup')).toBeNull();
-      expect(marker(2)!.classList).toContain('active');
-    });
-
-    it('not on desktop, next to the list: its marker selects the venue', async () => {
-      const desktop = vi.spyOn(window, 'matchMedia').mockReturnValue({
-        matches: true,
-        addEventListener() {},
-        removeEventListener() {},
-      } as unknown as MediaQueryList);
-      const { fixture, el, marker } = await create([ONE, TWO]);
-      const select = vi.fn();
-      fixture.componentInstance.venueSelect.subscribe(select);
-
-      marker(2)!.click();
-      await fixture.whenStable();
-      expect(el.querySelector('.maplibregl-popup')).toBeNull();
-      expect(marker(2)!.classList).toContain('active');
-      expect(select).toHaveBeenCalledExactlyOnceWith(2);
-
-      fixture.componentInstance.focus(1);
-      await fixture.whenStable();
-      expect(el.querySelector('.maplibregl-popup')).toBeNull();
-      expect(marker(1)!.classList).toContain('active');
-
-      el.querySelector<HTMLElement>('.maplibregl-canvas-container')!.click();
-      await fixture.whenStable();
-      expect(el.querySelector('.venue-marker.active')).toBeNull();
-      desktop.mockRestore();
     });
 
     it('only one is open: another venue’s replaces it', async () => {
-      const { fixture, el, marker } = await openPopup();
+      const { el, touch } = await openPopup();
 
-      marker(1)!.click();
-      await fixture.whenStable();
+      await touch(1);
       expect(el.querySelectorAll('.maplibregl-popup').length).toBe(1);
       expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 1');
 
-      fixture.componentInstance.focus(2);
-      await fixture.whenStable();
+      await touch(2);
       expect(el.querySelectorAll('.maplibregl-popup').length).toBe(1);
       expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 2');
     });
 
-    it('in the venue view, the map has none: touching a venue chooses it, without moving', async () => {
+    it('reducing the map closes it at once', async () => {
+      const { el, touch, toggleLarge } = await openPopup();
+
+      await toggleLarge();
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+      await touch(2);
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+    });
+
+    it('small, in the venue view, touching a venue moves neither the map nor the route', async () => {
       const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
-      const { fixture, el, marker, change } = await create([ONE, TWO], 1);
+      const { fixture, marker, change, touch } = await create([ONE, TWO], 1);
+      const touched: number[] = [];
+      fixture.componentInstance.venueSelect.subscribe((number) => touched.push(number));
+
+      const moves = easeTo.mock.calls.length;
+      await touch(2);
+      expect(touched).toEqual([2]);
+      // Its card comes to the middle (app.ts): already in sight, the map stays.
+      await change('current', 2);
+      expect(easeTo).toHaveBeenCalledTimes(moves);
+      expect(marker(1)!.classList).toContain('destination');
+      expect(marker(2)!.classList).not.toContain('destination');
+      easeTo.mockRestore();
+    });
+
+    it('beside the list, touching a venue doesn’t choose it: only its card’s map button does', async () => {
+      const { fixture, el, marker, touch, clickMap } = await create([ONE, TWO]);
+
+      await touch(2);
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+      expect(el.querySelector('.venue-marker.destination')).toBeNull();
+
       fixture.componentInstance.focus(1);
       await fixture.whenStable();
-      const chosen: number[] = [];
-      fixture.componentInstance.venueSelect.subscribe((number) => chosen.push(number));
-
-      marker(2)!.click();
-      expect(el.querySelector('.maplibregl-popup')).toBeNull();
-      expect(chosen).toEqual([2]);
-      // It becomes the venue (app.ts): already in sight, the map stays.
-      const moves = easeTo.mock.calls.length;
-      await change('routeTo', 2);
-      expect(easeTo).toHaveBeenCalledTimes(moves);
-      expect(marker(2)!.classList).toContain('active');
-      easeTo.mockRestore();
+      expect(marker(1)!.classList).toContain('destination');
+      await touch(2);
+      await clickMap();
+      expect(marker(1)!.classList).toContain('destination');
+      expect(marker(2)!.classList).not.toContain('destination');
     });
   });
 
-  it('in the venue view, it goes to the venue chosen below it, at the zoom it’s at', async () => {
+  it('in the venue view, it goes to the venue whose card is in the middle, at the zoom it’s at', async () => {
     const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
-    const { fixture, change } = await create([ONE, TWO], 1);
-    await change('routeTo', 2);
+    const { fixture, change, marker } = await create([ONE, TWO], 1);
+    await change('current', 2);
+    expect(marker(1)!.classList).toContain('destination');
     expect(easeTo).toHaveBeenLastCalledWith({
       center: [TWO.location!.lng, TWO.location!.lat],
       duration: 250,
@@ -568,6 +580,22 @@ describe('VenueMap', () => {
     expect(tooltip()).toBe('Punto de partida');
     el.querySelector<HTMLElement>('.maplibregl-canvas-container')!.click();
     expect(tooltip()).toBeUndefined();
+  });
+
+  it('with the live location, the user’s point is them', async () => {
+    const { fixture, el, change } = await create([ONE]);
+    await change('origin', { lat: 39.98, lng: -0.04 });
+    const point = el.querySelector('.origin-marker')!;
+    const tooltip = () => el.querySelector('.origin-tooltip')?.textContent;
+    live.set(true);
+    await fixture.whenStable();
+
+    point.dispatchEvent(new MouseEvent('mouseenter'));
+    expect(tooltip()).toBe('Tu ubicación');
+
+    live.set(false);
+    await fixture.whenStable();
+    expect(tooltip()).toBe('Punto de partida');
   });
 
   describe('going full screen', () => {
@@ -844,17 +872,72 @@ describe('VenueMap', () => {
       expect(fitBounds.mock.lastCall![1]).toMatchObject({ animate: true });
     });
 
-    it('choosing another venue frames its route, without going to the venue first', async () => {
+    it('with another venue’s card in the middle, the map goes to it and the route stays', async () => {
       const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
       arrivals.set(new Map([1, 2].map((number) => [number, walking(12)])));
-      const { change } = await create([ONE, TWO], 1);
-      await change('origin', { lat: 39.98, lng: -0.054 });
+      const { fixture, change } = await create([ONE, TWO], 1);
+      await change('origin', { lat: 39.98, lng: -0.0542 });
       await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(2));
+      const before = dots(fixture);
+
+      await change('current', 2);
+      expect(easeTo.mock.lastCall![0]).toMatchObject({
+        center: [TWO.location!.lng, TWO.location!.lat],
+      });
+      expect(fitBounds).toHaveBeenCalledTimes(2);
+      expect(request).toHaveBeenCalledOnce();
+      expect(dots(fixture)).toEqual(before);
+
+      // Back on the card of the venue the route goes to, the map shows the whole route again.
+      await change('current', 1);
+      expect(fitBounds).toHaveBeenCalledTimes(3);
+      expect(request).toHaveBeenCalledOnce();
+      easeTo.mockRestore();
+    });
+
+    it('a new route isn’t framed with another venue’s card in the middle', async () => {
+      arrivals.set(new Map([1, 2].map((number) => [number, walking(12)])));
+      const { fixture, change } = await create([ONE, TWO], 1, 2);
+      await change('origin', { lat: 39.98, lng: -0.0543 });
+      await vi.waitFor(() => expect(dots(fixture)).toBeDefined());
+      expect(fitBounds).toHaveBeenCalledOnce(); // Only the venues, on painting them.
+    });
+
+    it('its card’s map button frames the route to another venue, without going to it first', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      arrivals.set(new Map([1, 2].map((number) => [number, walking(12)])));
+      const { fixture, change } = await create([ONE, TWO], 1, 2);
+      await change('origin', { lat: 39.98, lng: -0.054 });
+      await vi.waitFor(() => expect(dots(fixture)).toBeDefined());
       const moves = easeTo.mock.calls.length;
 
+      fixture.componentInstance.showRoute(2);
       await change('routeTo', 2);
-      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(3));
+      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(2));
+      expect(request).toHaveBeenCalledTimes(2);
       expect(easeTo).toHaveBeenCalledTimes(moves);
+      easeTo.mockRestore();
+    });
+
+    it('from a card on the side, its map button frames the route once both have arrived', async () => {
+      arrivals.set(new Map([1, 2].map((number) => [number, walking(12)])));
+      const { fixture, change } = await create([ONE, TWO], 1);
+      await change('origin', { lat: 39.98, lng: -0.0544 });
+      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(2));
+
+      // Its card comes to the middle at the same time as the route is asked for.
+      fixture.componentInstance.showRoute(2);
+      fixture.componentRef.setInput('routeTo', 2);
+      fixture.componentRef.setInput('current', 2);
+      await fixture.whenStable();
+      await vi.waitFor(() => expect(fitBounds).toHaveBeenCalledTimes(3));
+    });
+
+    it('without a starting point, its card’s map button takes the map to the venue', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      const { fixture } = await create([ONE, TWO], 1, 2);
+      fixture.componentInstance.showRoute(2);
+      expect(easeTo.mock.lastCall![0]).toMatchObject({ center: TWO.location, zoom: 16 });
       easeTo.mockRestore();
     });
 
@@ -911,7 +994,7 @@ describe('VenueMap', () => {
 
       it('is offered with a live location and a venue to go to', async () => {
         live.set(false);
-        const { fixture, el, change, marker } = await create([ONE, TWO]);
+        const { fixture, el, change } = await create([ONE, TWO]);
         await change('origin', { lat: 39.98, lng: -0.05 });
         expect(guideButton(el)).toBeNull();
 
@@ -919,9 +1002,54 @@ describe('VenueMap', () => {
         await fixture.whenStable();
         expect(guideButton(el)).toBeNull();
 
-        marker(2)!.click();
+        fixture.componentInstance.focus(2);
         await fixture.whenStable();
         expect(guideButton(el)).not.toBeNull();
+      });
+
+      it('full screen, a venue’s popup pauses it, and it goes on once the popup closes', async () => {
+        const { el, touch, clickMap, toggleLarge } = await guiding(-0.0581);
+        await toggleLarge();
+
+        await touch(1);
+        expect(el.querySelector('.maplibregl-popup')).not.toBeNull();
+        expect(guideButton(el)).not.toBeNull();
+        expect(el.querySelector('.guided-arrival')).toBeNull();
+
+        await clickMap();
+        expect(el.querySelector('.maplibregl-popup')).toBeNull();
+        expect(guideButton(el)).toBeNull();
+        expect(el.querySelector('.guided-arrival')).not.toBeNull();
+      });
+
+      it('reducing the map with the popup open, it goes on too', async () => {
+        const { el, touch, toggleLarge } = await guiding(-0.0582);
+        await toggleLarge();
+        await touch(1);
+
+        await toggleLarge();
+        expect(guideButton(el)).toBeNull();
+      });
+
+      it('moving the map by hand with the popup open, it doesn’t go on', async () => {
+        const { el, touch, clickMap, toggleLarge } = await guiding(-0.0583);
+        await toggleLarge();
+        await touch(1);
+
+        FakeMap.of(el).startGesture();
+        await clickMap();
+        expect(guideButton(el)).not.toBeNull();
+      });
+
+      it('its button closes the popup open and goes on guiding', async () => {
+        const { fixture, el, touch, toggleLarge } = await guiding(-0.0584);
+        await toggleLarge();
+        await touch(1);
+
+        guideButton(el)!.click();
+        await fixture.whenStable();
+        expect(el.querySelector('.maplibregl-popup')).toBeNull();
+        expect(guideButton(el)).toBeNull();
       });
 
       it('keeps up with the user close up, low on the map, looking along the route', async () => {
@@ -976,6 +1104,59 @@ describe('VenueMap', () => {
         await change('origin', { lat: 39.98, lng: -0.045 });
         expect(easeTo).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('highlighted', () => {
+    /** The markers with that class, by number. */
+    const withClass = (el: HTMLElement, name: string) =>
+      [...el.querySelectorAll(`.venue-marker.${name}`)].map((m) =>
+        parseInt(m.getAttribute('title')!),
+      );
+    /** The marker with the pin, by number. */
+    const pinned = (el: HTMLElement) =>
+      [...el.querySelectorAll('.venue-marker')]
+        .filter((m) => m.querySelector('use[href="#icon-pin"]'))
+        .map((m) => parseInt(m.getAttribute('title')!));
+
+    it('the venue the route goes to has the pin, which goes along with it', async () => {
+      const { el, change } = await create([ONE, TWO, THREE], 1);
+      expect(withClass(el, 'destination')).toEqual([1]);
+      expect(pinned(el)).toEqual([1]);
+
+      await change('routeTo', 3);
+      expect(withClass(el, 'destination')).toEqual([3]);
+      expect(pinned(el)).toEqual([3]);
+      expect(el.querySelectorAll('.venue-marker svg').length).toBe(1);
+
+      // Filtered out, it goes with its marker; back, with it again.
+      await change('venues', [ONE, TWO]);
+      expect(pinned(el)).toEqual([]);
+      await change('venues', [ONE, TWO, THREE]);
+      expect(pinned(el)).toEqual([3]);
+    });
+
+    it('in the venue view, the one whose card is in the middle too, if it’s another', async () => {
+      const { el, change } = await create([ONE, TWO, THREE], 1);
+      expect(withClass(el, 'current')).toEqual([]);
+
+      await change('current', 2);
+      expect(withClass(el, 'current')).toEqual([2]);
+      expect(withClass(el, 'destination')).toEqual([1]);
+
+      await change('routeTo', 2);
+      expect(withClass(el, 'current')).toEqual([]);
+      expect(withClass(el, 'destination')).toEqual([2]);
+    });
+
+    it('beside the list, only the one chosen with its card’s map button, once it is', async () => {
+      const { fixture, el } = await create([ONE, TWO]);
+      expect(pinned(el)).toEqual([]);
+
+      fixture.componentInstance.focus(2);
+      await fixture.whenStable();
+      expect(pinned(el)).toEqual([2]);
+      expect(withClass(el, 'current')).toEqual([]);
     });
   });
 

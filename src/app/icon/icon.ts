@@ -101,17 +101,6 @@ export const STAR_PATH = ICONS.star[0];
 
 const SVG = 'http://www.w3.org/2000/svg';
 
-/** Those of each icon's <svg>, as in Icon's template: the strokes of its <symbol> inherit them. */
-const ATTRIBUTES = {
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  'stroke-width': '2',
-  'stroke-linecap': 'round',
-  'stroke-linejoin': 'round',
-  'aria-hidden': 'true',
-};
-
 let sprite: SVGSVGElement | undefined;
 
 /**
@@ -175,15 +164,4 @@ export class Icon {
   constructor() {
     addSprite();
   }
-}
-
-/** The same icon as a loose element, for DOM created outside Angular (the map's markers). */
-export function createIcon(name: IconName): SVGSVGElement {
-  addSprite();
-  const svg = document.createElementNS(SVG, 'svg');
-  for (const [attribute, value] of Object.entries(ATTRIBUTES)) svg.setAttribute(attribute, value);
-  const use = document.createElementNS(SVG, 'use');
-  use.setAttribute('href', `#icon-${name}`);
-  svg.append(use);
-  return svg;
 }

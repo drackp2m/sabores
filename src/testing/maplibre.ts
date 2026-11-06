@@ -245,14 +245,31 @@ class FakeMap extends Evented {
 }
 
 export class Popup extends Evented {
+  private static readonly popups = new WeakMap<Element, Popup>();
+
+  /** The popup open on the page with that element. */
+  static of(element: Element): Popup {
+    return Popup.popups.get(element)!;
+  }
+
   private map?: FakeMap;
   private container?: HTMLElement;
   private readonly content = document.createElement('div');
   private maxWidth = '';
+  /** How far above the point its arrow ends (in the real one, read from its position). */
+  offset: number;
 
-  constructor(private readonly options: { className: string; closeOnClick?: boolean }) {
+  constructor(
+    private readonly options: { className: string; closeOnClick?: boolean; offset?: number },
+  ) {
     super();
     this.content.className = 'maplibregl-popup-content';
+    this.offset = options.offset ?? 0;
+  }
+
+  setOffset(offset: number): this {
+    this.offset = offset;
+    return this;
   }
 
   isOpen(): boolean {
@@ -288,6 +305,7 @@ export class Popup extends Evented {
     this.map = map;
     this.container = document.createElement('div');
     this.container.className = `maplibregl-popup ${this.options.className}`;
+    Popup.popups.set(this.container, this);
     this.container.style.maxWidth = this.maxWidth;
     this.container.append(this.content);
     map.getContainer().append(this.container);

@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import * as maplibre from 'maplibre-gl';
 
-import { Map as FakeMap } from '../../testing/maplibre';
+import { Map as FakeMap, Popup as FakePopup } from '../../testing/maplibre';
 import { testVenue } from '../../testing/venue';
 import { TapasRoute } from '../tapas-route';
 import { Themes } from '../theme';
@@ -156,11 +156,52 @@ describe('VenueMap', () => {
       expect(touched).toHaveBeenCalledTimes(2);
     });
 
+    it('going full screen, the venue whose card is in the middle shows its popup at once', async () => {
+      const { el, toggleLarge } = await create([ONE, TWO], 1, 2);
+      const popup = () => el.querySelector('.maplibregl-popup strong')?.textContent;
+
+      await toggleLarge();
+      expect(popup()).toBe('VENUE 2');
+      await toggleLarge();
+      expect(popup()).toBeUndefined();
+    });
+
+    it('also enlarged again on its way back, before it gets to its place', async () => {
+      const animate = vi.spyOn(Element.prototype, 'animate').mockReturnValue({
+        finished: new Promise(() => {}),
+        cancel() {},
+      } as unknown as Animation);
+      const { el, toggleLarge } = await create([ONE, TWO], 1);
+      await toggleLarge();
+      await toggleLarge();
+      expect(el.querySelector('.frame.large')).not.toBeNull();
+      expect(el.querySelector('.maplibregl-popup')).toBeNull();
+
+      await toggleLarge();
+      expect(el.querySelector('.maplibregl-popup strong')?.textContent).toBe('VENUE 1');
+      animate.mockRestore();
+    });
+
     it('has the number, the name and the address, without buttons', async () => {
       const { popup } = await openPopup();
       expect(popup.querySelector('.venue-number')?.textContent).toBe('2');
       expect(popup.querySelector('.popup-heading strong')?.textContent).toBe('VENUE 2');
       expect(popup.querySelector('button')).toBeNull();
+    });
+
+    it('its arrow ends on the white edge of what marks its venue, covering it', async () => {
+      const { popup, change } = await openPopup();
+      const offset = () => FakePopup.of(popup).offset;
+      // A 10 px dot, with a 2 px edge: from the point, 5 px to the edge.
+      expect(offset()).toBe(5);
+
+      // Its card in the middle: the dot, 12 px.
+      await change('current', 2);
+      expect(offset()).toBe(6);
+
+      // The route there: the 26 px pin, whose head starts 19.5 px above the point.
+      await change('routeTo', 2);
+      expect(offset()).toBe(18.5);
     });
 
     it('takes up all the width between the map’s buttons, keeping their margin', async () => {
@@ -573,6 +614,8 @@ describe('VenueMap', () => {
 
     point.dispatchEvent(new MouseEvent('mouseenter'));
     expect(tooltip()).toBe('Punto de partida');
+    // Its arrow, on the white edge of the 10 px point, covering it.
+    expect(FakePopup.of(el.querySelector('.origin-tooltip')!).offset).toBe(5);
     point.dispatchEvent(new MouseEvent('mouseleave'));
     expect(tooltip()).toBeUndefined();
 
@@ -1007,6 +1050,13 @@ describe('VenueMap', () => {
         expect(guideButton(el)).not.toBeNull();
       });
 
+      it('going full screen, no popup opens on its own: the way ahead comes first', async () => {
+        const { el, toggleLarge } = await guiding(-0.0585);
+        await toggleLarge();
+        expect(el.querySelector('.maplibregl-popup')).toBeNull();
+        expect(guideButton(el)).toBeNull();
+      });
+
       it('full screen, a venue’s popup pauses it, and it goes on once the popup closes', async () => {
         const { el, touch, clickMap, toggleLarge } = await guiding(-0.0581);
         await toggleLarge();
@@ -1116,24 +1166,40 @@ describe('VenueMap', () => {
     /** The marker with the pin, by number. */
     const pinned = (el: HTMLElement) =>
       [...el.querySelectorAll('.venue-marker')]
-        .filter((m) => m.querySelector('use[href="#icon-pin"]'))
+        .filter((m) => m.querySelector('svg path'))
         .map((m) => parseInt(m.getAttribute('title')!));
 
     it('the venue the route goes to has the pin, which goes along with it', async () => {
       const { el, change } = await create([ONE, TWO, THREE], 1);
       expect(withClass(el, 'destination')).toEqual([1]);
       expect(pinned(el)).toEqual([1]);
+      expect(withClass(el, 'pinned')).toEqual([1]);
 
+      // The one it left goes back into its dot, and then is a dot again.
       await change('routeTo', 3);
       expect(withClass(el, 'destination')).toEqual([3]);
-      expect(pinned(el)).toEqual([3]);
-      expect(el.querySelectorAll('.venue-marker svg').length).toBe(1);
+      expect(pinned(el)).toEqual([1, 3]);
+      await vi.waitFor(() => expect(pinned(el)).toEqual([3]));
+      expect(withClass(el, 'pinned')).toEqual([3]);
 
       // Filtered out, it goes with its marker; back, with it again.
       await change('venues', [ONE, TWO]);
       expect(pinned(el)).toEqual([]);
       await change('venues', [ONE, TWO, THREE]);
       expect(pinned(el)).toEqual([3]);
+    });
+
+    it('back to one that was going back into its dot, the same pin grows again', async () => {
+      const { el, change, marker } = await create([ONE, TWO], 1);
+      const pin = marker(1)!.querySelector('svg');
+
+      await change('routeTo', 2);
+      await change('routeTo', 1);
+      expect(marker(1)!.querySelector('svg')).toBe(pin);
+      await vi.waitFor(() => expect(pinned(el)).toEqual([1]));
+      // It stays: it isn't taken out once back in its dot.
+      await new Promise((r) => setTimeout(r, 400));
+      expect(pinned(el)).toEqual([1]);
     });
 
     it('in the venue view, the one whose card is in the middle too, if it’s another', async () => {

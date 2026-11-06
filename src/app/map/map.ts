@@ -19,7 +19,7 @@ import type * as ml from 'maplibre-gl';
 
 import { ArrivalTime } from '../arrival-time/arrival-time';
 import { Clock } from '../clock';
-import { Icon, createIcon } from '../icon/icon';
+import { Icon } from '../icon/icon';
 import { isTouch, reducedMotion, remInPx } from '../media';
 import {
   Route,
@@ -44,6 +44,7 @@ import {
   statusBadge,
   statusKind,
 } from '../venues';
+import { MarkerPin } from './pin';
 
 const CASTELLON: ml.LngLatLike = [-0.037, 39.986];
 
@@ -120,6 +121,17 @@ const NORTH_SNAP = 7;
 
 /** In meters: how far the starting point can get from the route drawn before asking for another. */
 const OFF_ROUTE = 40;
+
+/**
+ * What marks each point, as in styles/_map.scss: the venues' dots (and the user's), the bigger one
+ * whose card is in sight and the pin of the one the route goes to, in rem; their white edge, in px.
+ */
+const DOT = 0.625;
+const CURRENT_DOT = 0.75;
+const PIN = 1.625;
+const DOT_EDGE = 2;
+/** From the top of the pin's head to its tip, on the point, out of the 24 of its icon (pin.ts). */
+const PIN_HEAD = (21.5 - 3.5) / 24;
 
 /** How far the map's buttons are from its edges, and a popup from them. */
 const BUTTON_MARGIN = 10;
@@ -551,8 +563,8 @@ export class VenueMap {
   private resumeGuide = false;
   /** The venue the route goes to: in the venue view, routeTo; beside the list, selected. */
   private readonly chosen = computed(() => this.routeTo() ?? this.selected());
-  /** Its marker's pin (styles/_map.scss), created the first time there's one. */
-  private pin?: SVGSVGElement;
+  /** The pins in the markers: the one the route goes to, and those going back into their dot. */
+  private readonly pins = new Map<number, MarkerPin>();
   /**
    * Those with a marker. It only changes when which ones they are changes: the list arrives in a new
    * array on reordering it, marking a favorite or rating a tapa, and the map doesn't have to move.
@@ -818,6 +830,7 @@ export class VenueMap {
 
     this.destroyRef.onDestroy(() => {
       this.resizeObserver?.disconnect();
+      for (const pin of this.pins.values()) pin.stop();
       this.map()?.remove();
       clearTimeout(this.hideHint);
       this.location.mapInSight.set(false);
@@ -837,6 +850,7 @@ export class VenueMap {
       untracked(() => {
         this.paint(map, venues);
         this.setPopups(venues, popups);
+        this.placePins(chosen, current);
       });
       for (const [number, marker] of this.markers) {
         const kind = kinds.get(number);
@@ -845,12 +859,10 @@ export class VenueMap {
         classes.toggle('destination', number === chosen);
         classes.toggle('current', number === current && number !== chosen);
       }
-      // Only one pin, which goes from marker to marker.
-      const destination = chosen === null ? undefined : this.markers.get(chosen)?.getElement();
-      if (!destination) this.pin?.remove();
-      else if (this.pin?.parentElement !== destination) {
-        destination.append((this.pin ??= createIcon('pin')));
-      }
+      // The open popup's arrow, on what marks its venue now.
+      const opened = this.opened();
+      const popup = opened === null ? undefined : this.markers.get(opened)?.getPopup();
+      if (popup?.isOpen()) popup.setOffset(this.popupOffset(opened!));
       const number = this.pendingFocus;
       this.pendingFocus = null;
       if (number !== null) untracked(() => this.focus(number));
@@ -904,12 +916,25 @@ export class VenueMap {
         () => {
           this.placeSmall(small, this.host.querySelector('.frame')!.getBoundingClientRect());
           this.resize(0, 1);
+          this.showCurrent();
         },
         { injector: this.injector },
       );
       return;
     }
     this.resize(at, Number(large));
+    if (large) afterNextRender(() => this.showCurrent(), { injector: this.injector });
+  }
+
+  /**
+   * Full screen, the card in the middle gets hidden: its venue's popup opens at once, once the markers
+   * have theirs (see popups). Not while guiding, which it would stop to make room for it (see
+   * showPopup): the way ahead comes first.
+   */
+  private showCurrent(): void {
+    const number = this.current();
+    const marker = number === null ? undefined : this.markers.get(number);
+    if (marker?.getPopup()?.isOpen() === false && !this.guiding()) marker.togglePopup();
   }
 
   /**
@@ -1145,7 +1170,7 @@ export class VenueMap {
       closeButton: false,
       closeOnClick: false,
       focusAfterOpen: false,
-      offset: 7,
+      offset: (DOT * remInPx()) / 2, // Its arrow, on its white edge (see popupOffset).
     });
     origin.addEventListener('mouseenter', () => this.originTooltip.addTo(map));
     origin.addEventListener('mouseleave', () => this.originTooltip.remove());
@@ -1433,7 +1458,6 @@ export class VenueMap {
 
   /** Gives the markers their popup, or takes it away, as the layout changes (see popups). */
   private setPopups(venues: readonly Venue[], popups: boolean): void {
-    let offset: number | undefined;
     for (const venue of venues) {
       const marker = this.markers.get(venue.number);
       if (!marker || !!marker.getPopup() === popups) continue;
@@ -1441,11 +1465,9 @@ export class VenueMap {
         marker.setPopup(null);
         continue;
       }
-      // Reading the font size forces a style recalculation: only when one has to be created.
-      offset ??= Math.round(0.35 * remInPx());
+      // Its offset, on opening it (see popupOffset).
       const popup = new this.maplibre.Popup({
         anchor: 'bottom',
-        offset,
         className: 'map-popup',
         maxWidth: 'none', // See fitPopup.
         closeButton: false,
@@ -1476,10 +1498,62 @@ export class VenueMap {
     if (previous !== popup) previous?.remove();
     if (this.guiding()) this.resumeGuide = true;
     this.guiding.set(false);
+    popup.setOffset(this.popupOffset(venue.number));
     this.fitPopup(popup);
     popup.setDOMContent(this.popup(venue));
     this.map()!.getCanvasContainer().append(popup.getElement());
     this.placePopup(marker);
+  }
+
+  /**
+   * The pins (pin.ts): out of the dot of the venue the route goes to, and back into it for the one it
+   * went to. Before the classes change: their color goes from the dot's to the pin's, or back
+   * (styles/_map.scss). Out of the dot at once before the map is painted (see shown).
+   */
+  private placePins(chosen: number | null, current: number | null): void {
+    for (const [number, pin] of this.pins) {
+      const element = this.markers.get(number)?.getElement();
+      if (!element?.contains(pin.element)) {
+        // Its marker went away (filtered out), and the pin with it.
+        pin.stop();
+        this.pins.delete(number);
+      } else if (number !== chosen) {
+        pin.shrink(this.dotSize(number === current), () => {
+          if (this.pins.get(number) !== pin) return;
+          this.pins.delete(number);
+          pin.element.remove();
+          element.classList.remove('pinned');
+        });
+      }
+    }
+    const element = chosen === null ? undefined : this.markers.get(chosen)?.getElement();
+    if (!element) return;
+    let pin = this.pins.get(chosen!);
+    if (!pin) {
+      pin = new MarkerPin(this.dotSize(chosen === current), DOT_EDGE, PIN * remInPx());
+      this.pins.set(chosen!, pin);
+      element.classList.add('pinned');
+      element.append(pin.element);
+      // In its dot's color, for the transition to the pin's.
+      void getComputedStyle(pin.element).fill;
+    }
+    pin.grow(this.shown);
+  }
+
+  /** A dot's diameter, in px: bigger with its card in the middle. */
+  private dotSize(current: boolean): number {
+    return (current ? CURRENT_DOT : DOT) * remInPx();
+  }
+
+  /**
+   * How far above its venue's point a popup's arrow ends: on the inside of the white edge of what marks
+   * it, covering it. The pin's head, the bigger dot of the one whose card is in sight or a dot. Reading
+   * the font size forces a style recalculation: only for the popup open.
+   */
+  private popupOffset(number: number): number {
+    const rem = remInPx();
+    if (number === this.chosen()) return PIN * rem * PIN_HEAD - DOT_EDGE / 2;
+    return ((number === this.current() ? CURRENT_DOT : DOT) * rem) / 2;
   }
 
   /**

@@ -73,13 +73,32 @@
   }
 }
 
+// Every point on the map, the user's and the venues': the same size, with the same white edge and
+// shadow. The pin keeps them too (.venue-marker svg). The popups' arrows end on that edge: map.ts
+// knows these sizes (DOT and the others).
+$dot: 0.625rem;
+$current-dot: 0.75rem;
+$pin: 1.625rem;
+$pin-room: 0.375rem;
+$pin-room-below: 0.75rem;
+$dot-edge: 2px;
+$dot-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+// The same for the pin, as a filter: in drop-shadow() the blur is the deviation, half box-shadow's.
+$pin-shadow: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35));
+
+@mixin dot($size: $dot) {
+  box-sizing: content-box;
+  width: $size;
+  height: $size;
+  border: $dot-edge solid #fff;
+  border-radius: 50%;
+  box-shadow: $dot-shadow;
+}
+
 // The user's point (map.ts). With the location lost, blue-grey, and flickering back to its blue in
 // irregular bursts, like a light that's failing. A long loop, so that it doesn't look like one.
 .origin-marker {
-  width: 17px;
-  height: 17px;
-  border: 3px solid #fff;
-  border-radius: 50%;
+  @include dot;
   background-color: #2563eb;
 
   &.lost {
@@ -125,8 +144,8 @@
 }
 
 // Venue markers (map.ts): the dot, in the middle of its area to click on. The one whose card is in
-// sight, in the accent color; the one the route goes to, a pin in that color instead, with its tip on
-// the point.
+// sight, in the accent color and a bit bigger; the one the route goes to, a pin in that color
+// instead, with its tip on the point. Growing, the dots keep their edge: they get wider, not scaled.
 .venue-marker {
   z-index: 1; // Above the user's point; those two and the hovered one, above the others.
   display: grid;
@@ -141,53 +160,78 @@
     z-index: 2;
   }
 
-  // Outlined in white, like the dots, and with their shadow. Only in the destination's (map.ts).
+  @media (hover: hover) {
+    &:hover {
+      z-index: 3;
+      --dot-size: #{$dot * 1.1};
+    }
+  }
+
+  &::after {
+    content: '';
+    @include dot(var(--dot-size, #{$dot}));
+    background: var(--marker-color, var(--brand));
+    transition:
+      background-color 0.15s,
+      width 0.15s,
+      height 0.15s;
+  }
+
+  // The pin (pin.ts), in the destination's marker, and in the one it leaves while it goes back into
+  // its dot: instead of the dot. Its strokes keep the dots' edge at any size; inside the circle in its
+  // head, the map shows through (one path, filled evenodd). From the dot's color to the accent, and
+  // back, along with its shape.
   svg {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 2.5rem;
-    height: 2.5rem;
-    fill: var(--accent);
+    // With room around it for its shadow, also as a dot (lower, round the point, out of its 24 units:
+    // it isn't clipped to them). The mask (below) leaves out what's outside its box.
+    overflow: visible;
+    box-sizing: content-box;
+    width: $pin;
+    height: $pin;
+    padding: $pin-room $pin-room $pin-room-below;
+    fill: var(--marker-color, var(--brand));
     stroke: #fff;
-    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
-    transform-origin: 50% calc(100% * 21.5 / 24);
-    translate: -50% calc(-100% * 21.5 / 24); // The tip, at y = 21.5 of 24.
-    transition: scale 0.15s;
+    stroke-width: $dot-edge;
+    stroke-linejoin: round;
+    filter: $pin-shadow;
+    // Its shadow, though, would grey the hole: the mask, which goes after the filter, takes it out.
+    // The hole's circle, wherever pin.ts has it (in the icon's 24 units), inside its white edge.
+    mask-image: radial-gradient(
+      circle at 50% calc(#{$pin-room} + #{$pin} * var(--hole-y) / 24),
+      transparent calc(#{$pin} * var(--hole-r) / 24 - #{$dot-edge} / 2),
+      #000 0
+    );
+    // The tip, at y = 21.5 of 24, on the point.
+    transform-origin: 50% calc(#{$pin-room} + #{$pin} * 21.5 / 24);
+    translate: -50% calc(-1 * (#{$pin-room} + #{$pin} * 21.5 / 24));
+    transition:
+      fill 0.35s,
+      scale 0.15s;
+
+    @include media.reduced-motion {
+      transition: none;
+    }
+
+    path {
+      fill-rule: evenodd;
+      vector-effect: non-scaling-stroke;
+    }
   }
 
-  &.destination::after {
+  &.destination svg {
+    fill: var(--accent);
+  }
+
+  &.pinned::after {
     display: none;
   }
 
   @media (hover: hover) {
     &:hover svg {
       scale: 1.1;
-    }
-  }
-
-  @media (hover: hover) {
-    &:hover {
-      z-index: 3;
-    }
-  }
-
-  &::after {
-    content: '';
-    width: 0.75rem;
-    height: 0.75rem;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    background: var(--marker-color, var(--brand));
-    box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
-    transition:
-      background-color 0.15s,
-      transform 0.15s;
-  }
-
-  @media (hover: hover) {
-    &:hover::after {
-      transform: scale(1.15);
     }
   }
 
@@ -208,8 +252,8 @@
     --marker-color: var(--muted);
   }
 
-  &.current::after {
-    background: var(--accent);
-    transform: scale(1.25);
+  &.current {
+    --dot-size: #{$current-dot};
+    --marker-color: var(--accent);
   }
 }

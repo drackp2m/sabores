@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 // Map popups (MapLibre creates them outside the components). As wide as map.ts lets them be, unless
 // that makes the photos larger than at their smallest in the cards (9rem, venue-card.scss): two, with
 // the gap between them and the padding and border around them (.venue-popup). Above the markers,
@@ -41,19 +43,26 @@
 
 // The arrow continues the border: a square on its corner, cut in half, whose fill covers the border
 // where they meet (they overlap 1px). Without a shadow: cut, it would draw a box around the arrow.
+// Its point, the outside of its border, right at the bottom of its box: where MapLibre leaves it, the
+// offset map.ts gives it above the point (on the edge of what marks it).
+$tip: 15px;
+$tip-side: $tip * math.sqrt(2); // The square's side: half its diagonal is the tip's height.
+
 :is(.map-popup, .origin-tooltip).maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
   overflow: hidden;
   width: 40px;
-  height: 20px;
+  height: $tip;
   margin-top: -1px;
   border: 0;
 
+  // Centered on the top of the box.
   &::after {
     content: '';
     display: block;
-    width: 19px;
-    height: 19px;
-    margin: -10px auto 0;
+    box-sizing: border-box;
+    width: $tip-side;
+    height: $tip-side;
+    margin: math.div(-$tip-side, 2) auto 0;
     border: 1px solid var(--border);
     background: var(--surface);
     transform: rotate(45deg);

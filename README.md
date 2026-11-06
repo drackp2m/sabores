@@ -161,6 +161,7 @@ src/app/
   theme.ts           light, dark or system theme
   user-location.ts   starting point: geolocation or an address searched for
   routing.ts         route along the streets and link to the maps app
+  external-links.ts  from the iPhone's Home Screen, other sites' links open in Safari
   media.ts           media queries for the code (the styles' are in src/styles/_media.scss)
   animate-height.ts  height animation, for the schedule and «Ver más»
   venue-card/        a venue's card with its tapas, notices and schedule
@@ -186,6 +187,11 @@ It can be installed as an app (*Add to Home Screen* on iPhone, *Install app* on 
 `public/manifest.webmanifest` and the Apple tags in `src/index.html`. The icons (`public/icon-*.png`,
 `apple-touch-icon.png`, `favicon.*`) are the «S» from `public/favicon.svg` exported to PNG; the *maskable*
 version leaves margin for Android's round crop.
+
+Installed on an iPhone or iPad, the app would open other sites' links (Instagram, the map's credits…)
+in a browser of its own, on top of it: [src/app/external-links.ts](src/app/external-links.ts) sends
+them to Safari with the `x-safari-https:` scheme (iOS 17 or later, undocumented). Apple Maps' links
+are left alone: the system opens them in its app.
 
 ## Deployment
 

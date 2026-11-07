@@ -332,6 +332,9 @@ export class PhotoViewer {
     if (!photo || this.closing) return;
     this.closing = true;
     await this.animate(photo, false);
+    // The thumbnail and not the photo, in the same frame: until the viewer is gone, both would be
+    // seen, one over the other (if the photo is see-through, as a withdrawn venue's).
+    this.dialog()!.nativeElement.style.visibility = 'hidden';
     photo.origin.style.visibility = '';
     photo.origin.focus({ preventScroll: true });
     this.viewer.photo.set(null);
@@ -393,15 +396,20 @@ export class PhotoViewer {
     const fromStars = new DOMRect(pixel(pill.left), pixel(pill.top), pill.width, pill.height);
     const toStars = snap(stars);
     const starsScale = fromStars.height / toStars.height;
-    // From the card of a venue that has withdrawn, almost in black and white (styles/_theme.scss):
-    // the photo and its stars get their color back on the way.
+    // From the card of a venue that has withdrawn, almost in black and white and a bit see-through
+    // (styles/_theme.scss): the photo and its stars get their color back on the way. Both together,
+    // as in the card: see-through one by one, the photo would show through the stars more than on
+    // landing.
     const withdrawn = photo.origin.closest('.withdrawn')
       ? getComputedStyle(photo.origin).getPropertyValue('--withdrawn-filter').trim()
       : '';
     const colors = withdrawn
-      ? [image, stars].map((element) =>
-          element.animate(direction([{ filter: withdrawn }, { filter: 'none' }]), options),
-        )
+      ? [
+          image.parentElement!.animate(
+            direction([{ filter: withdrawn }, { filter: 'none' }]),
+            options,
+          ),
+        ]
       : [];
     // Each transform on its own, away from what has to be repainted, so that it can run on the
     // compositor: a slow frame on the main thread doesn't hold it up.

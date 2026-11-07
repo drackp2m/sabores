@@ -1,11 +1,12 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
 import { Favorite } from '../favorite/favorite';
 import { ScheduleStatus } from '../schedule-status/schedule-status';
 import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
+import { TapasRoute } from '../tapas-route';
 import { VenueHeader } from '../venue-header/venue-header';
-import { Venue } from '../venues';
+import { Venue, isWithdrawn } from '../venues';
 
 /**
  * The «Fotos» view: each venue with the same heading as its card (number, name, address, how long it
@@ -21,7 +22,7 @@ import { Venue } from '../venues';
     <ul>
       @for (card of cards(); track card.venue.number) {
         @let venue = card.venue;
-        <li [attr.id]="'venue-' + venue.number">
+        <li [attr.id]="'venue-' + venue.number" [class.withdrawn]="card.withdrawn">
           <span class="venue-mark"></span>
           <app-venue-header
             [venue]="venue"
@@ -47,6 +48,9 @@ import { Venue } from '../venues';
             }
             <app-favorite [venue]="venue" />
           </div>
+          @if (card.withdrawn) {
+            <span class="withdrawn-ribbon"><span>Retirado</span></span>
+          }
         </li>
       }
     </ul>
@@ -123,6 +127,18 @@ import { Venue } from '../venues';
       margin: 0 0.2rem 0.2rem 0.1rem;
       font-size: 1.4rem;
     }
+
+    // Withdrawn, almost in black and white and a bit see-through like its card (venue-card.scss),
+    // part by part.
+    .withdrawn {
+      border-color: var(--withdrawn-border);
+      background: var(--withdrawn-surface);
+
+      > :is(app-venue-header, .photos),
+      .bottom > * {
+        filter: var(--withdrawn-filter);
+      }
+    }
   `,
 })
 export class Gallery {
@@ -132,12 +148,19 @@ export class Gallery {
   /** The map button: on phones the venue opens, on its map; on desktop, the map goes to it. */
   readonly showOnMap = output<number>();
 
-  /** The venue's seals: gluten-free (or on request) and Ruta de Sabor, if any tapa has them. */
-  protected readonly cards = computed(() =>
-    this.venues().map((venue) => ({
+  private readonly tapasRoute = inject(TapasRoute);
+
+  /**
+   * The venue's seals: gluten-free (or on request) and Ruta de Sabor, if any tapa has them; and
+   * whether it has withdrawn, for its ribbon.
+   */
+  protected readonly cards = computed(() => {
+    const today = this.tapasRoute.today();
+    return this.venues().map((venue) => ({
       venue,
       gluten: glutenSeal(venue.tapas),
       flavorRoute: venue.tapas.some((t) => t.flavorRoute),
-    })),
-  );
+      withdrawn: isWithdrawn(venue, today),
+    }));
+  });
 }

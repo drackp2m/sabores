@@ -14,6 +14,7 @@ import {
   filterVenues,
   formatDistance,
   formatDuration,
+  isWithdrawn,
   limitedSchedule,
   nextHour,
   openBetween,
@@ -29,6 +30,7 @@ import {
   timeRange,
   unchanged,
   weekdayOf,
+  withdrawalNotice,
 } from './venues';
 
 function venue(
@@ -326,6 +328,39 @@ describe('filterVenues', () => {
   it('filters by the Castelló Ruta de Sabor seal', () => {
     expect(names({ flavorRoute: true })).toEqual(['ORIGEN']);
   });
+
+  it('with a day or a time, leaves out those withdrawn by today', () => {
+    const withdrawn = venues.map((v) =>
+      v.name === 'ORIGEN' ? { ...v, withdrawnFrom: '2026-11-06' } : v,
+    );
+    const on = (today: string, filters: Partial<Filters>) =>
+      filterVenues(withdrawn, { ...NO_FILTERS, ...filters }, undefined, today).map((v) => v.name);
+    expect(on('2026-11-05', { day: 'monday' })).toEqual(['CÚPULA', 'ORIGEN']);
+    expect(on('2026-11-06', { day: 'monday' })).toEqual(['CÚPULA']);
+    expect(on('2026-11-06', { from: '13:00', to: '13:00' })).toEqual([]);
+    // The rest of the filters don't depend on its schedule: it's still there, with its ribbon.
+    expect(on('2026-11-06', {})).toEqual(['CÚPULA', 'ORIGEN', 'DOS EN VERDE']);
+    expect(on('2026-11-06', { flavorRoute: true })).toEqual(['ORIGEN']);
+  });
+});
+
+describe('isWithdrawn and withdrawalNotice', () => {
+  const withdrawing = testVenue({ withdrawnFrom: '2026-11-09' });
+
+  it('it has withdrawn from that day on', () => {
+    expect(isWithdrawn(withdrawing, '2026-11-08')).toBe(false);
+    expect(isWithdrawn(withdrawing, '2026-11-09')).toBe(true);
+    expect(isWithdrawn(withdrawing, '2026-11-10')).toBe(true);
+    expect(isWithdrawn(testVenue(), '2026-11-10')).toBe(false);
+  });
+
+  it('until then, a notice says from when', () => {
+    expect(withdrawalNotice(withdrawing, '2026-11-08')).toBe(
+      'A partir del lunes 9 de noviembre deja de participar en la ruta.',
+    );
+    expect(withdrawalNotice(withdrawing, '2026-11-09')).toBeNull();
+    expect(withdrawalNotice(testVenue(), '2026-11-08')).toBeNull();
+  });
 });
 
 describe('filterVenues with favorites and ratings', () => {
@@ -437,6 +472,21 @@ describe('scheduleStatus', () => {
     expect(scheduleStatus(schedule, at('14:00'), { ...route, startDate: '2026-10-30' })).toEqual({
       open: false,
       minutes: 2 * 24 * 60 - 60,
+    });
+  });
+
+  it('ends when the venue withdraws', () => {
+    // Withdrawn from Friday: on Wednesday at night, nothing more.
+    expect(scheduleStatus(schedule, at('17:00'), route, '2026-10-30')).toEqual({
+      open: false,
+      minutes: 180,
+    });
+    expect(
+      scheduleStatus({ ...schedule, wednesday: [] }, at('10:00'), route, '2026-10-30'),
+    ).toEqual({ open: false, minutes: null });
+    expect(scheduleStatus(schedule, at('14:00'), route, '2026-10-28')).toEqual({
+      open: false,
+      minutes: null,
     });
   });
 });

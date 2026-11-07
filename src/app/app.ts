@@ -272,6 +272,7 @@ export class App {
         favorites: filters.favorites ? this.store.favorites() : NO_MARKS.favorites,
         ratings: filters.tried ? this.store.ratings() : NO_MARKS.ratings,
       },
+      this.tapasRoute.today(),
     );
   }
 

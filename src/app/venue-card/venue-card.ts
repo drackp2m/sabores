@@ -21,7 +21,17 @@ import { Seal, glutenSeal } from '../seal/seal';
 import { TapaPhoto } from '../tapa-photo/tapa-photo';
 import { TapasRoute } from '../tapas-route';
 import { VenueHeader } from '../venue-header/venue-header';
-import { Venue, WEEKDAYS, Weekday, formatSlots, splitSlots, unchanged, weekdayOf } from '../venues';
+import {
+  Venue,
+  WEEKDAYS,
+  Weekday,
+  formatSlots,
+  isWithdrawn,
+  splitSlots,
+  unchanged,
+  weekdayOf,
+  withdrawalNotice,
+} from '../venues';
 
 /**
  * The venues whose schedule is open, and how it's shown, for the visit: the card in the list and the
@@ -91,6 +101,11 @@ export class VenueCard {
       ? 'Estás viendo el horario revisado. Pulsa este aviso para ver el horario original.'
       : 'El horario original no coincide con el horario revisado. Pulsa este aviso para ver la revisión.',
   );
+  /** If it's going to withdraw from the route, from when: once it has, the ribbon says so. */
+  protected readonly withdrawal = computed(() =>
+    withdrawalNotice(this.venue(), this.tapasRoute.today()),
+  );
+  protected readonly withdrawn = computed(() => isWithdrawn(this.venue(), this.tapasRoute.today()));
   /** To highlight today in the schedule. */
   protected readonly today = computed(() => weekdayOf(this.clock.now()));
   /**

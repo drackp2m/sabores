@@ -1,7 +1,11 @@
 <span class="venue-mark"></span>
-<article>
+<!-- Once withdrawn, in black and white, with the ribbon across the bottom right corner. -->
+<article [class.withdrawn]="withdrawn()">
   <app-venue-header [venue]="venue()" [mapButton]="mapButton()" (showOnMap)="showOnMap.emit()" />
 
+  @if (withdrawal(); as withdrawal) {
+    <p class="note">{{ withdrawal }}</p>
+  }
   @for (note of venue().notes; track note) {
     <p class="note">{{ note }}</p>
   }
@@ -119,4 +123,8 @@
     }
     <app-favorite [venue]="venue()" />
   </footer>
+
+  @if (withdrawn()) {
+    <span class="withdrawn-ribbon"><span>Retirado</span></span>
+  }
 </article>

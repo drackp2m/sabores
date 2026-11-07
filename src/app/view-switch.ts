@@ -98,6 +98,9 @@ const AROUND = 12;
 /** With it on the root, what the card shows doesn't change: it only moves (see _view-switch.scss). */
 const SAME_CARD = 'same-card';
 
+/** With it on the root, the card is a venue's that has withdrawn: see-through, its outline too. */
+const WITHDRAWN_CARD = 'withdrawn-card';
+
 /**
  * On the new card's map button while it arrives: as it was in the view it comes from, so that the
  * card looks the same in both pictures (in the venue view the one in the middle may have none, see
@@ -248,6 +251,8 @@ function moveCard({
     name(card, 'card');
     name(card.querySelector('app-venue-header'), 'card-heading');
     name(card.querySelector('app-favorite'), 'card-favorite');
+    // A venue that has withdrawn: its ribbon comes out of the card, which would cut it.
+    name(card.querySelector('.withdrawn-ribbon'), 'card-ribbon');
     const { above, below } = around(card, staying);
     above.forEach((block, i) => name(block, `${side}-up-${i + 1}`));
     below.forEach((block, i) => name(block, `${side}-down-${i + 1}`));
@@ -264,6 +269,7 @@ function moveCard({
     root.style.setProperty(`--card-${edge}`, `${by}px`);
 
   root.classList.toggle(SAME_CARD, !slide);
+  root.classList.toggle(WITHDRAWN_CARD, before.matches('.withdrawn'));
   const kept = mapButton(before)?.classList.contains('idle') ? KEPT.hidden : KEPT.shown;
   let keptButton: HTMLElement | null | undefined;
   let header: HTMLElement | null = null;
@@ -309,7 +315,7 @@ function moveCard({
   transition.ready.then(start, arrive);
   const end = () => {
     clear();
-    root.classList.remove(SAME_CARD);
+    root.classList.remove(SAME_CARD, WITHDRAWN_CARD);
     keptButton?.classList.remove(kept, SWITCHING);
     releaseHeader(header);
     root.style.removeProperty('--card-top');

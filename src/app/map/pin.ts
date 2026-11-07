@@ -118,14 +118,16 @@ export class MarkerPin {
     const from = this.progress;
     const duration = reducedMotion() ? 0 : time * Math.min(1, Math.abs(target - from));
     const start = performance.now();
-    const step = () => {
-      const t = duration ? Math.min(1, (performance.now() - start) / duration) : 1;
+    const step = (elapsed: number) => {
+      const t = duration ? Math.min(1, elapsed / duration) : 1;
       this.progress = t === 1 ? target : from + (target - from) * ease(t);
       this.draw();
-      if (t < 1) this.frame = requestAnimationFrame(step);
+      if (t < 1) this.frame = requestAnimationFrame(() => step(performance.now() - start));
       else this.done?.();
     };
-    step();
+    // At once, from where it is, not from another reading of the clock: turned back near its end,
+    // with a fraction of a millisecond left to go, a few µs would already be part of the way.
+    step(0);
   }
 
   /**

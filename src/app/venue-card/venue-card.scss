@@ -7,6 +7,7 @@
 
 article {
   container: card / inline-size;
+  position: relative; // The ribbon of a venue that has withdrawn goes on its corner.
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -14,6 +15,19 @@ article {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+// Withdrawn, almost in black and white and a bit see-through (styles/_theme.scss), but for its
+// ribbon. Part by part and not the whole card: switching view, the heading and the heart travel on
+// their own, without what the card has.
+.withdrawn {
+  border-color: var(--withdrawn-border);
+  background: var(--withdrawn-surface);
+
+  > :not(footer, .withdrawn-ribbon),
+  footer > * {
+    filter: var(--withdrawn-filter);
+  }
 }
 
 .note {

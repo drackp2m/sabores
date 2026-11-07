@@ -76,6 +76,11 @@ $tip-side: $tip * math.sqrt(2); // The square's side: half its diagonal is the t
   padding: 0.5em;
 }
 
+// Withdrawn, almost in black and white like its card (the rest is already gray or black).
+.venue-popup:has(.withdrawn-ribbon) :is(.venue-number, img) {
+  filter: var(--withdrawn-filter);
+}
+
 // Like a card's header. The number comes out of the left edge, past the padding and covering the
 // border.
 .popup-header {
@@ -97,6 +102,11 @@ $tip-side: $tip * math.sqrt(2); // The square's side: half its diagonal is the t
   flex-direction: column;
   gap: 0.1em;
   min-width: 0;
+
+  // Out of the way of the ribbon of a venue that has withdrawn (styles/_badges.scss).
+  .venue-popup:has(.withdrawn-ribbon) & {
+    padding-right: 3.8em;
+  }
 
   strong {
     text-wrap: balance;

@@ -25,16 +25,18 @@ describe('VenueMap', () => {
   let fitBounds: ReturnType<typeof vi.spyOn>;
   const statuses = signal<ReadonlyMap<number, Status>>(new Map());
   const arrivals = signal<ReadonlyMap<number, Arrival>>(new Map());
+  const today = signal('2026-11-05');
   const lost = signal(false);
   const mapInSight = signal(false);
   const live = signal(false);
   beforeEach(() => {
     fitBounds = vi.spyOn(maplibre.Map.prototype, 'fitBounds').mockReturnThis();
     statuses.set(new Map());
+    today.set('2026-11-05');
     localStorage.clear(); // The theme.
     TestBed.configureTestingModule({
       providers: [
-        { provide: TapasRoute, useValue: { statuses, arrivals } },
+        { provide: TapasRoute, useValue: { statuses, arrivals, today } },
         { provide: UserLocation, useValue: { lost, mapInSight, live } },
       ],
     });
@@ -273,6 +275,21 @@ describe('VenueMap', () => {
       statuses.set(new Map());
       await fixture.whenStable();
       expect(status()).toBe('');
+    });
+
+    it('once its venue has withdrawn, has the ribbon of its card, also at midnight', async () => {
+      statuses.set(new Map([[2, { open: false, minutes: null }]]));
+      const withdrawing = { ...TWO, withdrawnFrom: '2026-11-06' };
+      const { fixture, el, touch, toggleLarge } = await create([ONE, withdrawing], 1);
+      await toggleLarge();
+      await touch(2);
+      const popup = el.querySelector<HTMLElement>('.maplibregl-popup')!;
+      expect(popup.querySelector('.withdrawn-ribbon')).toBeNull();
+
+      today.set('2026-11-06');
+      await fixture.whenStable();
+      expect(popup.querySelector('.withdrawn-ribbon')?.textContent).toBe('Retirado');
+      expect(popup.querySelector('.schedule-status')?.textContent).toBe('no hay más tapas');
     });
 
     it('what starts on it reaches the map, to drag it, but clicks stay on it', async () => {

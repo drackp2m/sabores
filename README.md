@@ -50,7 +50,8 @@ scripts/
       "photo": "photos/01-1.jpg"
     }],
     "location": { "lat": 39.98081, "lng": -0.03257 },  // reviewed, 5 decimals (~1 m); null if unknown
-    "page": 4                            // page in the PDF
+    "page": 4,                           // page in the PDF
+    "withdrawnFrom": "2026-11-06"        // only if it withdrew: from that day on it's out of the route
   }]
 }
 ```
@@ -64,8 +65,8 @@ swift scripts/extract.swift "GUÍA OFICIAL 2026 DIGITAL.pdf" data
 swift scripts/geocode.swift data
 ```
 
-The locations and `reviewedHours` in `venues.json` are reviewed by hand: running these scripts again
-overwrites them.
+The locations, `reviewedHours` and `withdrawnFrom` in `venues.json` are set by hand: running these
+scripts again overwrites them.
 
 `extract.swift` overwrites `venues.json` without coordinates; `geocode.swift` adds them back from the cache.
 Drinks are normalized with the `drinkNames` table in `extract.swift`: if the guide brings a new one, the
@@ -121,6 +122,14 @@ on foot, by car or based on the distance) or by soonest closing (first those ser
 soonest; then those opening soonest). Each card says how long until it closes or opens.
 
 If it closes before you can get there, the status shows in red.
+
+A venue that withdraws from the route (`withdrawnFrom`) says so in its card until that day: «A partir
+del … deja de participar en la ruta». From then on its card, in either view, is almost in black and
+white and a bit see-through (its photos get their color back as they enlarge), with a «Retirado»
+ribbon that wraps around its bottom right corner from behind (in its popup, around the top right
+one): at each end the band makes half of the turn and its back the other half, and then goes on
+straight behind the card. The heart under it still works. Its schedule has no more tapas, so it doesn't
+come up when filtering by day or time.
 
 When a venue's reviewed hours close part of its tapas schedule, an exclamation mark goes between «Horario
 de tapas» and the status. The same mark, in the filters, is «Horarios revisados»: on, each schedule keeps

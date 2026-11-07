@@ -18,6 +18,24 @@
   --warning-soft: #fff3d6;
   --red: #a61e24;
   --red-soft: #fde4e2;
+  // The ribbon of a venue that has withdrawn, with white text, and its back where it folds
+  // (styles/_badges.scss). Its card, almost in black and white and a bit see-through: what's in it,
+  // part by part, and its background and border. In the viewer, its photos get their color back
+  // (viewer.ts).
+  --ribbon: #5c4f47;
+  --ribbon-back: #3b312b;
+  --withdrawn-opacity: 0.65;
+  --withdrawn-filter: grayscale(0.7) opacity(var(--withdrawn-opacity));
+  --withdrawn-surface: color-mix(
+    in srgb,
+    var(--surface) calc(var(--withdrawn-opacity) * 100%),
+    transparent
+  );
+  --withdrawn-border: color-mix(
+    in srgb,
+    var(--border) calc(var(--withdrawn-opacity) * 100%),
+    transparent
+  );
   --amber: #d97706;
   --heart: #e11d48;
   --star: #ffc531;
@@ -52,6 +70,8 @@
   --warning-soft: #3a2e14;
   --red: #ff9a8f;
   --red-soft: #3f1d1b;
+  --ribbon: #75665c;
+  --ribbon-back: #3a302a;
   --amber: #f5a524;
   --heart: #fb5a7a;
   --shadow-raised:

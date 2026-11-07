@@ -229,13 +229,17 @@ main {
   gap: 0.5rem;
   margin-inline: calc(-1 * var(--gutter-left)) calc(-1 * var(--gutter-right));
   padding-inline: var(--gutter-left) var(--gutter-right);
+  // Room below, without moving what follows, for the ribbon of a venue that has withdrawn, which
+  // sticks out of its card's bottom (styles/_badges.scss): scrolling sideways, it cuts what comes out.
+  margin-bottom: -0.5rem;
+  padding-bottom: 0.5rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 
   @media (hover: hover) {
-    padding-bottom: 0.5rem;
+    padding-bottom: 1rem;
     scrollbar-width: thin;
   }
 

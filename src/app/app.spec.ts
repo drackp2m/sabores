@@ -503,6 +503,38 @@ describe('App', () => {
     expect([day.value, from.value, to.value]).toEqual(['', '', '']);
   });
 
+  it('warns about a venue that is going to withdraw and, from that day on, shows its ribbon', async () => {
+    const now = signal(new Date(2026, 10, 5, 20, 0)); // Thursday.
+    TestBed.overrideProvider(Clock, { useValue: { now } });
+    const withdrawing = { ...DATA.venues[1], withdrawnFrom: '2026-11-06' };
+    const { fixture, el, press } = await start({ ...DATA, venues: [DATA.venues[0], withdrawing] });
+    const card = (number: number) => el.querySelector(`#venue-${number}`)!;
+    /** Its ribbon and whether it's in black and white, in either view. */
+    const withdrawn = (number: number) => [
+      card(number).querySelector('.withdrawn-ribbon')?.textContent ?? null,
+      !!card(number).querySelector('.withdrawn'),
+    ];
+    expect(card(2).querySelector('.note')?.textContent).toBe(
+      'A partir del viernes 6 de noviembre deja de participar en la ruta.',
+    );
+    expect(withdrawn(2)).toEqual([null, false]);
+
+    now.set(new Date(2026, 10, 6, 0, 0));
+    await fixture.whenStable();
+    expect(card(2).querySelector('.note')).toBeNull();
+    expect(withdrawn(2)).toEqual(['Retirado', true]);
+    expect(withdrawn(1)).toEqual([null, false]);
+    // No more tapas, but it can still be found on the map.
+    expect(card(2).querySelector('app-schedule-status')!.textContent).toBe('no hay más tapas');
+    expect(el.querySelector(MAP_BUTTON(2))!.classList).not.toContain('idle');
+
+    await press('.menu-button');
+    await press('.menu button', 'Fotos');
+    expect(card(2).matches('.withdrawn')).toBe(true);
+    expect(card(2).querySelector('.withdrawn-ribbon')?.textContent).toBe('Retirado');
+    expect(card(1).matches('.withdrawn')).toBe(false);
+  });
+
   describe('with «Abierto ahora» on', () => {
     const now = signal(new Date(2026, 10, 1, 23, 30)); // A Sunday.
 

@@ -108,16 +108,27 @@ $curve: ease-in-out;
   overflow: hidden;
 }
 
+// A venue's that has withdrawn (view-switch.ts): see-through like it (styles/_theme.scss).
+:root.withdrawn-card::view-transition-group(card) {
+  border-color: var(--withdrawn-border);
+  background: var(--withdrawn-surface);
+}
+
 // Where the card is, border included, and not inside the group's.
 ::view-transition-image-pair(card) {
   inset: -1px;
 }
 
 // The heading, number included (it comes out of the card), and the heart stay above the card: the
-// heart goes along with its bottom edge.
+// heart goes along with its bottom edge, and so does the ribbon of a venue that has withdrawn, above
+// the heart and coming out of the corner.
 ::view-transition-group(card-heading),
 ::view-transition-group(card-favorite) {
   z-index: 1;
+}
+
+::view-transition-group(card-ribbon) {
+  z-index: 2;
 }
 
 // The same in every view: the new ones at once, live, without the old ones fading under them. Safari's
@@ -125,12 +136,14 @@ $curve: ease-in-out;
 // pixel lower, the address half a pixel higher), and it got back to its size as it faded into the
 // new one: the address, dancing.
 ::view-transition-old(card-heading),
-::view-transition-old(card-favorite) {
+::view-transition-old(card-favorite),
+::view-transition-old(card-ribbon) {
   display: none;
 }
 
 ::view-transition-new(card-heading),
-::view-transition-new(card-favorite) {
+::view-transition-new(card-favorite),
+::view-transition-new(card-ribbon) {
   animation: none;
 }
 

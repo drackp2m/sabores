@@ -48,6 +48,11 @@ export interface Venue {
   reviewedHours: Record<Weekday, TimeSlot[]> | null;
   tapas: Tapa[];
   location: Coordinates | null;
+  /**
+   * 'YYYY-MM-DD': from that day on it no longer takes part in the route (it withdrew). Only on those
+   * that did. See isWithdrawn().
+   */
+  withdrawnFrom?: string;
 }
 
 export interface RouteEvent {
@@ -147,10 +152,31 @@ export function photoUrl(tapa: Tapa, width: 500 | 690): string {
   return `data/${tapa.photo.replace(/\.jpg$/, '')}-${width}.webp`;
 }
 
+/** Today ('YYYY-MM-DD') it no longer takes part in the route. */
+export function isWithdrawn(venue: Venue, today: string): boolean {
+  return !!venue.withdrawnFrom && today >= venue.withdrawnFrom;
+}
+
+/** Before the day it withdraws, the notice that it will: from that day on, the ribbon says so. */
+export function withdrawalNotice(venue: Venue, today: string): string | null {
+  const from = venue.withdrawnFrom;
+  if (!from || today >= from) return null;
+  const [year, month, day] = from.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const weekday = WEEKDAYS.find((d) => d.id === weekdayOf(date))!.name.toLowerCase();
+  const dayAndMonth = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+  return `A partir del ${weekday} ${dayAndMonth} deja de participar en la ruta.`;
+}
+
+/**
+ * With a day or a time, those withdrawn by today (isWithdrawn()) are left out: they no longer serve
+ * tapas.
+ */
 export function filterVenues(
   venues: readonly Venue[],
   filters: Filters,
   marks: UserMarks = NO_MARKS,
+  today = '',
 ): Venue[] {
   const text = normalize(filters.text.trim());
   const number = /^\d+$/.test(text) ? Number(text) : null;
@@ -160,7 +186,8 @@ export function filterVenues(
       (!favorites || marks.favorites.has(venue.number)) &&
       (!tried || matchesTried(venue, tried, marks.ratings)) &&
       (!text || (number !== null ? venue.number === number : searchTextOf(venue).includes(text))) &&
-      (!(day || from || to) || openBetween(venue.schedule, day, from, to)) &&
+      (!(day || from || to) ||
+        (!isWithdrawn(venue, today) && openBetween(venue.schedule, day, from, to))) &&
       (!glutenFree ||
         venue.tapas.some(
           (t) =>
@@ -408,17 +435,21 @@ export interface Status {
   untilClosing?: boolean;
 }
 
-/** Finds the current slot or, failing that, the next opening within the dates of the route. */
+/**
+ * Finds the current slot or, failing that, the next opening within the dates of the route: until the
+ * venue withdraws, if it does (Venue.withdrawnFrom).
+ */
 export function scheduleStatus(
   schedule: Record<Weekday, TimeSlot[]>,
   now: Date,
   event?: Pick<RouteEvent, 'startDate' | 'endDate'>,
+  withdrawnFrom?: string,
 ): Status {
   const t = now.getHours() * 60 + now.getMinutes();
   for (let d = 0; d <= 7; d++) {
     const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
     const iso = isoDate(date);
-    if (event && iso > event.endDate) break;
+    if ((event && iso > event.endDate) || (withdrawnFrom && iso >= withdrawnFrom)) break;
     if (event && iso < event.startDate) continue;
     for (const slot of schedule[weekdayOf(date)]) {
       const [opens, closes] = bounds(slot);
@@ -569,7 +600,8 @@ function fromMinutes(minutes: number): string {
   return `${two(Math.floor(minutes / 60) % 24)}:${two(minutes % 60)}`;
 }
 
-function isoDate(date: Date): string {
+/** 'YYYY-MM-DD', like the dates in the data. */
+export function isoDate(date: Date): string {
   const two = (n: number) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`;
 }

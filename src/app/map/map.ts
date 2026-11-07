@@ -39,6 +39,7 @@ import {
   StatusKind,
   Venue,
   distanceMeters,
+  isWithdrawn,
   journeyMinutes,
   photoUrl,
   statusBadge,
@@ -1643,7 +1644,10 @@ export class VenueMap {
 
   /**
    * The schedule status, right now: when it closes or opens, without how long it takes to get there.
-   * In the color of its marker, which does count it (see kinds).
+   * In the color of its marker, which does count it (see kinds). Once the venue has withdrawn, also
+   * the ribbon of its card (styles/_badges.scss), across the top right corner: at the bottom, the
+   * photos' names are. It goes in the popup's corner wherever it is, and here it keeps up with the
+   * date as the status does.
    */
   private popupStatus(venue: Venue): HTMLElement[] {
     const status = this.tapasRoute.statuses().get(venue.number);
@@ -1654,6 +1658,12 @@ export class VenueMap {
     badge.className = `schedule-status ${kind}`;
     badge.textContent = text;
     if (warning) badge.title = warning;
-    return [badge];
+    if (!isWithdrawn(venue, this.tapasRoute.today())) return [badge];
+    const ribbon = document.createElement('span');
+    ribbon.className = 'withdrawn-ribbon top';
+    const label = document.createElement('span');
+    label.textContent = 'Retirado';
+    ribbon.append(label);
+    return [badge, ribbon];
   }
 }

@@ -8,6 +8,7 @@ import {
   SlotChange,
   Weekday,
   arrivalFrom,
+  isoDate,
   limitedSchedule,
   scheduleChanges,
   scheduleStatus,
@@ -52,11 +53,16 @@ export class TapasRoute {
     });
   });
 
+  /** 'YYYY-MM-DD': it only changes at midnight. For the venues that withdraw (isWithdrawn()). */
+  readonly today = computed(() => isoDate(this.clock.now()));
+
   /** Schedule status of each venue right now. */
   readonly statuses = computed(() => {
     const event = this.data()?.event;
     const now = this.clock.now();
-    return new Map(this.venues().map((v) => [v.number, scheduleStatus(v.schedule, now, event)]));
+    return new Map(
+      this.venues().map((v) => [v.number, scheduleStatus(v.schedule, now, event, v.withdrawnFrom)]),
+    );
   });
 
   /** Arrival time at each venue from the starting point. */

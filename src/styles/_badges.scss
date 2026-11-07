@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 // A venue's number: it comes out of the left edge of its card (covering the border), rounded only on
 // the right.
 .venue-number {
@@ -86,4 +88,175 @@
   box-shadow: inset var(--pill-edge) var(--pill-edge) 0 rgb(255 255 255 / 0.3);
   color: rgb(255 255 255 / 0.7);
   line-height: 1;
+}
+
+// A venue that no longer takes part in the route (isWithdrawn() in venues.ts): a ribbon across the
+// bottom right corner of its card and of the gallery's, which comes from behind it (in the popups,
+// with .top, across the top right one). Through it, what's underneath (the heart) still gets
+// touched. All in em, of the text around it: in the popups it's smaller, like the rest.
+//
+// Each end goes past the border and turns round, as if over a rounded edge: the band, straight up
+// to there, makes the first half of the turn, until it's edge-on at the fold; its back, the other
+// half, and then it goes on straight, at right angles to the band, until it's behind the card. Seen
+// from the front, an edge turning round goes on along the band while it gets closer to the fold, a
+// sine curve: here, a Bézier curve with the same tangents at both ends.
+//
+// In its box, square, the card's corner is $ribbon-stick from the bottom right one, and the folds
+// are its right and bottom edges. The rest is symmetric on the diagonal: the bottom end, the right
+// one with x and y swapped.
+$ribbon-stick: 0.5; // From the border to the fold.
+$ribbon-turn: 0.38; // How round the turn is (its radius): the band is straight up to there.
+$ribbon-band: 1.3; // How wide the band is.
+$ribbon-inner: 4.3; // From the card's corner to the band's inner edge, along the diagonal.
+$ribbon-text: 0.68;
+$ribbon-across: math.sqrt(2) * $ribbon-band; // The band's width, up and down.
+$ribbon-rise: math.div(math.$pi, 2) * $ribbon-turn; // How far an edge goes up in half the turn.
+// The back reaches the card at the box's top: just tall enough.
+$ribbon-size: 3 * $ribbon-stick + math.sqrt(2) * $ribbon-inner + (math.$pi - 2) * $ribbon-turn;
+// Where the band's edges start turning, at the right end: the inner one (further from the corner)
+// and the outer one.
+$ribbon-turn-x: $ribbon-size - $ribbon-turn;
+$ribbon-inner-y: $ribbon-size - 2 * $ribbon-stick - math.sqrt(2) * $ribbon-inner + $ribbon-turn;
+$ribbon-outer-y: $ribbon-inner-y + $ribbon-across;
+// The Bézier curves' handles: a third of the turn's half, along each tangent.
+$ribbon-handle: math.div(math.$pi, 6) * $ribbon-turn;
+// Where the band's middle is, the same across and down.
+$ribbon-center: $ribbon-size -
+  $ribbon-stick - math.div($ribbon-inner - math.div($ribbon-band, 2), math.sqrt(2));
+
+// A point of the path, rounded; with $swap, that of the bottom end.
+@function ribbon-point($x, $y, $swap: false) {
+  $x: math.div(math.round($x * 10000), 10000);
+  $y: math.div(math.round($y * 10000), 10000);
+  @if $swap {
+    @return '#{$y} #{$x}';
+  }
+  @return '#{$x} #{$y}';
+}
+
+// The band, straight between its two ends, each turning half round up to the fold.
+@function ribbon-front() {
+  $h: $ribbon-handle;
+  $x: $ribbon-turn-x;
+  $right: $ribbon-size;
+  // The right end goes from the inner edge to the outer one; the bottom end, back.
+  $path: 'M';
+  $from: $ribbon-inner-y;
+  $to: $ribbon-outer-y;
+  @each $swap in (false, true) {
+    @if $swap {
+      $path: $path + ' L';
+      $from: $ribbon-outer-y;
+      $to: $ribbon-inner-y;
+    }
+    $path: $path +
+      ' #{ribbon-point($x, $from, $swap)}' +
+      ' C #{ribbon-point($x + $h, $from - $h, $swap)}' +
+      ' #{ribbon-point($right, $from - $ribbon-rise + $h, $swap)}' +
+      ' #{ribbon-point($right, $from - $ribbon-rise, $swap)}' +
+      ' L #{ribbon-point($right, $to - $ribbon-rise, $swap)}' +
+      ' C #{ribbon-point($right, $to - $ribbon-rise + $h, $swap)}' +
+      ' #{ribbon-point($x + $h, $to - $h, $swap)}' +
+      ' #{ribbon-point($x, $to, $swap)}';
+  }
+  @return $path + ' Z';
+}
+
+// Its back at each end: the other half of the turn, from the fold, and then straight to the card.
+@function ribbon-back() {
+  $h: $ribbon-handle;
+  $x: $ribbon-turn-x;
+  $right: $ribbon-size;
+  $border: $ribbon-size - $ribbon-stick;
+  $top: $ribbon-inner-y - $ribbon-rise;
+  $bottom: $ribbon-outer-y - $ribbon-rise;
+  $turned: $ribbon-inner-y - 2 * $ribbon-rise; // Where the inner edge has turned all the way.
+  $behind: $turned - ($ribbon-stick - $ribbon-turn); // Where it reaches the card: 0.
+  $path: '';
+  @each $swap in (false, true) {
+    $path: $path +
+      ' M #{ribbon-point($right, $top, $swap)}' +
+      ' C #{ribbon-point($right, $top - $h, $swap)}' +
+      ' #{ribbon-point($x + $h, $turned + $h, $swap)}' +
+      ' #{ribbon-point($x, $turned, $swap)}' +
+      ' L #{ribbon-point($border, $behind, $swap)}' +
+      ' L #{ribbon-point($border, $behind + $ribbon-across, $swap)}' +
+      ' L #{ribbon-point($x, $turned + $ribbon-across, $swap)}' +
+      ' C #{ribbon-point($x + $h, $turned + $ribbon-across + $h, $swap)}' +
+      ' #{ribbon-point($right, $bottom - $h, $swap)}' +
+      ' #{ribbon-point($right, $bottom, $swap)} Z';
+  }
+  @return $path;
+}
+
+// A mask with that path, the size of the box.
+@function ribbon-mask($path) {
+  $size: ribbon-point($ribbon-size, $ribbon-size);
+  @return url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 #{$size}'%3E%3Cpath d='#{$path}'/%3E%3C/svg%3E")
+    0 0 / 100% 100% no-repeat;
+}
+
+// In em of the band's text, which is smaller.
+@function ribbon-text-em($em) {
+  @return math.div($em, $ribbon-text) * 1em;
+}
+
+.withdrawn-ribbon {
+  $s: $ribbon-stick * 1em;
+
+  position: absolute;
+  right: calc(-1px - #{$s}); // Past the border.
+  bottom: calc(-1px - #{$s});
+  width: $ribbon-size * 1em;
+  height: $ribbon-size * 1em;
+  filter: drop-shadow(0 0 0.12em rgb(0 0 0 / 0.4));
+  pointer-events: none;
+
+  &.top {
+    top: calc(-1px - #{$s});
+    bottom: auto;
+    scale: 1 -1;
+  }
+
+  // Its back, under the band; and the band.
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  &::before {
+    background: var(--ribbon-back);
+    mask: ribbon-mask(ribbon-back());
+  }
+
+  &::after {
+    background: var(--ribbon);
+    mask: ribbon-mask(ribbon-front());
+  }
+
+  // The text, above the band, centered on it and going up.
+  span {
+    position: absolute;
+    z-index: 1;
+    top: ribbon-text-em($ribbon-center - math.div($ribbon-band, 2));
+    left: ribbon-text-em($ribbon-center - 4);
+    width: ribbon-text-em(8);
+    rotate: -45deg;
+    color: #fff;
+    font-size: #{$ribbon-text}em;
+    font-weight: 700;
+    line-height: ribbon-text-em($ribbon-band);
+    letter-spacing: 0.08em;
+    text-indent: 0.08em; // The spacing also goes after the last letter: centered all the same.
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  // Turned back: the box flipped upside down would leave it backwards.
+  &.top span {
+    scale: 1 -1;
+  }
 }

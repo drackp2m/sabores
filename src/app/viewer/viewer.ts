@@ -393,6 +393,16 @@ export class PhotoViewer {
     const fromStars = new DOMRect(pixel(pill.left), pixel(pill.top), pill.width, pill.height);
     const toStars = snap(stars);
     const starsScale = fromStars.height / toStars.height;
+    // From the card of a venue that has withdrawn, almost in black and white (styles/_theme.scss):
+    // the photo and its stars get their color back on the way.
+    const withdrawn = photo.origin.closest('.withdrawn')
+      ? getComputedStyle(photo.origin).getPropertyValue('--withdrawn-filter').trim()
+      : '';
+    const colors = withdrawn
+      ? [image, stars].map((element) =>
+          element.animate(direction([{ filter: withdrawn }, { filter: 'none' }]), options),
+        )
+      : [];
     // Each transform on its own, away from what has to be repainted, so that it can run on the
     // compositor: a slow frame on the main thread doesn't hold it up.
     const animations = [
@@ -441,6 +451,7 @@ export class PhotoViewer {
         ]),
         options,
       ),
+      ...colors,
     ];
     return Promise.all(animations.map((animation) => animation.finished));
   }

@@ -108,8 +108,8 @@ import { TimeField } from './time-field';
           </div>
         </div>
 
-        <div class="field hours" role="group" aria-labelledby="hours-label">
-          <span id="hours-label">Tener en cuenta</span>
+        <div class="field consider" role="group" aria-labelledby="consider-label">
+          <span id="consider-label">Tener en cuenta</span>
           <div class="checkboxes">
             <label
               class="control"
@@ -118,6 +118,11 @@ import { TimeField } from './time-field';
               <input type="checkbox" [formField]="form.reviewedHours" />
               <app-icon class="alert" name="alert" />
               Horarios revisados
+            </label>
+            <label class="control" title="Solo los locales que siguen participando en la ruta">
+              <input type="checkbox" [formField]="form.withdrawn" />
+              <app-icon class="ribbon" name="withdrawn" />
+              Locales no participantes
             </label>
           </div>
         </div>
@@ -168,13 +173,13 @@ import { TimeField } from './time-field';
       }
 
       &.only,
-      &.hours {
+      &.consider {
         flex: 1 1 auto;
       }
     }
 
-    // The checkboxes, on the same row as long as they fit, sharing the width (on desktop, up to 15rem);
-    // the rest, on the next one.
+    // The checkboxes, on the same row as long as they fit, sharing the width (on desktop, up to 15rem,
+    // or what their text needs, «Locales no participantes»); the rest, on the next one.
     .checkboxes {
       display: flex;
       flex-wrap: wrap;
@@ -182,6 +187,7 @@ import { TimeField } from './time-field';
 
       .control {
         flex: 1 1 auto;
+        min-width: max-content;
         max-width: 15rem;
       }
     }
@@ -199,6 +205,11 @@ import { TimeField } from './time-field';
     // The same as in the cards' schedule.
     .alert {
       color: var(--warning);
+    }
+
+    // The same as the «Retirado» ribbon.
+    .ribbon {
+      color: var(--ribbon);
     }
 
     .range {

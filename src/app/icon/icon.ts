@@ -72,6 +72,11 @@ const ICONS = {
   clock: ['M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18z', 'M12 7.5V12l3 2'],
   // An exclamation mark in a circle: the reviewed hours take part of the schedule away.
   alert: ['M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18z', 'M12 7.5v5', 'M12 16.5h.01'],
+  // A card with a ribbon round its bottom right corner, like a venue that has withdrawn.
+  withdrawn: [
+    'M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6',
+    'M11 21L21 11v5.5L16.5 21z',
+  ],
   plus: ['M12 5v14', 'M5 12h14'],
   minus: ['M5 12h14'],
   star: [

@@ -128,8 +128,9 @@ del … deja de participar en la ruta». From then on its card, in either view, 
 white and a bit see-through (its photos get their color back as they enlarge), with a «Retirado»
 ribbon that wraps around its bottom right corner from behind (in its popup, around the top right
 one): at each end the band makes half of the turn and its back the other half, and then goes on
-straight behind the card. The heart under it still works. Its schedule has no more tapas, so it doesn't
-come up when filtering by day or time.
+straight behind the card. The heart under it still works. Its status says there are no more tapas, but
+it still comes up when filtering by day or time, by its schedule: in grey, it can be told apart. «Locales no participantes», in the filters' «Tener en cuenta» (the icon, a card with that
+ribbon round its corner), leaves those venues out altogether.
 
 When a venue's reviewed hours close part of its tapas schedule, an exclamation mark goes between «Horario
 de tapas» and the status. The same mark, in the filters, is «Horarios revisados»: on, each schedule keeps

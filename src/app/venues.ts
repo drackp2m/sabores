@@ -100,6 +100,11 @@ export interface Filters {
    * (limitedSchedule()), everywhere: cards, statuses, filters and sorting.
    */
   reviewedHours: boolean;
+  /**
+   * «Locales no participantes»: those withdrawn by today (isWithdrawn()) are left out. Off, they're
+   * there, with their ribbon, and by day or time they go by their schedule, like the rest.
+   */
+  withdrawn: boolean;
   /** 'yes': some gluten-free tapa; 'optional': "gluten-free on request" counts too. */
   glutenFree: '' | 'yes' | 'optional';
   /** Drink type (Drink.type). */
@@ -126,6 +131,7 @@ export const NO_FILTERS: Filters = {
   to: '',
   openNow: false,
   reviewedHours: false,
+  withdrawn: false,
   glutenFree: '',
   drink: '',
   flavorRoute: false,
@@ -168,10 +174,7 @@ export function withdrawalNotice(venue: Venue, today: string): string | null {
   return `A partir del ${weekday} ${dayAndMonth} deja de participar en la ruta.`;
 }
 
-/**
- * With a day or a time, those withdrawn by today (isWithdrawn()) are left out: they no longer serve
- * tapas.
- */
+/** Those withdrawn by today (isWithdrawn()) are left out only with Filters.withdrawn. */
 export function filterVenues(
   venues: readonly Venue[],
   filters: Filters,
@@ -180,14 +183,14 @@ export function filterVenues(
 ): Venue[] {
   const text = normalize(filters.text.trim());
   const number = /^\d+$/.test(text) ? Number(text) : null;
-  const { day, from, to, glutenFree, drink, flavorRoute, favorites, tried } = filters;
+  const { day, from, to, withdrawn, glutenFree, drink, flavorRoute, favorites, tried } = filters;
   return venues.filter(
     (venue) =>
+      (!withdrawn || !isWithdrawn(venue, today)) &&
       (!favorites || marks.favorites.has(venue.number)) &&
       (!tried || matchesTried(venue, tried, marks.ratings)) &&
       (!text || (number !== null ? venue.number === number : searchTextOf(venue).includes(text))) &&
-      (!(day || from || to) ||
-        (!isWithdrawn(venue, today) && openBetween(venue.schedule, day, from, to))) &&
+      (!(day || from || to) || openBetween(venue.schedule, day, from, to)) &&
       (!glutenFree ||
         venue.tapas.some(
           (t) =>

@@ -329,18 +329,27 @@ describe('filterVenues', () => {
     expect(names({ flavorRoute: true })).toEqual(['ORIGEN']);
   });
 
-  it('with a day or a time, leaves out those withdrawn by today', () => {
+  describe('those withdrawn by today', () => {
     const withdrawn = venues.map((v) =>
       v.name === 'ORIGEN' ? { ...v, withdrawnFrom: '2026-11-06' } : v,
     );
     const on = (today: string, filters: Partial<Filters>) =>
       filterVenues(withdrawn, { ...NO_FILTERS, ...filters }, undefined, today).map((v) => v.name);
-    expect(on('2026-11-05', { day: 'monday' })).toEqual(['CÚPULA', 'ORIGEN']);
-    expect(on('2026-11-06', { day: 'monday' })).toEqual(['CÚPULA']);
-    expect(on('2026-11-06', { from: '13:00', to: '13:00' })).toEqual([]);
-    // The rest of the filters don't depend on its schedule: it's still there, with its ribbon.
-    expect(on('2026-11-06', {})).toEqual(['CÚPULA', 'ORIGEN', 'DOS EN VERDE']);
-    expect(on('2026-11-06', { flavorRoute: true })).toEqual(['ORIGEN']);
+
+    it('are there, with their ribbon, also by day or time (their schedule)', () => {
+      expect(on('2026-11-06', {})).toEqual(['CÚPULA', 'ORIGEN', 'DOS EN VERDE']);
+      expect(on('2026-11-06', { flavorRoute: true })).toEqual(['ORIGEN']);
+      expect(on('2026-11-06', { day: 'monday' })).toEqual(['CÚPULA', 'ORIGEN']);
+      expect(on('2026-11-06', { from: '13:00', to: '13:00' })).toEqual(['ORIGEN']);
+    });
+
+    it('with «Locales no participantes», are left out', () => {
+      const out = { withdrawn: true };
+      expect(on('2026-11-05', out)).toEqual(['CÚPULA', 'ORIGEN', 'DOS EN VERDE']);
+      expect(on('2026-11-06', out)).toEqual(['CÚPULA', 'DOS EN VERDE']);
+      expect(on('2026-11-06', { ...out, flavorRoute: true })).toEqual([]);
+      expect(on('2026-11-06', { ...out, day: 'monday' })).toEqual(['CÚPULA']);
+    });
   });
 });
 

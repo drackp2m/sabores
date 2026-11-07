@@ -533,6 +533,13 @@ describe('App', () => {
     expect(card(2).matches('.withdrawn')).toBe(true);
     expect(card(2).querySelector('.withdrawn-ribbon')?.textContent).toBe('Retirado');
     expect(card(1).matches('.withdrawn')).toBe(false);
+
+    // Taking them into account, those that no longer take part are left out.
+    await press('.consider label', 'Locales no participantes');
+    expect(el.querySelector('#venue-2')).toBeNull();
+    expect(el.querySelector('#venue-1')).not.toBeNull();
+    await press('.actions button', 'Limpiar');
+    expect(card(2).matches('.withdrawn')).toBe(true);
   });
 
   describe('with «Abierto ahora» on', () => {
@@ -1036,7 +1043,7 @@ describe('App', () => {
     // Out of the grid of the days.
     expect(el.querySelector('#venue-1 dl .notice')).toBeNull();
 
-    await press('.hours label', 'Horarios revisados');
+    await press('.consider label', 'Horarios revisados');
     expect(slots(1).textContent).toBe('09:00–18:00');
     expect(notice()).toBe(
       'Estás viendo el horario revisado. Pulsa este aviso para ver el horario original.',
@@ -1067,7 +1074,7 @@ describe('App', () => {
     await press('#venue-1 .notice');
     expect(slots()).toBe('00:00–cierre');
     expect(schedule.open).toBe(true);
-    expect(el.querySelector<HTMLInputElement>('.hours input')!.checked).toBe(false);
+    expect(el.querySelector<HTMLInputElement>('.consider input')!.checked).toBe(false);
   });
 
   it('creates the schedule the first time it opens and keeps it', async () => {

@@ -29,15 +29,24 @@ describe('VenueMap', () => {
   const lost = signal(false);
   const mapInSight = signal(false);
   const live = signal(false);
+  const searching = signal(false);
+  const error = signal('');
+  const useMyLocation = vi.fn(() => searching.set(true));
   beforeEach(() => {
     fitBounds = vi.spyOn(maplibre.Map.prototype, 'fitBounds').mockReturnThis();
     statuses.set(new Map());
     today.set('2026-11-05');
+    searching.set(false);
+    error.set('');
+    useMyLocation.mockClear();
     localStorage.clear(); // The theme.
     TestBed.configureTestingModule({
       providers: [
         { provide: TapasRoute, useValue: { statuses, arrivals, today } },
-        { provide: UserLocation, useValue: { lost, mapInSight, live } },
+        {
+          provide: UserLocation,
+          useValue: { lost, mapInSight, live, searching, error, useMyLocation },
+        },
       ],
     });
   });
@@ -561,7 +570,7 @@ describe('VenueMap', () => {
     const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
     const { fixture, el, change } = await create([ONE]);
     const button = () => el.querySelector<HTMLElement>('.buttons.bottom.left button');
-    expect(button()).toBeNull();
+    expect(button()!.getAttribute('aria-label')).toBe('Usar mi ubicación');
 
     await change('origin', { lat: 39.98, lng: -0.04 });
     expect(button()!.getAttribute('aria-label')).toBe('Ir al punto de partida');
@@ -591,6 +600,90 @@ describe('VenueMap', () => {
     button()!.click();
     await change('origin', { lat: 39.981, lng: -0.04 });
     expect(button()).not.toBeNull();
+  });
+
+  describe('without a starting point', () => {
+    const button = (el: HTMLElement) =>
+      el.querySelector<HTMLButtonElement>('[aria-label="Usar mi ubicación"]');
+    afterEach(() => vi.useRealTimers());
+
+    it('its button asks for the location, and is out of use until it arrives', async () => {
+      const { fixture, el, change } = await create([ONE]);
+      button(el)!.click();
+      await fixture.whenStable();
+      expect(useMyLocation).toHaveBeenCalledOnce();
+      expect(button(el)!.disabled).toBe(true);
+      expect(button(el)!.classList).toContain('searching');
+
+      searching.set(false);
+      await change('origin', { lat: 39.98, lng: -0.04 });
+      expect(button(el)).toBeNull();
+    });
+
+    it('also out of use while asked for elsewhere: on opening the app, say', async () => {
+      const { fixture, el } = await create([ONE]);
+      searching.set(true);
+      await fixture.whenStable();
+      expect(button(el)!.disabled).toBe(true);
+    });
+
+    it('beside the list, the map goes to the location once it arrives', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      const { fixture, el, change } = await create([ONE]);
+      button(el)!.click();
+      await fixture.whenStable();
+      expect(easeTo).not.toHaveBeenCalled();
+
+      searching.set(false);
+      await change('origin', { lat: 39.98, lng: -0.04 });
+      expect(easeTo).toHaveBeenLastCalledWith({ center: [-0.04, 39.98], zoom: 16, duration: 250 });
+      // On it: the button to go there doesn't show up.
+      expect(el.querySelector('.buttons.bottom.left button')).toBeNull();
+      easeTo.mockRestore();
+    });
+
+    it('in the venue view it stays on the venue, for the route to be framed', async () => {
+      const easeTo = vi.spyOn(maplibre.Map.prototype, 'easeTo');
+      const { fixture, el, change } = await create([ONE], 1);
+      button(el)!.click();
+      await fixture.whenStable();
+      const moves = easeTo.mock.calls.length;
+
+      searching.set(false);
+      await change('origin', { lat: 39.98, lng: -0.04 });
+      expect(easeTo).toHaveBeenCalledTimes(moves);
+      expect(el.querySelector('[aria-label="Ir al punto de partida"]')).not.toBeNull();
+      easeTo.mockRestore();
+    });
+
+    it('says why, for a moment, if it can’t be had', async () => {
+      const { fixture, el } = await create([ONE]);
+      const failure = () => el.querySelector('[role="alert"]')?.textContent?.trim();
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      button(el)!.click();
+      await fixture.whenStable();
+      expect(failure()).toBeUndefined();
+
+      error.set('No se ha podido obtener tu ubicación: escribe una dirección.');
+      searching.set(false);
+      await fixture.whenStable();
+      expect(failure()).toBe('No se ha podido obtener tu ubicación: escribe una dirección.');
+      expect(button(el)!.disabled).toBe(false);
+
+      vi.advanceTimersByTime(4000);
+      await fixture.whenStable();
+      expect(failure()).toBeUndefined();
+    });
+
+    it('a failure from the list isn’t said on the map', async () => {
+      const { fixture, el } = await create([ONE]);
+      searching.set(true);
+      await fixture.whenStable();
+      error.set('No se ha encontrado «Calle Falsa 123» cerca de Castelló.');
+      searching.set(false);
+      await fixture.whenStable();
+      expect(el.querySelector('[role="alert"]')).toBeNull();
+    });
   });
 
   it('marks the user’s point while the location is lost', async () => {

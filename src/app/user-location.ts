@@ -61,10 +61,10 @@ type Source = 'geolocation' | 'address';
 
 /**
  * Point from which distances and arrival times are calculated. The last one is recovered when the
- * app opens: the current location if that's what was used and the browser already allows it;
- * otherwise, the last address searched for. The current location keeps moving with the phone for as
- * long as it's the starting point, but only while a map shows it: otherwise, it isn't worth the
- * battery, nor having the list change while it's being read.
+ * app opens: the current location if that's what was used, asking for it again unless the browser
+ * has been told not to give it; otherwise, the last address searched for. The current location
+ * keeps moving with the phone for as long as it's the starting point, but only while a map shows
+ * it: otherwise, it isn't worth the battery, nor having the list change while it's being read.
  */
 @Injectable({ providedIn: 'root' })
 export class UserLocation {
@@ -178,7 +178,7 @@ export class UserLocation {
   private async restore(): Promise<void> {
     const source = this.store.setting<Source | null>('source');
     if (!source) return;
-    if (source === 'geolocation' && (await geolocationAllowed())) {
+    if (source === 'geolocation' && !(await geolocationDenied())) {
       this.useMyLocation();
       return;
     }
@@ -293,10 +293,14 @@ function wasTyped({ muni }: Candidate, text: string): boolean {
     .some((name) => text.includes(name));
 }
 
-/** Without asking: only if permission was already given (Safari on iOS, say, asks again). */
-async function geolocationAllowed(): Promise<boolean> {
+/**
+ * Only if it was refused for good. Safari on iOS, from the Home Screen above all, often forgets that
+ * it was allowed and says it will ask: then it asks, rather than the app opening without it and the
+ * route waiting for it to be asked for by hand. With no way to know, it asks too.
+ */
+async function geolocationDenied(): Promise<boolean> {
   try {
-    return (await navigator.permissions.query({ name: 'geolocation' })).state === 'granted';
+    return (await navigator.permissions.query({ name: 'geolocation' })).state === 'denied';
   } catch {
     return false;
   }

@@ -117,6 +117,9 @@ const STATUS_KINDS: StatusKind[] = ['open', 'soon', 'late', 'closed'];
 /** How far a finger must move to know where it's going (fingers tremble a little on touching). */
 const DRAG_THRESHOLD = 10;
 
+/** In milliseconds, why the location couldn't be had stays on the map: time to read it. */
+const FAILURE_TIME = 4000;
+
 /** In degrees: how near north a turn can end to go back to it (as MapLibre's bearingSnap). */
 const NORTH_SNAP = 7;
 
@@ -251,9 +254,11 @@ const SMALL_MAP = [
           <button
             type="button"
             class="secondary icon"
+            [class.searching]="searching()"
             [title]="label"
             [attr.aria-label]="label"
-            (click)="goToOrigin()"
+            [disabled]="searching()"
+            (click)="origin() ? goToOrigin() : useMyLocation()"
           >
             <app-icon name="location" />
           </button>
@@ -286,6 +291,11 @@ const SMALL_MAP = [
       <p class="hint" [class.visible]="hint()" aria-hidden="true">
         Usa dos dedos para mover el mapa
       </p>
+      @if (failure(); as text) {
+        <p class="hint failure" role="alert" animate.enter="entering" animate.leave="leaving">
+          {{ text }}
+        </p>
+      }
       @if (noMap()) {
         <p class="no-map">No se ha podido cargar el mapa.</p>
       }
@@ -487,6 +497,40 @@ const SMALL_MAP = [
       }
     }
 
+    // Shown while it's there, coming and going like the hint.
+    .failure {
+      opacity: 1;
+
+      &.entering {
+        animation: fade 0.3s reverse;
+      }
+
+      &.leaving {
+        animation: fade 0.3s;
+      }
+    }
+
+    @keyframes fade {
+      to {
+        opacity: 0;
+      }
+    }
+
+    // The location on its way: the button, out of use, breathes.
+    .searching app-icon {
+      animation: breathe 1s ease-in-out infinite alternate;
+
+      @include media.reduced-motion {
+        animation: none;
+      }
+    }
+
+    @keyframes breathe {
+      to {
+        opacity: 0.35;
+      }
+    }
+
     .no-map {
       position: absolute;
       inset: 0;
@@ -649,12 +693,22 @@ export class VenueMap {
   private readonly onOrigin = linkedSignal({ source: this.origin, computation: () => false });
   /**
    * The button to go to the user's point, by what it is. Not while guiding, nor once pressed: the map
-   * is on it. Like the north one, it goes away as soon as it's pressed, not on getting there.
+   * is on it. Like the north one, it goes away as soon as it's pressed, not on getting there. With no
+   * point, the same one asks for the location (see useMyLocation): from the venue view there's no
+   * going back to the list for it.
    */
   protected readonly originButton = computed(() => {
-    if (!this.map() || !this.origin() || this.guiding() || this.onOrigin()) return null;
+    if (!this.map() || this.guiding() || this.onOrigin()) return null;
+    if (!this.origin()) return 'Usar mi ubicación';
     return this.location.live() ? 'Ir a mi ubicación' : 'Ir al punto de partida';
   });
+  /** A starting point on its way, from here or from the list (also on opening the app). */
+  protected readonly searching = this.location.searching;
+  /** Its button asked for the location, which hasn't come yet nor failed (see useMyLocation). */
+  private readonly locating = signal(false);
+  /** Why the location couldn't be had, over the map for a moment. */
+  protected readonly failure = signal('');
+  private hideFailure?: ReturnType<typeof setTimeout>;
   /** With the starting point moving with the phone and a venue to go to. */
   protected readonly canGuide = computed(
     () => !!this.map() && this.location.live() && !!this.destination(),
@@ -823,6 +877,17 @@ export class VenueMap {
         .replaceChildren(...status);
     });
 
+    // The location its button asked for, once it's here or has failed.
+    effect(() => {
+      const origin = this.origin();
+      if (!this.locating() || this.searching()) return;
+      untracked(() => {
+        this.locating.set(false);
+        if (!origin) this.sayWhy(this.location.error());
+        else if (this.routeTo() === null && this.map()) this.goToOrigin();
+      });
+    });
+
     // What the user's point is: where they are, moving with the phone, or where they said they'd start.
     effect(() => {
       if (!this.map()) return;
@@ -834,6 +899,7 @@ export class VenueMap {
       for (const pin of this.pins.values()) pin.stop();
       this.map()?.remove();
       clearTimeout(this.hideHint);
+      clearTimeout(this.hideFailure);
       this.location.mapInSight.set(false);
     });
 
@@ -1086,6 +1152,22 @@ export class VenueMap {
     const { lng, lat } = this.origin()!;
     map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16), duration: MOVE_TIME });
     this.onOrigin.set(true);
+  }
+
+  /**
+   * With no starting point, its button asks for the location, which then moves with the phone as it
+   * does from the list. Once it's here, in the venue view the route to the venue gets framed (see the
+   * route's effect); beside the list, the map goes to it. If it can't be had, the map says why.
+   */
+  protected useMyLocation(): void {
+    this.locating.set(true);
+    this.location.useMyLocation();
+  }
+
+  private sayWhy(text: string): void {
+    this.failure.set(text);
+    clearTimeout(this.hideFailure);
+    this.hideFailure = setTimeout(() => this.failure.set(''), FAILURE_TIME);
   }
 
   /** A popup open would hide the way ahead: it gets closed. */

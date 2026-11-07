@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
+import { Store } from './store';
 import { UserLocation } from './user-location';
 
 /** A portal as CartoCiudad returns it. */
@@ -181,6 +182,49 @@ describe('UserLocation', () => {
       expect(clearWatch).toHaveBeenCalledTimes(1);
       expect(watchPosition).toHaveBeenCalledTimes(2);
       hidden.mockRestore();
+    });
+
+    describe('on opening the app, if it was the starting point', () => {
+      const ADDRESS = { lat: 39.979, lng: -0.041, label: 'Calle Herrero, 49' };
+      afterEach(() => Reflect.deleteProperty(navigator, 'permissions'));
+
+      /** The app opening again, with what was saved and what the browser says of the permission. */
+      async function reopen(state?: PermissionState) {
+        if (state) {
+          Object.defineProperty(navigator, 'permissions', {
+            configurable: true,
+            value: { query: async () => ({ state }) },
+          });
+        }
+        const store = TestBed.inject(Store);
+        store.saveSetting('address', ADDRESS);
+        store.saveSetting('source', 'geolocation');
+        const reopened = TestBed.runInInjectionContext(() => new UserLocation());
+        await vi.waitFor(() => expect(reopened.searching() || reopened.origin()).toBeTruthy());
+        TestBed.tick();
+        return reopened;
+      }
+
+      it('asks for it again, also if the browser says it will ask (Safari on iOS)', async () => {
+        for (const state of ['granted', 'prompt'] as const) {
+          watchPosition.mockClear();
+          const reopened = await reopen(state);
+          expect(reopened.searching()).toBe(true);
+          expect(reopened.origin()).toBeNull();
+          expect(watchPosition).toHaveBeenCalledOnce();
+        }
+      });
+
+      it('also with no way to know what the browser says', async () => {
+        await reopen();
+        expect(watchPosition).toHaveBeenCalledOnce();
+      });
+
+      it('refused for good, without asking: from the last address', async () => {
+        const reopened = await reopen('denied');
+        expect(watchPosition).not.toHaveBeenCalled();
+        expect(reopened.origin()).toEqual(ADDRESS);
+      });
     });
   });
 
